@@ -32,7 +32,7 @@ Co-authored-by: Florian Wunderlich <fwunderlich@factor3.de>
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01C2UBZdnrDZSBh8yQz8rc9g
 ---
- python/sglang/srt/layers/moe/kt_lend.py       | 1339 +++++++++++++++++
+ python/sglang/srt/layers/moe/kt_lend.py       | 1360 +++++++++++++++++
  python/sglang/srt/layers/moe/kt_lend_probe.py |  157 ++
  python/sglang/srt/layers/moe/kt_pinned.py     |  132 ++
  python/sglang/srt/managers/scheduler.py       |    5 +
@@ -40,17 +40,17 @@ Claude-Session: https://claude.ai/code/session_01C2UBZdnrDZSBh8yQz8rc9g
  python/sglang/srt/model_loader/loader.py      |   12 +
  python/sglang/srt/models/deepseek_v4.py       |   10 +-
  .../srt/models/deepseek_v4_replay_tail.py     |    5 +
- 8 files changed, 1664 insertions(+), 1 deletion(-)
+ 8 files changed, 1685 insertions(+), 1 deletion(-)
  create mode 100644 python/sglang/srt/layers/moe/kt_lend.py
  create mode 100644 python/sglang/srt/layers/moe/kt_lend_probe.py
  create mode 100644 python/sglang/srt/layers/moe/kt_pinned.py
 
 diff --git a/python/sglang/srt/layers/moe/kt_lend.py b/python/sglang/srt/layers/moe/kt_lend.py
 new file mode 100644
-index 0000000000..5079b6a17f
+index 0000000000..ee46afcbf0
 --- /dev/null
 +++ b/python/sglang/srt/layers/moe/kt_lend.py
-@@ -0,0 +1,1339 @@
+@@ -0,0 +1,1360 @@
 +# SPDX-License-Identifier: Apache-2.0
 +"""KT prefill lend (KT_PREFILL_LEND=1): during a streamed prefill the
 +GPU-resident weights hand their physical memory to the prefill and come back,
@@ -130,6 +130,14 @@ index 0000000000..5079b6a17f
 +
 +ENABLED = os.environ.get("KT_PREFILL_LEND", "0") == "1"
 +MIN_BYTES = int(os.environ.get("KT_PREFILL_LEND_MIN_BYTES", str(1 << 20)))
++# Dynamic resident experts swap their packed weights AND one-byte scales.
++# Small scales must join the immutable prefill mirror: res_guard republishes
++# identity expert IDs when that mirror is restored. Keep the ordinary size
++# policy unchanged when resident swapping is disabled.
++_DYNAMIC_RESIDENT_SCALES = all(
++    os.environ.get(name, "0") == "1"
++    for name in ("KT_KV_HOT_LEND", "KT_KV_HOT_DYNAMIC_SLOTS", "KT_KV_HOT_DYNAMIC_RESIDENT")
++)
 +TAG_WEIGHTS = "kt_lend_weights"
 +TAG_SCRATCH = "kt_lend_scratch"
 +HINT = os.environ.get("KT_PREFILL_LEND_HINT", "")
@@ -207,6 +215,19 @@ index 0000000000..5079b6a17f
 +        shape = getattr(t, "tensor_shape", None)
 +        return int(math.prod(shape)) * 9 // 8 if shape else 0
 +    return t.numel() * t.element_size()
++
++
++def _lendable_size(name: str, tensor) -> bool:
++    size = _nbytes(tensor)
++    return size >= MIN_BYTES or (
++        _DYNAMIC_RESIDENT_SCALES
++        and size > 0
++        and tensor.element_size() == 1
++        and name.rsplit(".", 1)[-1] in (
++            "w13_weight_scale_inv", "w2_weight_scale_inv",
++            "w13_weight_scale", "w2_weight_scale",
++        )
++    )
 +
 +
 +def _pinned_bounce(n: int):
@@ -349,7 +370,7 @@ index 0000000000..5079b6a17f
 +                or any(w in name for w in SKIP + PFONLY + RESIDENT)
 +            ):
 +                continue
-+            if _nbytes(p) < MIN_BYTES:
++            if not _lendable_size(name, p):
 +                # room for it in case the loading stacks it into a fused
 +                # owner with lent parameters (Flash-Next's in_proj_ba)
 +                slack += _align(_nbytes(p))
@@ -533,7 +554,7 @@ index 0000000000..5079b6a17f
 +        and _ready(q)
 +        and q.is_cuda
 +        and q.is_contiguous()
-+        and _nbytes(q) >= MIN_BYTES
++        and _lendable_size(n, q)
 +        and not any(w in n for w in SKIP + RESIDENT)
 +        and (STATE.get("final") or not any(w in n for w in PFONLY))
 +    ]
@@ -662,7 +683,7 @@ index 0000000000..5079b6a17f
 +        for n, q in STATE["layers"][i].named_parameters()
 +        if _ready(q)
 +        and q.is_cuda
-+        and _nbytes(q) >= MIN_BYTES
++        and _lendable_size(n, q)
 +        and not any(w in n for w in SKIP + PFONLY + RESIDENT)
 +    ):
 +        return

@@ -5452,3 +5452,129 @@ index 0000000..d7dcd51
 +def test_activation_type_defaults_to_silu():
 +    config = kt_kernel_ext.moe.MOEConfig(1, 1, 8, 8, 0)
 +    assert config.activation_type == 0
+
+--- a/kt-kernel/operators/avx2/mxfp4-moe.hpp
++++ b/kt-kernel/operators/avx2/mxfp4-moe.hpp
+@@ -771,7 +771,12 @@
+       const char* v = std::getenv("KT_MXFP4_SMALL_M");
+       return v ? std::atoi(v) != 0 : true;
+     }();
+-    if (kSmallM && m >= 2 && m <= 8 && n_end > n_start) {
++    // Canonical routes preserve the single-row parity tree for every batch size.
++    static const bool kCanonical = [] {
++      const char* v = std::getenv("KT_MOE_CANONICAL_MATH");
++      return v && std::string(v) == "1";
++    }();
++    if ((kCanonical || (kSmallM && m <= 8)) && m >= 2 && n_end > n_start) {
+       const int ncols = n_end - n_start;
+       constexpr int kSmBlk = 32;  // groups a k block: four rows' activations are 16 KiB
+       static thread_local std::vector<float> sm_park_storage;
+@@ -1968,6 +1973,65 @@
+   using Base = TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>>;
+   using Base::Base;
+ 
++  // A separate API keeps the ordinary [tokens, hidden] output ABI unchanged.
++  // The caller supplies [tokens, topk, hidden] BF16 storage. No persistent
++  // pointer is installed: CUDA graphs retain their own correctly sized buffer.
++  __attribute__((optimize("no-associative-math")))
++  void forward_routes_binding(intptr_t qlen_ptr, int k, intptr_t ids_ptr,
++                              intptr_t weights_ptr, intptr_t input, intptr_t output) {
++    const int qlen = *(const int*)qlen_ptr;
++    const auto* ids = (const int64_t*)ids_ptr;
++    const auto* weights = (const float*)weights_ptr;
++    auto& c = this->config;
++    const char* enabled = std::getenv("KT_MOE_CANONICAL_MATH");
++    if (!enabled || std::string(enabled) != "1" || !this->weights_loaded ||
++        this->tp_count != 8 || c.hidden_size % 32 || c.intermediate_size % 256 ||
++        k != c.num_experts_per_tok || qlen < 1 || qlen > c.max_possible_qlen() ||
++        c.swiglu_limit != 10.f || c.swiglu_alpha != 0.f || this->kt_partial_[0])
++      throw std::runtime_error("unsupported canonical MXFP4 route configuration");
++    for (const char* option : {"KT_CPU_A4_INT8", "KT_MXFP4_G32_INT8"}) {
++      const char* value = std::getenv(option);
++      if (value && std::atoi(value) != 0)
++        throw std::runtime_error("canonical MXFP4 routes require BF16 activations");
++    }
++    for (int r = 0; r < qlen * k; ++r)
++      if (ids[r] < -1 || ids[r] >= c.expert_num)
++        throw std::runtime_error("canonical MXFP4 route id out of range");
++
++    c.pool->dispense_backend()->do_numa_job([&](int part) {
++      this->tps[part]->forward(qlen, k, ids, weights, (const void*)input,
++                               this->local_output_numa[part]);
++    });
++    // Read existing unweighted BF16 down results, before branch weighting.
++    // Explicit additions keep NUMA partition order fixed; rounding once here
++    // defines the same per-route representation produced by the GPU kernel.
++    auto merge = [&](int token) {
++      for (int j = 0; j < k; ++j) {
++        const int64_t expert = ids[token * k + j];
++        auto* dst = (ggml_bf16_t*)output + ((size_t)token*k+j)*c.hidden_size;
++        if (c.should_skip_expert(expert) || weights[token*k+j] == 0.f) {
++          std::memset(dst, 0, sizeof(ggml_bf16_t)*c.hidden_size);
++          continue;
++        }
++        for (int e = 0; e < c.hidden_size; e += 16) {
++          __m256 sum0 = _mm256_setzero_ps(), sum1 = _mm256_setzero_ps();
++          for (int part = 0; part < 8; ++part) {
++            auto* tp = this->tps[part].get();
++            auto* src = tp->m_local_down_output_ptr_[expert] +
++                        (size_t)tp->m_local_pos_[token][j]*c.hidden_size + e;
++            __m256 v0, v1;
++            avx2::load_16xbf16_to_2x8xfp32(src, &v0, &v1);
++            sum0 = _mm256_add_ps(sum0, v0);
++            sum1 = _mm256_add_ps(sum1, v1);
++          }
++          avx2::store_2x8xfp32_to_16xbf16(&sum0, &sum1, dst+e);
++        }
++      }
++    };
++    if (qlen < 10) { for (int i=0; i<qlen; ++i) merge(i); }
++    else c.pool->do_work_stealing_job(qlen, nullptr, merge, nullptr);
++  }
++
+   ~TP_MOE() {
+     for (auto& part : tp_weight_arenas_)
+       for (auto& a : part) AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>::free_expert_arena(a);
+--- a/kt-kernel/ext_bindings.cpp
++++ b/kt-kernel/ext_bindings.cpp
+@@ -177,6 +177,28 @@
+       [](cls& self, const std::vector<std::vector<uintptr_t>>& val) {                  \
+         self.name = uint_to_void_ptr_nested<void>(val);                                \
+       })
++
++// Uses the existing CPUInfer task ownership and CUDA-stream ordering contract.
++template <class MoeClass>
++struct CanonicalRouteBindings {
++  struct Args {
++    CPUInfer* cpuinfer;
++    MoeClass* moe;
++    intptr_t qlen;
++    int k;
++    intptr_t ids, weights, input, output;
++  };
++  static void inner(void* raw) {
++    auto* a = (Args*)raw;
++    a->cpuinfer->enqueue(&MoeClass::forward_routes_binding, a->moe, a->qlen,
++                          a->k, a->ids, a->weights, a->input, a->output);
++  }
++  static std::pair<intptr_t,intptr_t> task(std::shared_ptr<MoeClass> moe,
++      intptr_t qlen, int k, intptr_t ids, intptr_t weights, intptr_t input, intptr_t output) {
++    auto* a = new Args{nullptr,moe.get(),qlen,k,ids,weights,input,output};
++    return {(intptr_t)&inner,(intptr_t)a};
++  }
++};
+ 
+ template <class T>
+ class MOEBindings {
+@@ -471,6 +493,11 @@
+       .def("warm_up", &MoeClass::warm_up)
+       .def("load_weights", &MoeClass::load_weights)
+       .def("forward", &MoeClass::forward_binding);
++
++  if constexpr (requires { &MoeClass::forward_routes_binding; }) {
++    moe_cls.def("forward_routes_task", &CanonicalRouteBindings<MoeClass>::task)
++           .def("forward_routes", &MoeClass::forward_routes_binding);
++  }
+ 
+   // kt-moe-partials-out.py
+   if constexpr (requires { &MoeClass::set_partial_outputs; }) {

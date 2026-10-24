@@ -44,6 +44,15 @@ jobs:
       - name: SM89 dispatch contracts (CPU only)
         run: python3 tools/test_sm89_dispatch.py sglang
 
+      - name: resident expert restoration (CPU only)
+        run: python3 tools/test_lend_expert_bundle.py sglang
+
+      - name: prefix cache policy CPU contracts
+        run: |
+          python3 tools/test_prefix_cache_policy.py sglang
+          python3 -m pip install "$(sed -n '/^pydantic==/p' requirements.txt)"
+          python3 tools/test_prefix_policy_schema.py sglang
+
       - name: ktransformers and its llama.cpp
         run: |
           git init -q kt && cd kt
