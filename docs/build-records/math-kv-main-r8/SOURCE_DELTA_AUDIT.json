@@ -1,0 +1,80 @@
+{
+  "upstream_main": "e8608a224c108c06c8dbe636bf0bfef295e82161",
+  "build_commit": "e269c463f76ceaa1308f5c8937155183461dd87f",
+  "build_tree": "f32435e39afaf6d179683b82d9e658c30e786a08",
+  "build_changes": [
+    "M\t.github/workflows/patches-apply.yml",
+    "A\tdocs/canonical-moe-math.md",
+    "A\tdocs/prefix-cache-policy.md",
+    "M\tpatches/kt-kernel-tree.patch",
+    "M\tpatches/sglang-tier1/13-prefill-lend.patch",
+    "A\tpatches/sglang-tier1/18-prefix-cache-policy.patch",
+    "A\tpatches/sglang-tier1/19-canonical-moe-math.patch",
+    "M\tpatches/sglang-tier1/requires.txt",
+    "A\ttools/test_lend_expert_bundle.py",
+    "A\ttools/test_prefix_cache_policy.py",
+    "A\ttools/test_prefix_policy_schema.py"
+  ],
+  "prs": {
+    "5": {
+      "head": "0509480d48b1dd8fee96065c1c249494877a79ac",
+      "merge_base": "e8608a224c108c06c8dbe636bf0bfef295e82161",
+      "changes": [
+        "M\t.github/workflows/patches-apply.yml",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/FINAL_REVIEW.json",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/ISOLATION.json",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/MATRIX_RESULT.json",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/OBSERVATIONS_SHA256.txt",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/RESULTS.md",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/case_receipts.json",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/fixed_hot_receipts.json",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/observations.json.gz",
+        "A\tdocs/benchmarks/pr5-isolated-main-20261025/verify.py",
+        "A\tdocs/cpu-gpu-overlap.md",
+        "A\tpatches/kt-kernel-cpu-handoff.patch",
+        "A\tpatches/sglang-tier1/18-cpu-gpu-overlap.patch",
+        "M\tpatches/sglang-tier1/requires.txt",
+        "M\tserve.sh",
+        "M\tsetup.sh",
+        "A\ttools/test_cpu_gpu_overlap.py",
+        "A\ttools/test_handoff_pack.py"
+      ]
+    },
+    "6": {
+      "head": "5099d0bd33547d2acccb7b6eaf3dc830cb6e4235",
+      "merge_base": "e8608a224c108c06c8dbe636bf0bfef295e82161",
+      "changes": [
+        "M\t.github/workflows/patches-apply.yml",
+        "M\tREADME.md",
+        "A\tdocs/retained-session-concurrency.md",
+        "A\tpatches/sglang-optional/01-retained-session-admission.patch",
+        "A\tprofiles/retained-session-4.sh",
+        "M\tsetup.sh",
+        "A\ttools/test_retained_session_admission.py",
+        "A\ttools/test_retained_setup_selection.py"
+      ]
+    },
+    "7": {
+      "head": "5105f0bc54898cba6965b96fdd981b6ed31270c0",
+      "merge_base": "e8608a224c108c06c8dbe636bf0bfef295e82161",
+      "changes": [
+        "A\tdocs/sm89-indexer-merge.md",
+        "A\tpatches/sglang-tier0/14-sm89-indexer-merge.patch",
+        "A\ttools/test_fused_merge_wiring.py",
+        "A\ttools/test_live_topk.py",
+        "A\ttools/test_merge_sink.py"
+      ]
+    },
+    "8": {
+      "head": "6f83f96539105a640f95006455e4ec869be81dc1",
+      "merge_base": "e8608a224c108c06c8dbe636bf0bfef295e82161",
+      "changes": [
+        "M\t.github/workflows/patches-apply.yml",
+        "A\tdocs/dynamic-hot-slots.md",
+        "M\tpatches/sglang-tier1/16-hot-lend.patch",
+        "A\ttools/test_dynamic_hot_launch.py",
+        "A\ttools/test_dynamic_hot_slots.py"
+      ]
+    }
+  }
+}
