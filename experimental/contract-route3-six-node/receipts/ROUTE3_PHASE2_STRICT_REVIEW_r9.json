@@ -1,0 +1,64 @@
+{
+  "status": "INVALIDATED_WRONG_BINARY_REBUILT",
+  "result_sha256": "29b76f4d7ca21f2fb278ce67efcff0633a685c58408b8fdab4ced26e90e796ea",
+  "counts": {
+    "e8m0_all_finite_codes": 4,
+    "scale_domain_strided": 6,
+    "reference_batch_invariance_raw": 66,
+    "cuda_raw_partials": 36,
+    "cuda_to_prefill_boundary_raw": 30,
+    "permutation_raw": 6,
+    "partition_raw": 6,
+    "changed_graph_raw": 36,
+    "reference_batch_invariance_output": 66,
+    "cuda_reduced_output": 36,
+    "public_fixed_reference": 66,
+    "default_off": 66,
+    "enabled_public_dispatch": 36,
+    "unchanged_prefill_dispatch": 30,
+    "changed_graph_output": 36,
+    "changed_public_graph": 36,
+    "native_all_power_domain": 2,
+    "native_invalid_scales": 18,
+    "native_changed_scale_graph": 15
+  },
+  "flag_checks": 361,
+  "timing_cells": 78,
+  "selection": {
+    "totals_208_calls_ms": {
+      "cuda_phase2": {
+        "1": 12.869376227259636,
+        "4": 13.0370561927557,
+        "8": 13.173248022794724,
+        "16": 13.686272069811821
+      },
+      "triton_phase1_best": {
+        "1": 27.267583414912224,
+        "4": 28.61721596121788,
+        "8": 29.4504966288805
+      },
+      "fixed_transpose": {
+        "1": 23.352575957775116,
+        "4": 30.28121581673622,
+        "8": 30.77248029410839
+      },
+      "current_core": {
+        "1": 12.315648049116135,
+        "4": 13.528575956821442,
+        "8": 20.733952224254608
+      }
+    },
+    "payload_bytes": 5200199680,
+    "bandwidth_floor_ms": 7.065488695652174,
+    "weight_bytes_per_us": 404075.50359628536,
+    "target_10ms_met": false,
+    "gate_12ms_met": false
+  },
+  "memory_peak_bytes": 3610341376,
+  "cuda_peak_bytes": 1404134400,
+  "no_model": true,
+  "pr6": "HELD_NO_PUSH_NO_PUBLISH",
+  "invalidated_by": "ROUTE3_L2_BINARY_INVALIDATION_r1.json",
+  "prior_review_sha256": "4a7c84f592a3bb8548f5a85d30059affd8268ce4d4ebd398b6018f65fdedfbeb",
+  "scope_correction": "597 cases and timings were executed on a loader-rebuilt default binary, not the authenticated policy binary. No policy correctness or performance conclusion."
+}

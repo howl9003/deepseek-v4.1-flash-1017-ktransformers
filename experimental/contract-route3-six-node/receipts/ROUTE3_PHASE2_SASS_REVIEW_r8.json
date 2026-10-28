@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-28T07:42:50.044725+00:00",
+  "status": "PASS_TO_COMPONENT_IDENTITY",
+  "build_receipt_sha256": "1e34aed03bd58bd3f925b9f074b593ef142a728d5c12408cb3c55b354670c8e7",
+  "binary_sha256": "1026daf900deaf87083272dafcc6a6b3553464149b59626054f1e20151972afd",
+  "sass_sha256": "cc4500b64aa6e6778aaa7a7bc9dfe818064f36c3530180e11ef7162b873af13e",
+  "zero_C_MMA_sites": 16,
+  "separate_FMUL_then_accumulating_FFMA_sites": 64,
+  "registers_per_thread": 128,
+  "shared_bytes_per_CTA": 38496,
+  "local_bytes": 0,
+  "stack_bytes": 0,
+  "ftz_instructions": 0,
+  "no_model": true,
+  "variant": "route3-phase2-persistent-r1"
+}

@@ -1,0 +1,119 @@
+{
+  "utc": "2026-10-28T00:07:07.702997+00:00",
+  "status": "PERFORMANCE_CHECKS_PASS_HELD",
+  "gates": {
+    "exact_owner": true,
+    "owner_success": true,
+    "run_complete": true,
+    "client_complete": true,
+    "authenticated_client": true,
+    "authenticated_manifest": true,
+    "clean_scope": true,
+    "no_outer_cleanup_errors": true,
+    "validated_source_unchanged": true,
+    "numerical26_pass": true,
+    "same_source_as_numerical": true,
+    "same_native_as_numerical": true,
+    "frozen_host_reload": true,
+    "historical_client_hash": true,
+    "four_japanese_two_prefill_six_breadth": true,
+    "both_clients_success": true,
+    "reported_rates_match": true,
+    "model_cap_and_reserve": true,
+    "six_nodes": true,
+    "no_swap": true,
+    "no_client_memory_events": true,
+    "final_host_reserve": true,
+    "recorded_historical_env_matches": true
+  },
+  "failed": [],
+  "unit": {
+    "InvocationID": "326c1112e1d34833ae0e99c5310c1337",
+    "MainPID": "0",
+    "Result": "success"
+  },
+  "evidence": {
+    "/scratch/aster/bench/feature-trial-B-contract-kernel-fast-six-r3/RUN-contract-kernel-perf-r3.json": "714b2fdd3484113240dcb3409b3a8d038b6193734854bbe67b13b6de180b6e90",
+    "/scratch/aster/bench/feature-trial-B-contract-kernel-fast-six-r3/supplemental-contract-kernel-perf-r3/RESULT.json": "c6c9608cfcb83abdd65162aa4e37979781fa5752411870d4c328dbddc0ab6a14",
+    "/scratch/aster/bench/feature-trial-B-contract-kernel-fast-six-r3/KERNEL_PERF_PREPARED_r3.json": "d4b4e7ab39ae210b340b4685b8b81924c50bbbc05eed57da731d22ffc2f38e88",
+    "/scratch/aster/bench/six-node-performance-r1/KERNEL_NUMERICAL_REVIEW_r3.json": "89939ee591ac379f032c45adfdb9eff61e52056ec6e9316b5e4c40b14cad10dc",
+    "/scratch/aster/bench/six-node-performance-r1/MATCHED_KERNEL_PERFORMANCE_PROFILE_r3.json": "452d74c2f2730c0dcbcdf63b614da883796989e52c0e584d353e5946d0226bca",
+    "/scratch/aster/bench/feature-trial-B-contract-kernel-fast-six-r3/model-contract-kernel-perf-r3/server/memory-before-client.json": "5005aeb9d501c512720717932d894dc40eaaa1ad382a2caeffff67a28d1ea65e",
+    "/scratch/aster/bench/feature-trial-B-contract-kernel-fast-six-r3/model-contract-kernel-perf-r3/server/memory-after-client.json": "977d42c3af00276c76c29fc18ea7e4b76c2629de4e007892c1b1fdc7e557e603",
+    "/scratch/aster/bench/feature-trial-B-contract-kernel-fast-six-r3/supplemental-contract-kernel-perf-r3/historical.log": "c9dc06e1a0c57c8337b9e406fa58efbdc5369a01e4425698be6b82fa25044cf0",
+    "/scratch/aster/bench/feature-trial-B-contract-kernel-fast-six-r3/supplemental-contract-kernel-perf-r3/breadth.log": "e6aca6e3d23299ec1165b0100fbdb143f78ec0846f2df55329cec695f57b53ba"
+  },
+  "japanese_tok_s": [
+    18.4,
+    19.0,
+    19.2,
+    19.6
+  ],
+  "japanese_median_tok_s": 19.1,
+  "prefill35000_seconds": [
+    264.57,
+    240.25
+  ],
+  "breadth": [
+    {
+      "workload": "Chinese prose",
+      "tok_s": 17.4
+    },
+    {
+      "workload": "English prose",
+      "tok_s": 16.6
+    },
+    {
+      "workload": "English technical prose",
+      "tok_s": 15.4
+    },
+    {
+      "workload": "math",
+      "tok_s": 16.5
+    },
+    {
+      "workload": "JSON",
+      "tok_s": 16.4
+    },
+    {
+      "workload": "Python code",
+      "tok_s": 16.7
+    }
+  ],
+  "post_timing_repeat": {
+    "text_equal": true,
+    "selected_logprobs_exact": true,
+    "full_acceptance": false
+  },
+  "memory": {
+    "final_charge_gib": 399.5328140258789,
+    "whole_run_peak_gib": 416.0,
+    "final_available_gib": 106.78424453735352,
+    "swap_bytes": 0,
+    "ready_events": {
+      "low": 0,
+      "high": 0,
+      "max": 5489,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "after_events": {
+      "low": 0,
+      "high": 0,
+      "max": 5489,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    }
+  },
+  "allocation_warning": "Second35K had an allocator retry warning and completed at240.25seconds; retained in launcher.log. Not evidence of zero allocation pressure.",
+  "limitations": [
+    "This performance profile differs explicitly from numerical acceptance: historical hot/stream/cache/concurrency settings. The separate26-gate numerical run is the acceptance evidence.",
+    "Six CPU nodes42workers vs historical8nodes56workers; math selectors and approximate replay exclusion are explicit additional differences. Historical unrecorded environment and power/unlock state remain unknown.",
+    "Single completed campaign; no30+tok/s result, no statistical cross-run speedup claim. Post-timing repeated8token probe is descriptive, not a substitute for the full gates."
+  ],
+  "pr6": "HELD_NO_PUSH_NO_PUBLISH"
+}

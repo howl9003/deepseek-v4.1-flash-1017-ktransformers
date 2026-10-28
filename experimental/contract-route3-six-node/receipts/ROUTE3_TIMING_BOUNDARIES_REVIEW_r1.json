@@ -1,0 +1,35 @@
+{
+  "status": "TIMING_BOUNDARY_REVIEW_PASS_NO_PROMOTION",
+  "result_sha256": "1bd9811c1f6fac0d68a557e93d22c7d4d4da810d851177a51424f75727437642",
+  "preparation_sha256": "9b2ad1718639e5c3f9c214ab3490644a4641b18072d9e7ba5af2af5cd451b3a8",
+  "checks": 156,
+  "flags": 66,
+  "timing_cells": 72,
+  "samples_per_cell": 15,
+  "totals_208_calls_ms": {
+    "quant_layout": {
+      "legacy_outer": 2.5172480270266533,
+      "marked_outer": 3.183103956282139,
+      "marked_inner": 0.6415360141545534
+    },
+    "native_raw": {
+      "legacy_outer": 12.243712112307549,
+      "marked_outer": 12.690944120287895,
+      "marked_inner": 11.479807868599892
+    },
+    "reduce_only": {
+      "legacy_outer": 2.537727989256382,
+      "marked_outer": 3.193599946796894,
+      "marked_inner": 0.701696015894413
+    },
+    "full_public": {
+      "legacy_outer": 12.659200131893158,
+      "marked_outer": 13.201920345425606,
+      "marked_inner": 11.947520092129707
+    }
+  },
+  "clocks_before": "P2, 2550 MHz, 11251 MHz, 48.42 W, 41",
+  "clocks_after": "P2, 2760 MHz, 11251 MHz, 87.61 W, 46",
+  "no_gate_substitution": true,
+  "interpretation": "Marked-inner uses captured external event nodes. Same-replay marked-outer minus inner reveals time outside the graph event boundaries, not a kernel speedup. Legacy method retained; no gate substitution or model promotion."
+}

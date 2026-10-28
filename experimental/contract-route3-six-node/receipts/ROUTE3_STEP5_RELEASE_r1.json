@@ -1,0 +1,45 @@
+{
+  "utc": "2026-10-28T12:07:27.628644+00:00",
+  "status": "BOTH_MODELS_COMPLETE_GPU_AND_LOCK_RELEASED",
+  "units": {
+    "codex-route3-numerics-r1.service": {
+      "SubState": "exited",
+      "InvocationID": "5cf9f5cf6b2d430cb26429d26ac4413f",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-performance-r1.service": {
+      "SubState": "exited",
+      "InvocationID": "92dd9133b3d54e13b654573f5651ea54",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-model-sequence-r1.service": {
+      "SubState": "exited",
+      "InvocationID": "fcea7b3e79c540f4b23e75429dae888a",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-stage-route3-performance-r1.service": {
+      "SubState": "exited",
+      "InvocationID": "e3c2f9d213a540d29f92fd7f2455e0ef",
+      "MainPID": "0",
+      "Result": "success"
+    }
+  },
+  "gpu_apps": "",
+  "shared_lock_free": true,
+  "power": "GPU-67d9f495-2d3a-1e93-a617-dd11ba547914, 320.00 W",
+  "host_reload_hashes": {
+    "/scratch/aster/bench/feature-trial-B-contract-route3-numerics-six-r1/client-tools/kv_checks.py": "eb31f84a7ae96126bfa1fd97e8c3c98527c58d5f515610b15a03fe39c14597b4",
+    "/scratch/aster/bench/feature-trial-B-contract-route3-fast-six-r1/client-tools/kv_checks.py": "eb31f84a7ae96126bfa1fd97e8c3c98527c58d5f515610b15a03fe39c14597b4"
+  },
+  "model_port_closed": true,
+  "host_memory_bytes": {
+    "MemTotal": 536264916992,
+    "MemAvailable": 518740197376
+  },
+  "no_further_runs": true,
+  "no_dspark": true,
+  "pr6": "HELD_NO_PUSH_NO_PUBLISH"
+}

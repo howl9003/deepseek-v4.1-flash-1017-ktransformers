@@ -1,0 +1,60 @@
+{
+  "status": "IDENTITY_AND_PRICE_GATE_PASS_NO_MODEL",
+  "result_sha256": "8c254b21f11ade84072268c0a7ce2a9ace280624c9302a05d8b7de3ebf4051bf",
+  "counts": {
+    "e8m0_all_finite_codes": 4,
+    "scale_domain_strided": 6,
+    "reference_batch_invariance_raw": 66,
+    "cuda_raw_partials": 36,
+    "cuda_to_prefill_boundary_raw": 30,
+    "permutation_raw": 6,
+    "partition_raw": 6,
+    "changed_graph_raw": 36,
+    "reference_batch_invariance_output": 66,
+    "cuda_reduced_output": 36,
+    "public_fixed_reference": 66,
+    "default_off": 66,
+    "enabled_public_dispatch": 36,
+    "unchanged_prefill_dispatch": 30,
+    "changed_graph_output": 36,
+    "changed_public_graph": 36,
+    "native_all_power_domain": 2,
+    "native_invalid_scales": 18,
+    "native_changed_scale_graph": 15
+  },
+  "flag_checks": 307,
+  "timing_cells": 24,
+  "selection": {
+    "totals_208_calls_ms": {
+      "cuda_phase2": {
+        "1": 10.030080139636993,
+        "4": 10.086400046944618,
+        "8": 10.101760193705559,
+        "16": 10.411519974470139
+      }
+    },
+    "payload_bytes": 5200199680,
+    "bandwidth_floor_ms": 7.065488695652174,
+    "weight_bytes_per_us": 518460.43178157543,
+    "target_10ms_met": false,
+    "gate_12ms_met": true
+  },
+  "memory_peak_bytes": 794599424,
+  "cuda_peak_bytes": 1404134400,
+  "gate_method": {
+    "name": "read_only_256MiB_displacement_r1",
+    "decision_sha256": "dbfa7d5f3333d257f391918af160fcdec62ebaf5c5ea0cb1c85a92468c2ca127",
+    "operation": "eviction.sum()",
+    "input_bytes": 268435456,
+    "input_access": "read-only",
+    "result_consumed": true,
+    "input_version_unchanged": true,
+    "threshold_ms": 12.0,
+    "original_method_failure_preserved": true,
+    "result_workspace_may_write": true
+  },
+  "binary_sha256": "51c179a96c838f2b51d9a01707706534a9472fe50752bedbab7c659905dca649",
+  "binary_provenance_verified": true,
+  "no_model": true,
+  "pr6": "HELD_NO_PUSH_NO_PUBLISH"
+}

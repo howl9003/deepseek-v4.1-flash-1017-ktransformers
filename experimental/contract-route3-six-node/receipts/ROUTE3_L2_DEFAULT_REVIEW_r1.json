@@ -1,0 +1,11 @@
+{
+  "status": "DEFAULT_SASS_BYTE_IDENTICAL_TO_REVIEWED_R1",
+  "build": 11,
+  "binary_sha256": "51c179a96c838f2b51d9a01707706534a9472fe50752bedbab7c659905dca649",
+  "sass_sha256": "c336cdda06154131fc2159f8259525331179ba5b48c36b0b6420dcb21bb41901",
+  "original_sass_sha256": "c336cdda06154131fc2159f8259525331179ba5b48c36b0b6420dcb21bb41901",
+  "registers": 72,
+  "smem_bytes": 38496,
+  "ROUTE3_L2_POLICY": 0,
+  "no_model": true
+}

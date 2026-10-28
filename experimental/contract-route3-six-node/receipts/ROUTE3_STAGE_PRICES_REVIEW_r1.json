@@ -1,0 +1,55 @@
+{
+  "status": "STAGE_DIAGNOSTICS_REVIEW_PASS_NO_PROMOTION",
+  "result_sha256": "0827f875d5f82b4c37a78e29b4a98f23b8d380ee6742f4c002b006b43e243a3c",
+  "preparation_sha256": "a687d5597eff5229751229859f639bb88ac497c95eaff44e3bf635ed2534daf0",
+  "checks": 126,
+  "flags": 42,
+  "timing_cells": 108,
+  "samples_per_cell": 15,
+  "traces": 6,
+  "no_layout_copies": true,
+  "totals_208_calls_ms": {
+    "quant_layout": {
+      "1": 2.4714240059256554,
+      "4": 2.4693760573863983,
+      "8": 2.5187840536236763
+    },
+    "native_raw": {
+      "1": 12.22783999145031,
+      "4": 12.270592257380486,
+      "8": 12.409344136714935
+    },
+    "reduce_only": {
+      "1": 2.495744042098522,
+      "4": 2.5379840657114983,
+      "8": 2.685183994472027
+    },
+    "native_reduce": {
+      "1": 12.449792131781578,
+      "4": 12.54118424654007,
+      "8": 12.738304197788239
+    },
+    "full_public": {
+      "1": 12.695808112621307,
+      "4": 12.791296228766441,
+      "8": 13.001728281378746
+    },
+    "staged_full": {
+      "1": 12.710400223731995,
+      "4": 12.8770562261343,
+      "8": 13.01708810031414
+    }
+  },
+  "instrumented_components_208_calls_ms": {
+    "quant": 0.24499200000000002,
+    "native": 10.975392,
+    "reduce": 0.21116000000000001,
+    "gaps": 0.01617578125
+  },
+  "caveats": [
+    "Standalone stage medians must not be added.",
+    "Profiler trace durations are diagnostic, not gate prices.",
+    "No conclusion that K=1280 cannot be optimized; counter profile and graph trace differ.",
+    "Unchanged full-call gate remains above12ms; no model promotion."
+  ]
+}

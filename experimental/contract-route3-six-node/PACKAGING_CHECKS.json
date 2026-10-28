@@ -1,0 +1,82 @@
+{
+  "status": "PASS_CPU_ONLY_RECONSTRUCTION_AND_LOCAL_SELFTESTS",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "/scratch/aster/bench/contract-route3-fork-package-r1/experimental/contract-route3-six-node/apply_overlay.py",
+        "--sglang",
+        "/scratch/aster/bench/contract-route3-package-bases-r1/sglang",
+        "--ktransformers",
+        "/scratch/aster/bench/contract-route3-package-bases-r1/ktransformers"
+      ],
+      "exit": 0,
+      "stdout": "{\"status\": \"CHECK_ONLY\", \"files_to_replace\": 55, \"model_run\": false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "/scratch/aster/bench/contract-route3-fork-package-r1/experimental/contract-route3-six-node/apply_overlay.py",
+        "--sglang",
+        "/scratch/aster/bench/contract-route3-package-bases-r1/sglang",
+        "--ktransformers",
+        "/scratch/aster/bench/contract-route3-package-bases-r1/ktransformers",
+        "--apply"
+      ],
+      "exit": 0,
+      "stdout": "{\"status\": \"APPLIED_AND_SOURCE_HASHES_VERIFIED\", \"files_to_replace\": 55, \"model_run\": false}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "/scratch/aster/bench/contract-route3-fork-package-r1/experimental/contract-route3-six-node/apply_overlay.py",
+        "--sglang",
+        "/scratch/aster/bench/contract-route3-package-bases-r1/sglang",
+        "--ktransformers",
+        "/scratch/aster/bench/contract-route3-package-bases-r1/ktransformers"
+      ],
+      "exit": 0,
+      "stdout": "{\"status\": \"CHECK_ONLY\", \"files_to_replace\": 0, \"model_run\": false}\n",
+      "stderr": ""
+    },
+    {
+      "test": "route3_sequence_reference.py",
+      "exit": 0,
+      "stdout": "1. m16n8k32 8-bit fragment map: A/B/C cover every element once; each register is 4 consecutive K bytes of one row/column\n2. split-K ranges fixed by K alone: 5120->40 blocks/split, 2304->18, 8192->64, 1280->10\n3. epilogue partials of a row are identical alone and inside a 6-row batch (per-row sequence)\n4. power-of-two scales: mul,mul,add == mul,fma bit for bit (exact multiplies, one rounding per block); arbitrary FP32 scales would differ on 39.8% of partials, so the selector must assert power-of-two scales\n5. moving one block across a split boundary changes the reduced bits: the partition is frozen with the selector\nSELFTEST_PASS\n",
+      "stderr": ""
+    },
+    {
+      "test": "test_route3_layout_local.py",
+      "exit": 0,
+      "stdout": "1. ldmatrix.x4 lane addressing delivers exactly the m16n8k32 A and B fragments (both n-tiles)\n2. row swizzle (chunk ^ (row & 7)) is bank-conflict free for every ldmatrix phase\n3. cp.async assignment writes every (row, chunk) of A and B exactly once; swizzle is a per-row bijection\n4. split partition equals the pinned tiles_per_split rule on all six shapes; chunks never cross a split\n5. shared memory per CTA 38496 bytes (12832 per stage): under 48 KiB, two CTAs per SM\nSELFTEST_PASS\n",
+      "stderr": ""
+    },
+    {
+      "test": "test_route3_l2policy_local.py",
+      "exit": 0,
+      "stdout": "1. ROUTE3_L2_POLICY=0 reduces token for token to the r1 source (sha256 952bb68e...)\n2. ROUTE3_L2_POLICY=1 adds one policy register and hinted copies for B and Bs only (ISA grammar: 16, src-size, policy)\nSELFTEST_PASS\n",
+      "stderr": ""
+    }
+  ],
+  "no_model": true,
+  "no_gpu_compute": true,
+  "python_syntax_files": 143,
+  "secret_pattern_alerts": [],
+  "file_limit_bytes": 10485760,
+  "publication": "NOT_PUSHED",
+  "scope": "Static packaging only; model receipts are the already completed step5 campaign.",
+  "historical_whitespace": {
+    "exit": 2,
+    "policy": "Historical sources and receipts are byte-pinned and not normalized. Newly authored packaging files checked separately.",
+    "diagnostic_lines": 27666
+  },
+  "source_inventory_counts": {
+    "ktransformers": 1210,
+    "sglang": 6028
+  }
+}

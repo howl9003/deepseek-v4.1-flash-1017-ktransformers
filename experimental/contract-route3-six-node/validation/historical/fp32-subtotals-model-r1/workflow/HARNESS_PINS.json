@@ -1,0 +1,45 @@
+{
+  "status": "REVIEWED_A_V7_B_V9",
+  "A": {
+    "version": "retry_v7",
+    "manifest_sha256": "637deee9c88f62adfddb747aa21be2a78efff979c2208a6b30ff7b33b7f466b8",
+    "archive_sha256": "eb655ff6be02470185dc87271c77c7a0ba659e6d709b7808c2ae863ac98b57d3",
+    "file_count": 141
+  },
+  "B": {
+    "version": "retry_v9",
+    "manifest_sha256": "c4baa15d7c476b4044d590304792c78525c326d7ecb8bf9fb348cc60fc50c9a2",
+    "archive_sha256": "d020e84c9ac459734ca93b6a99623d9bdb4369f4a3013498a622740e380b0747",
+    "file_count": 146
+  },
+  "declared_package_delta": {
+    "pr_acceptance_b/run_acceptance.py": {
+      "A": "d40084d652f39f0b5b7baa72c4dec0962561327f16ef956f336aad19ddc125ea",
+      "B": "cf0caedbaa4b017727ff54f96cbaba89a5c4028b9727d101ed5b4f3eb5b0dae5"
+    },
+    "pr_acceptance_b/serve_adapter.py": {
+      "A": "a38d8bd453b00c81e6c90f63a956b25e1a395abceda3459ce9caf745d37ff4e9",
+      "B": "d56801e5fe6bd69ba5a146d69f5a79e208c42c841cd52edb15f2da562003939f"
+    },
+    "pr_acceptance_b/test_planner_adapter.py": {
+      "A": null,
+      "B": "b7ebbfccc37ed529c2a162765aa71b0f9085e6f265b44a524bcc6e3bad8aca08"
+    },
+    "server_info_profile.py": {
+      "A": null,
+      "B": "adef7fa9c78a704739425c0182cd925f90e45affb7f18956ee59cada19da459a"
+    },
+    "test_server_info_profile.py": {
+      "A": null,
+      "B": "ccaa622a3c51a02bacd1c6ad8660822b4c039ba762a16044100318f9a9c90dcb"
+    },
+    "testdata/A-r8-server-info.json": {
+      "A": null,
+      "B": "584aed58b3bf31cc15e913815d5e365ca20ab8302a6d00511234e1e70f357a20"
+    },
+    "testdata/B-r2-server-info.json": {
+      "A": null,
+      "B": "664d5a41593a42b69e1e3938e8bce8de79bb9c0ee73a327d62044e27d60a2424"
+    }
+  }
+}

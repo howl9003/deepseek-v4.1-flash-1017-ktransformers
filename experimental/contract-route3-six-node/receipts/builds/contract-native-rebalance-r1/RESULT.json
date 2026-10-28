@@ -1,0 +1,65 @@
+{
+  "status": "PASS_PRIVATE_REBALANCE_BUILD_NOT_RUNTIME_VALIDATED",
+  "steps": [
+    {
+      "label": "configure",
+      "exit": 0,
+      "seconds": 3.0830161980120465,
+      "command": [
+        "cmake",
+        "-S",
+        "/scratch/aster/bench/six-node-performance-r1/contract-native-rebalance-r1/src/kt-kernel",
+        "-B",
+        "/scratch/aster/bench/six-node-performance-r1/contract-native-rebalance-r1/cmake",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DKTRANSFORMERS_USE_CUDA=ON",
+        "-DCMAKE_CUDA_ARCHITECTURES=89",
+        "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
+        "-DCPUINFER_ENABLE_LTO=OFF",
+        "-DKTRANSFORMERS_ENABLE_CPPTRACE=OFF",
+        "-DLLAMA_NATIVE=OFF",
+        "-DLLAMA_AVX=ON",
+        "-DLLAMA_AVX2=ON",
+        "-DLLAMA_FMA=ON",
+        "-DLLAMA_F16C=ON",
+        "-DLLAMA_AVX512=OFF",
+        "-DLLAMA_AVX512_VNNI=OFF",
+        "-DLLAMA_AVX512_BF16=OFF",
+        "-DLLAMA_AVX512_VBMI=OFF",
+        "-DLLAMA_BUILD_TESTS=OFF",
+        "-DLLAMA_BUILD_EXAMPLES=OFF",
+        "-DLLAMA_BUILD_SERVER=OFF",
+        "-DPYTHON_EXECUTABLE=/scratch/aster/bench/05yuki-main-00fd12a-candidate/.venv/bin/python",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DKT_ENABLE_CONTRACT_V2=ON"
+      ]
+    },
+    {
+      "label": "compile",
+      "exit": 0,
+      "seconds": 161.82420564399217,
+      "command": [
+        "cmake",
+        "--build",
+        "/scratch/aster/bench/six-node-performance-r1/contract-native-rebalance-r1/cmake",
+        "--target",
+        "kt_kernel_ext",
+        "-j",
+        "1"
+      ]
+    }
+  ],
+  "installed": false,
+  "default_off": true,
+  "source_preparation_sha256": "ba0356df3569eea05fbafbf99f174349d215698f53f37f794e8346671592d3a3",
+  "memory_peak": 2564722688,
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "swap": 0,
+  "artifact": {
+    "path": "/scratch/aster/bench/six-node-performance-r1/contract-native-rebalance-r1/cmake/kt_kernel_ext.cpython-312-x86_64-linux-gnu.so",
+    "sha256": "271595dcc2f5b39fead6be72747af0b5daa248994dc934c5eee6eb91f63ea062"
+  },
+  "changed_sources": [
+    "kt-kernel/operators/avx2/expert_arena_spill.hpp"
+  ]
+}

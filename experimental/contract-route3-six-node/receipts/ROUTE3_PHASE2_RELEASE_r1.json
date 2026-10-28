@@ -1,0 +1,51 @@
+{
+  "utc": "2026-10-28T05:57:39.948973+00:00",
+  "units": {
+    "codex-route3-phase2-build-r1.service": {
+      "InvocationID": "a9fe77331818479987f85369986fc578",
+      "MainPID": "0",
+      "Result": "exit-code"
+    },
+    "codex-route3-phase2-build-r2.service": {
+      "InvocationID": "0b8769055ca74e9f9a7f5efaf3c921ae",
+      "MainPID": "0",
+      "Result": "exit-code"
+    },
+    "codex-route3-phase2-build-r3.service": {
+      "InvocationID": "db287d152f454a00b4b1697333f12b06",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-phase2-build-r4.service": {
+      "InvocationID": "a639c756195c414e89a02aa0792c1e4d",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-phase2-build-r5.service": {
+      "InvocationID": "8d0ae433874c46bc88691e87f8bbaba3",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-phase2-validation-r1.service": {
+      "InvocationID": "eb73e2ddf2ed4455b42a6b671561b127",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-phase2-validation-r2.service": {
+      "InvocationID": "6a808032ecec4b7a8de3a2b0000525cf",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-phase2-validation-r3.service": {
+      "InvocationID": "87fdbe91f6774a019351b1ce71d18543",
+      "MainPID": "0",
+      "Result": "success"
+    }
+  },
+  "gpu_apps": [],
+  "gpu_state": "GPU-67d9f495-2d3a-1e93-a617-dd11ba547914, 320.00 W, 4 MiB",
+  "bench_lock_free": true,
+  "host_reload_gate_unchanged": true,
+  "accepted_runtime_unchanged": true,
+  "profile_capture_exists": false
+}

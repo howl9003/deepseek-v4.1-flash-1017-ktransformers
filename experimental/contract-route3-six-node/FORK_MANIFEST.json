@@ -1,0 +1,1095 @@
+{
+  "base_commit": "7e199f2be41b601805c3d587bf2efbde8a8c2f23",
+  "branch": "contract-route3-six-node-20261028",
+  "bytes_excluding_self": 11318613,
+  "destination": "howl9003/deepseek-v4.1-flash-1017-ktransformers",
+  "files": {
+    ".gitattributes": {
+      "bytes": 140,
+      "sha256": "fdb4b64babf1621491162342e8e23f3d7072786e5c91cb4b62fff84fd3533f24"
+    },
+    "CREDITS.md": {
+      "bytes": 6558,
+      "sha256": "e03e89111210e9f259be6940fc95c3ca511d2c3ebc1a43924021dc34eab7fae7"
+    },
+    "experimental/contract-route3-six-node/BUILD.md": {
+      "bytes": 4222,
+      "sha256": "5bd97e8a0f0172fa59f60df0fac15f1aa10fe97ab5c53f0869c1f1c90f805da0"
+    },
+    "experimental/contract-route3-six-node/EXCLUSIONS.json": {
+      "bytes": 1356,
+      "sha256": "f768b2b455e42dc163e6ededb16cdff00f4a82499c89a0e2d5dac9b83d6dfa18"
+    },
+    "experimental/contract-route3-six-node/PACKAGING_CHECKS.json": {
+      "bytes": 3959,
+      "sha256": "5b371a690fe9216b90338922cd12088c3b3692c8798915a5685387cf62c288d2"
+    },
+    "experimental/contract-route3-six-node/PRECISION_LEDGER.md": {
+      "bytes": 47636,
+      "sha256": "15030a95a25d7f3d58472592c6684add6d735841faa2b2932a89c1081f0242fb"
+    },
+    "experimental/contract-route3-six-node/PROVENANCE.json": {
+      "bytes": 67679,
+      "sha256": "48b5fde37ce35461df05a8abdfbe42d05585fb1e9e124ef66b62234b90d555e0"
+    },
+    "experimental/contract-route3-six-node/README.md": {
+      "bytes": 6055,
+      "sha256": "20251dd8bf0f21f3cb69a870e31987dc5498ed7722152019416bd52f64857af8"
+    },
+    "experimental/contract-route3-six-node/SOURCE_STACK.json": {
+      "bytes": 1045837,
+      "sha256": "40d68365a162ca19fcf51f30a3d41ab7a008e8d3fd2db12b782643c77d414016"
+    },
+    "experimental/contract-route3-six-node/apply_overlay.py": {
+      "bytes": 2394,
+      "sha256": "7f369bc9c54a26e2a2ae2f118b7dd129ee114204b50efd115d37e40d39d3d71f"
+    },
+    "experimental/contract-route3-six-node/auxiliary/repack/native.py": {
+      "bytes": 865,
+      "sha256": "873c8487faee7d7c1702cf46f2d228df94d02e04e4211f4e2bfe827e8891f042"
+    },
+    "experimental/contract-route3-six-node/auxiliary/repack/probe.py": {
+      "bytes": 6381,
+      "sha256": "816fbe8ddac8367afebe95ba51629686b8ec57a62ffa3bcfe529bb5c31641a89"
+    },
+    "experimental/contract-route3-six-node/auxiliary/repack/repack.py": {
+      "bytes": 1712,
+      "sha256": "4c25b25441fff69f7e9c43aa6f6aef5b5e8ae6706b89b2c487ef7de50b62b46a"
+    },
+    "experimental/contract-route3-six-node/auxiliary/repack/repack_avx2.cpp": {
+      "bytes": 1931,
+      "sha256": "88c3927575650ce3dac1dbe8ba8c783b47f70bd2770c1e352bfe8d036dfff08b"
+    },
+    "experimental/contract-route3-six-node/auxiliary/repack/test_repack.py": {
+      "bytes": 2257,
+      "sha256": "4f40366d0dd5af792fa4ea44508432d2d43cee27d1ea6c7990fc53b5fc10fa17"
+    },
+    "experimental/contract-route3-six-node/contract-reference/ORIGINAL_HASHES.json": {
+      "bytes": 8428,
+      "sha256": "7168bc5d69c762d428263c8a3e7dc14480c5a1a00e54b38f63a00d242a0e1a03"
+    },
+    "experimental/contract-route3-six-node/contract-reference/README.md": {
+      "bytes": 3284,
+      "sha256": "3b21d3368495cd4e7cc4a185e2b1a9f8296b96136e9369f8f9a033375816afe4"
+    },
+    "experimental/contract-route3-six-node/contract-reference/contract_v2.py": {
+      "bytes": 7260,
+      "sha256": "69335dec496d5a85e56bf42d436848437429b8ccb94166a1f8a04a2baf7e2e75"
+    },
+    "experimental/contract-route3-six-node/contract-reference/fp8_table.bin": {
+      "bytes": 1024,
+      "sha256": "422eccfaa21e72a6b26855bb10cdcfead6c1ce3262ecd813c99d8cbf9677f2e2"
+    },
+    "experimental/contract-route3-six-node/contract-reference/silu_table.bin": {
+      "bytes": 262144,
+      "sha256": "4e08cff10bed7793df85e094f8ec9d9700cce52412bd5e54070eaf221596f9ea"
+    },
+    "experimental/contract-route3-six-node/dependencies/deepseek-recipe-METADATA.txt": {
+      "bytes": 1681,
+      "sha256": "8b84adcf8dfa7b38230686a96ba4c98980427ece3f5b1ccaf4541e907056c7e4"
+    },
+    "experimental/contract-route3-six-node/dependencies/observed-pip-freeze.txt": {
+      "bytes": 4124,
+      "sha256": "8ed45e999973f8165d3b9023c02a5c8a957d2e669331fa4b9924b3dc21cc562e"
+    },
+    "experimental/contract-route3-six-node/licenses/deepseek-recipe/LICENSE": {
+      "bytes": 1065,
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+    },
+    "experimental/contract-route3-six-node/licenses/deepseek-recipe/THIRD_PARTY_LICENSES": {
+      "bytes": 27394,
+      "sha256": "065abdbbcb66156025d134001b86d407bd7f771a44214d232559104ac3fffd45"
+    },
+    "experimental/contract-route3-six-node/licenses/ktransformers-LICENSE": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "experimental/contract-route3-six-node/licenses/llama.cpp-LICENSE": {
+      "bytes": 1078,
+      "sha256": "e562a2ddfaf8280537795ac5ecd34e3012b6582a147ef69ba6a6a5c08c84757d"
+    },
+    "experimental/contract-route3-six-node/licenses/pybind11-LICENSE": {
+      "bytes": 1684,
+      "sha256": "83965b843b98f670d3a85bd041ed4b372c8ec50d7b4a5995a83ac697ba675dcb"
+    },
+    "experimental/contract-route3-six-node/licenses/sglang-LICENSE": {
+      "bytes": 11346,
+      "sha256": "1495e1e757ef4d0925a2350563cf5754bb23c51701a8ec4fb3c5cdcbedae6747"
+    },
+    "experimental/contract-route3-six-node/optional/01-retained-session-admission.patch": {
+      "bytes": 12165,
+      "sha256": "9f88a710ef5857cf8f9b53d004b6290e06dcbda7db00cac94bc99e56793f8a09"
+    },
+    "experimental/contract-route3-six-node/optional/02-prefix-cache-policy.patch": {
+      "bytes": 38304,
+      "sha256": "a3a763478cf071e193ec01e2fb303cf9c7d55edbf3e2e328dc16191af57dcad4"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/CMakeLists.txt": {
+      "bytes": 38612,
+      "sha256": "04e32950249db9a98382f98b11f437357af0913f114470bf802e80370d7bae01"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/cpu_backend/cpuinfer.h": {
+      "bytes": 10683,
+      "sha256": "d9faa3a8e20aaefffbd6f29abdf60250721c270bf38d90e831265fc3bc46eac8"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/cpu_backend/worker_pool.cpp": {
+      "bytes": 19267,
+      "sha256": "107dd465c3761eceebbcb7708af994020452b136a1a1a3bd2dcbf97a07bf8989"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/ext_bindings.cpp": {
+      "bytes": 56985,
+      "sha256": "ee0566fcd6f58105ae9cf1a5cbe7771d2a56f6db5439158ab4e9c10d2b3b7f18"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/avx2/contract_v2-moe.hpp": {
+      "bytes": 43635,
+      "sha256": "22339dc7e8d8e1c4fc347c9089cac419222cea51e38b3a54bf6772460365a368"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/avx2/contract_v2_kernels.inc": {
+      "bytes": 32352,
+      "sha256": "166bbc444ab3a16309251d8d7e20631427189d15ca9bf8c100f95b8f34f428bd"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/avx2/contract_v2_tables.inc": {
+      "bytes": 806473,
+      "sha256": "5b7a1f70f9612dd7dccbd57291d177a81da4606f81eee18110a792aa70d16b7a"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/avx2/expert_arena_spill.hpp": {
+      "bytes": 5075,
+      "sha256": "dd4c52726ac889092ccd02c56e99d9bd52ec5bbe472953e14b3060539bd48d27"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/avx2/moe_base.hpp": {
+      "bytes": 43596,
+      "sha256": "05b89f50e19de2a92ca0d95c48690173197343ed4f732a44ac1aa7d23c1818e5"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/avx2/mxfp4-moe.hpp": {
+      "bytes": 121437,
+      "sha256": "e68d66fbbc235d70a57249e758ca66e52d40300ebff41bf86a900cf1ff6ba9a7"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/avx2/strict_activation.cpp": {
+      "bytes": 971,
+      "sha256": "ee6545d466d35b4fb6e43d40c9f19f527e623f091cfd93d8667017ed810359ba"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/common.hpp": {
+      "bytes": 17703,
+      "sha256": "807bfbcf9e57db00f109e1851e7c150874ec716149d8a8ddd9b05ec45522dc61"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/operators/moe-tp.hpp": {
+      "bytes": 14063,
+      "sha256": "7f7c1b143e4af3e6b811d46bf0559e8965b4838ca616e307a590248fb9a491f3"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/python/experts_base.py": {
+      "bytes": 22141,
+      "sha256": "d4c3725a3b4882b450d6104c46eb4914ece9425c25a7f5506b1c9f41a8f1bc1c"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/kt-kernel/python/utils/amx.py": {
+      "bytes": 48365,
+      "sha256": "e77b9d9b1dfcbf27b36ab4f0a435fb0ad048b73ca555faf98bcf55ab36a1fa80"
+    },
+    "experimental/contract-route3-six-node/overlays/ktransformers/third_party/llama.cpp/spm-headers/ggml.h": {
+      "bytes": 90849,
+      "sha256": "11901b0c72a7d5a3d0f263499c1ed3ab43f0a0c453ed2b323142dbee992fee8c"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/kernels/ops/attention/dsv4/live_topk.py": {
+      "bytes": 15461,
+      "sha256": "10fa212920bf638969a344c51c815e9333e427dad370e0c516f2562744dea8a2"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/kernels/ops/attention/flash_mla_sm120_triton.py": {
+      "bytes": 19132,
+      "sha256": "582d9e6e9911ac3519815422f7c2c70870786a6ac2485e64c3b6d5940da64af6"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/kernels/ops/gemm/fixed_fp8_cuda_core.py": {
+      "bytes": 4910,
+      "sha256": "8a1340446c32678f270a7128d12d941c77ac43e5c4201881640242ea3a5a0dee"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/kernels/ops/gemm/fixed_fp8_decode.py": {
+      "bytes": 3808,
+      "sha256": "11316ecc719597dc5a6e71fd6012326d3b128687ade8a1856e9780b74a1dd649"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/kernels/ops/gemm/fixed_lm_head.py": {
+      "bytes": 3062,
+      "sha256": "44e595401c93f822e4c46c5562ea5f3bf5167a00f49fff269831ac6c5673bc15"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/kernels/ops/gemm/fixed_projection.py": {
+      "bytes": 2025,
+      "sha256": "2e1b929ca6dba5eadcb8eaa46d45c12ecf2ecfb4e9495659f6caf87fe4af4e60"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/kernels/ops/gemm/fixed_wo_a_fp8.py": {
+      "bytes": 2406,
+      "sha256": "2bb991999677bac2af2e8e005a0fc17f40c017bc71ac50feaa61f0f08868c2bc"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/kernels/ops/gemm/fp8_kernel.py": {
+      "bytes": 46318,
+      "sha256": "3bf61365788fcce6544fd44fad8d5b34503cd0d82e668ef2b3eb1683e13f013a"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/distributed/parallel_state.py": {
+      "bytes": 138934,
+      "sha256": "48b2684434052dcff41ab923e728ea37a20533ee275ab73640a496151afaf9a3"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/attention/dsv4/dsv41_sparse.py": {
+      "bytes": 13123,
+      "sha256": "a73657c431b0082b642ff058b932f40dad87e9bce3b9562ed25bc8fc4a7753bd"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/attention/dsv4/v41_indexer/dense_blocks.py": {
+      "bytes": 12708,
+      "sha256": "968a3211c255a08d353d38e35c00dbd7abd49771b592543f7dfd5760eebdc988"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/attention/dsv4/v41_indexer/scoring.py": {
+      "bytes": 21692,
+      "sha256": "c599b1c7e247620fc154f3a1157407e81b39e2dcf74baabf3bda8eb6dcc90462"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/logits_processor.py": {
+      "bytes": 67634,
+      "sha256": "7d011c51b763df461d0986327c4ec377d7623a1e98b29b34e6c7c4c94b532ba6"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/__init__.py": {
+      "bytes": 1079,
+      "sha256": "7f49158545714cd6c0d0ba3f587aa2194f88069efebe84ab3efb224b74d37d3d"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/adapter.py": {
+      "bytes": 11007,
+      "sha256": "1b870df1dac4795a6c653860aed8d363e35cac6bc9ca63a43c904d780d7bd291"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/arena_stream_candidate.py": {
+      "bytes": 7548,
+      "sha256": "30fa501199bf0375a31a5af3329d7f196655a77c608cbed904d995b1d1688bd3"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/decode_splitk_candidate.py": {
+      "bytes": 12318,
+      "sha256": "5fadce37f90e2d9c047b55a322743706c4d5b415647dc44391e0b37ae248c2a0"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/dp4a_projection_r1.py": {
+      "bytes": 4300,
+      "sha256": "821cc33a6778b7e93fdddb66f9e139cefdc19a5167681d5a71435522a11270b3"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/dp4a_routes_candidate.py": {
+      "bytes": 11890,
+      "sha256": "e56a8e58899fd393fa6d2d50a219711a821bbd3987a1f573a02192c834c1820c"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/fast_combine.py": {
+      "bytes": 1631,
+      "sha256": "2cddedee062041db840a89238a0055be7a78b6132e8bd08d8a194a61eb983c56"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/fp8_table.bin": {
+      "bytes": 1024,
+      "sha256": "422eccfaa21e72a6b26855bb10cdcfead6c1ce3262ecd813c99d8cbf9677f2e2"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/kernels.py": {
+      "bytes": 13730,
+      "sha256": "7d714024ff17d565bca938f6549084715cbbfaea9fa6fd02ca24d71056aeb908"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/moe.py": {
+      "bytes": 7087,
+      "sha256": "17a955be315739d414244d7bbb93509878ea315c43ad6255cbf7df4f4e8c7890"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/silu_table.bin": {
+      "bytes": 262144,
+      "sha256": "4e08cff10bed7793df85e094f8ec9d9700cce52412bd5e54070eaf221596f9ea"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/static_routes_candidate.py": {
+      "bytes": 9760,
+      "sha256": "806fd8b1dacaf8f4d083079ceb1e33f2a484fffe7ce62624dadfd0795e6fed35"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/stream_graph_candidate.py": {
+      "bytes": 4042,
+      "sha256": "74a4204bfa95c5f167b3d1464240506aa0f08e4c6e3a15ead8f149095972bd6d"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/contract_v2/tables.py": {
+      "bytes": 1163,
+      "sha256": "0db5af4a8b4347aae5eced229397a14762bb3ab75a949ff560337f11d48b4616"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/kt_ep_wrapper.py": {
+      "bytes": 31357,
+      "sha256": "c1eb8c4c6289e42b39efe1388a253490e161c3fa81acb7a7bee0f99a2e853da8"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/kt_handoff_pack.py": {
+      "bytes": 5285,
+      "sha256": "c129eda15d3fa616eca0d9869034d214f802da5d9c9adf317737a42b56ebe2dd"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/kt_kv_hot_lend.py": {
+      "bytes": 59468,
+      "sha256": "5641c4d986b6a0f635e50c0f11b4e0dbc7f366405a6d7eb8bc09a2e0a22b0c9d"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/kt_kv_prefill_lend.py": {
+      "bytes": 43407,
+      "sha256": "7c8389adae34f2778b1ce36bf8cd7b1093108675099c68b7086a57d5ba68c688"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/kt_lend.py": {
+      "bytes": 58446,
+      "sha256": "3ae289df0db95c789a545608e7b47c6c6a7fc763bb3412fe96ef58659694f621"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/layers/moe/kt_stream_prefill.py": {
+      "bytes": 88950,
+      "sha256": "4a56c827755bbb094973a493927876ba173c4d0ef97649238cf72f194d6486ea"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/managers/scheduler.py": {
+      "bytes": 285097,
+      "sha256": "aefa42511a6188e6e2884f52e44d11b9eb418535782d8fecd1c11b660351bdbb"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/models/deepseek_common/moe_transport.py": {
+      "bytes": 17124,
+      "sha256": "513c237d891a37db5dae3ff4f373228bdf77ed44bea43d6b753fea11c7ed0df8"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/models/deepseek_v2.py": {
+      "bytes": 150544,
+      "sha256": "6b97c5e4c0b2a7ddc129123f0f9c9291b01b2dbd505bc4d137dc676b220a86b0"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/models/deepseek_v4.py": {
+      "bytes": 253398,
+      "sha256": "e537fbaec4438751e845fa3aa1e59fcd88ed46bf5a9e699bc74ac1022229f132"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/models/deepseek_v4_mhc.py": {
+      "bytes": 30322,
+      "sha256": "95322d1ded8fa694599b6fe4bdd5e55399a75282e700e8f75b571c46f9af1948"
+    },
+    "experimental/contract-route3-six-node/overlays/sglang/python/sglang/srt/utils/kt_service_affinity.py": {
+      "bytes": 11383,
+      "sha256": "70d7d0777d619625ca4d548aa1d0fe06e3ad67a4a601750e4f4c5ebfb18efbbd"
+    },
+    "experimental/contract-route3-six-node/profiles/expert-placement.json": {
+      "bytes": 57149,
+      "sha256": "f0db7c97f5a7ef50487e5e77a3b2ebe4b115118d5f4793f31a4391704c89e9e6"
+    },
+    "experimental/contract-route3-six-node/profiles/numerical-as-run.json": {
+      "bytes": 9846,
+      "sha256": "dc42a1a70be9387a77d98529a76f79ed89931f21bddea210cf8581690db871e1"
+    },
+    "experimental/contract-route3-six-node/profiles/numerical-substitutions.json": {
+      "bytes": 798,
+      "sha256": "3a96b10a04b51958e7cf9a174e515c792464a44322543083116b7e5578b48e05"
+    },
+    "experimental/contract-route3-six-node/profiles/numerical-template.json": {
+      "bytes": 8310,
+      "sha256": "3c799c7e86732bde7164bd4bf86f075d6de702e033b0d02abf68ec2026d0e622"
+    },
+    "experimental/contract-route3-six-node/profiles/performance-as-run.json": {
+      "bytes": 9154,
+      "sha256": "94afac8c15d32b3b7c57d39f7cf14016477b66440d981e911654475db482f706"
+    },
+    "experimental/contract-route3-six-node/profiles/performance-substitutions.json": {
+      "bytes": 794,
+      "sha256": "bf4667c50494ee80df73d0d0baaad317a4138a08855f249479fec24fa8889ce4"
+    },
+    "experimental/contract-route3-six-node/profiles/performance-template.json": {
+      "bytes": 7678,
+      "sha256": "e0c147829d5de5eee1b1bdf168fa0b9e527b1b9cee1fd322f1749ed1b78ee755"
+    },
+    "experimental/contract-route3-six-node/receipts/BF16_ORDERED_PERFORMANCE_REVIEW_r1.json": {
+      "bytes": 4516,
+      "sha256": "984bd0a01ad3a8595879864a5f77044b3ae0a1a1c7b8f1c418f0d224d2a7cae2"
+    },
+    "experimental/contract-route3-six-node/receipts/KERNEL_NUMERICAL_REVIEW_r3.json": {
+      "bytes": 1607831,
+      "sha256": "89939ee591ac379f032c45adfdb9eff61e52056ec6e9316b5e4c40b14cad10dc"
+    },
+    "experimental/contract-route3-six-node/receipts/KERNEL_PERFORMANCE_REVIEW_r3.json": {
+      "bytes": 4669,
+      "sha256": "6dd81ff05dae7ad3577937e2e39ae7c69f637f3bfdf63067cf738fcbc9f6a8e9"
+    },
+    "experimental/contract-route3-six-node/receipts/NEW_ARITHMETIC_REVIEW_r1.md": {
+      "bytes": 2479,
+      "sha256": "6d298b4bbefd432c0e08a96fddd7185b35963dc8b060e19df8315f6bbffd4fd7"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_CHAIN_PRICES_REVIEW_r1.json": {
+      "bytes": 1263,
+      "sha256": "38491dff99f374953390bccabad3c36997039e76599a1f7e8349fcb34cb6c7d7"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_COMPONENT_REVIEW_r1.json": {
+      "bytes": 4258,
+      "sha256": "92f9c6bbe2d69de51fc5404d503521a2cebca8afbbcc442ef57d45d89948c027"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_L2_BINARY_INVALIDATION_r1.json": {
+      "bytes": 3078,
+      "sha256": "bf837d044669225a02ce80e0de32aff0afa0ed115eab058e01478b7d57d56da8"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_L2_DEFAULT_REVIEW_r1.json": {
+      "bytes": 440,
+      "sha256": "9e2b4c7bc65808c464e45b31cd69412a42d62378c882e76a46e03fa81a075234"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_L2_PRICES_REVIEW_r2.json": {
+      "bytes": 2276,
+      "sha256": "280ffec7250f611e0f7e020a2bfd3514503cef97fd250d8614e3a5f99c751276"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_L2_RELEASE_r2.json": {
+      "bytes": 871,
+      "sha256": "b3bd2ed58c22e9a2407954ba0e9ffbf3fcb55b5ad4a0860b166f98e820c46b29"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_L2_RESULTS_MANIFEST_r3.json": {
+      "bytes": 1567,
+      "sha256": "5b3c0935b2a652b50a8150cabf7f86e27e0bb6fff1fc1ad35f9f08774827df53"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_NUMERICAL_REVIEW_r1.json": {
+      "bytes": 1608168,
+      "sha256": "a1eada43a1887b51ffadb510c48d97bccc038dab9c627bc0a9a7ab4952a7ca9a"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PACKAGE_R1D_REVIEW.json": {
+      "bytes": 2023,
+      "sha256": "b0ebca3488cc6f93cb9c2f89049561fa63b326cdf6f2a2a2388cd728288ef75f"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PERFORMANCE_REVIEW_r1.json": {
+      "bytes": 4677,
+      "sha256": "f7fbb31ecc2fafe89085465fd551fb7e2ad2eb4ead49bd9f836ba6ca535a22d7"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE1_RESULTS_FOR_CLAUDE.md": {
+      "bytes": 9611,
+      "sha256": "be7e81a20f0dfcd38f9b070bb51efacdb8f445c391d3544848f2751435593a68"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_COUNTER_RESULTS_FOR_CLAUDE_r1.md": {
+      "bytes": 3450,
+      "sha256": "7bef2dee135a83a24dfe4fcc6d6539ce0ab41c8385a6c3fc23e2492702ec037f"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_COUNTER_REVIEW_r1.json": {
+      "bytes": 3371,
+      "sha256": "e1b3d4c63523c7425e3330ea61fadc40b2334c4538819fec3dccec72c5eb0376"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_PROFILE_REVIEW_PREPARATION_r1.json": {
+      "bytes": 904,
+      "sha256": "118edae55018b7d0694df5792d2a3fc09b5a3d7cca966b5d1b52caeb1b04aae4"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_RELEASE_r1.json": {
+      "bytes": 1588,
+      "sha256": "f049bad194c10564ee271c1e6d25e757e3edceae876340ff8546e85a6513fdef"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_RESULTS_FOR_CLAUDE.md": {
+      "bytes": 9153,
+      "sha256": "d392a3a08abdb7ffa7297d491c12762ff3d4df93c8412c640b4b19d56631a16c"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_RESULTS_FOR_CLAUDE_after_counter_r1.md": {
+      "bytes": 12623,
+      "sha256": "5e0ac8797aa0a7c8423b5e20c98b2f001f8b7b1412e6bae8130c5c9ba9662fc8"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_RESULTS_FOR_CLAUDE_before_counter_r1.md": {
+      "bytes": 11126,
+      "sha256": "8695f5d9316aa9763f9be38984b488a49d5bb18bc9b50c671053892780583390"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_RESULTS_FOR_CLAUDE_r2.md": {
+      "bytes": 9551,
+      "sha256": "8f1277a77dc0038a94c93406e8e28bef91cf9a8b31d9d5294ff4d612336baef9"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_RESULTS_FOR_CLAUDE_r3.md": {
+      "bytes": 9153,
+      "sha256": "d392a3a08abdb7ffa7297d491c12762ff3d4df93c8412c640b4b19d56631a16c"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_REVIEW_r1.json": {
+      "bytes": 1681,
+      "sha256": "a35c5d119e4ddbee4f4a7bd25e5cb1ca1fb7db6448d86de20aa9b794280870db"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r1.json": {
+      "bytes": 728,
+      "sha256": "fa76f5ce21d0a3fac637dbb0208a83374e4f707b52c5685a4da372d4004adea8"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r10.json": {
+      "bytes": 641,
+      "sha256": "ccec4208aadd54125f9ac4b437dee2636d874e0f1425a96ecbcfb23ecf66ff51"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r2.json": {
+      "bytes": 642,
+      "sha256": "274ce6453213bd6968b9da48d4c7911a51578bdee6b1297149ad0b7daa682795"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r3.json": {
+      "bytes": 644,
+      "sha256": "113c1b31b8135cfe27e62f1c5916cd7404063ae6c1a7dcbced9388c492a57f12"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r4.json": {
+      "bytes": 643,
+      "sha256": "e89297e83df4b1d22c9f3f88bbae887f0e5ea721cdfced89a0603550285ceba9"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r5.json": {
+      "bytes": 643,
+      "sha256": "02ebc3b91850042ab7fc90b7e8ccb4ca144641c4103abcfff9837190060462b7"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r6.json": {
+      "bytes": 645,
+      "sha256": "655cb2bc225b7a363a20e290ce6b60b96ba77c852f33cbb9fc65341bf139f0a1"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r7.json": {
+      "bytes": 644,
+      "sha256": "20307b28b51be1f0668337bf5d73e887486b9f619d8afd3a0d8fff0f4381471d"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r8.json": {
+      "bytes": 643,
+      "sha256": "bf29abdbc319178e6597bfb3a49847c20dd8d4cd3fdecaa92bc1bc7e80e96e2f"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_SASS_REVIEW_r9.json": {
+      "bytes": 641,
+      "sha256": "c2a18f1ffd41593e7a0d76e0c895ab2bb04ab144be6f84b068091f606eee3c21"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r1.json": {
+      "bytes": 1808,
+      "sha256": "c637923cb0ce7202c4ee4f75c433830a679a71a9606ecaf26030ede16ded5f97"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r10.json": {
+      "bytes": 2112,
+      "sha256": "2426ce82d171b2a20b161b852c3a06cc9600aeaa6becbc2531026058eef0fe5c"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r2.json": {
+      "bytes": 1812,
+      "sha256": "685cf9562d513ca16f954d6c6c3663a0f2c5ad45238d2fec06134e13b9a0b23d"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r3.json": {
+      "bytes": 1812,
+      "sha256": "983daffb6efb0cbe3fa944de19bcf6f272935b5ac58cfcbe5e2888663967a673"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r4.json": {
+      "bytes": 1812,
+      "sha256": "77215817b7d39d4e0d8169727a364eb8ab876f973cf2ad2d4ca4bf15bccb343f"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r5.json": {
+      "bytes": 1810,
+      "sha256": "2486c1e507c1cc6c7cb134d310a4c14de2fc0a9e9ad2b54c4bae96417d14bf1c"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r6.json": {
+      "bytes": 1812,
+      "sha256": "49b8a3dcac5ac1b704d52ee12f867a8fb0eb9f4828bc672baf611ede20a8cf54"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r7.json": {
+      "bytes": 1813,
+      "sha256": "848adbd6d92588d0f7d701befe37009ba6eb2c50cf5fd7e4d5ffe1cff8b89a9e"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r8.json": {
+      "bytes": 1811,
+      "sha256": "0cf0fd0c23d80fffa10e5372d8e8bf57911d09a705a64a44d356908a49ca3183"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r9.json": {
+      "bytes": 2151,
+      "sha256": "9d7564c019b8ef1d7be14418a873e0d6cb60d48407a810bc5c6a8ce02eec03fa"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_PHASE2_STRICT_REVIEW_r9_before_binary_audit.json": {
+      "bytes": 1809,
+      "sha256": "4a7c84f592a3bb8548f5a85d30059affd8268ce4d4ebd398b6018f65fdedfbeb"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_READONLY_REVIEW_r1.json": {
+      "bytes": 1982,
+      "sha256": "8f768544fd9865483352c5a1d80225d1314f68f4c2201e1666d1c45aa00a7a1c"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_RELEASE_r1.json": {
+      "bytes": 651,
+      "sha256": "71352c7e75bb915ff8bd8dca7053c14edd6c236d85036ea2423d5b6c63641eb2"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_STAGE_AND_TIMING_RESULTS_FOR_CLAUDE_r1.md": {
+      "bytes": 5932,
+      "sha256": "5bd11b285c995acbc19c39b15f50d98618f5617da8eccc54e5a277bd314f1785"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_STAGE_PRICES_REVIEW_r1.json": {
+      "bytes": 1634,
+      "sha256": "bd27d2ab96a85745627ede74d6512ed05c00ef246b790b18585df59d22c2f775"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_STEP5_RELEASE_r1.json": {
+      "bytes": 1556,
+      "sha256": "2e87da3f5da02fd8c553cf5f963ece8d0c394d96dfb07678a8fad7e4f9d8da7e"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_STEP5_REPORT_MANIFEST_r1.json": {
+      "bytes": 925,
+      "sha256": "237de5e2401448bbce3b1242b8a0ca588df3680ac6617fbee041719c687cb666"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_STEP5_RESULTS_FOR_CLAUDE_r1.md": {
+      "bytes": 5650,
+      "sha256": "c193d093394719bf4c48934049bbdd1f7731b1e4f88551b608b9ffaef68a110d"
+    },
+    "experimental/contract-route3-six-node/receipts/ROUTE3_TIMING_BOUNDARIES_REVIEW_r1.json": {
+      "bytes": 1386,
+      "sha256": "c8369ec5c7f72e1c14ba08897b4540961618207d03f531d39f22474d22ffb177"
+    },
+    "experimental/contract-route3-six-node/receipts/builds/contract-native-rebalance-r1/RESULT.json": {
+      "bytes": 2194,
+      "sha256": "21d1f407d5377300470c0f25769d3eb1117948aa87b693d6a869860c8adc5963"
+    },
+    "experimental/contract-route3-six-node/receipts/builds/default-build11.sass": {
+      "bytes": 668583,
+      "sha256": "c336cdda06154131fc2159f8259525331179ba5b48c36b0b6420dcb21bb41901"
+    },
+    "experimental/contract-route3-six-node/receipts/builds/route3-phase2-build-r11/RESULT.json": {
+      "bytes": 2367,
+      "sha256": "b769ec34a37821f88e5d75c23883474354809cb6aa383f41305bc29e5e502e78"
+    },
+    "experimental/contract-route3-six-node/receipts/builds/route3-phase2-build-r13/RESULT.json": {
+      "bytes": 2367,
+      "sha256": "4dc3b5e20d4db6a9194c50faaa8b9cc58ba1a4c5569e249446ea8d14c500fbef"
+    },
+    "experimental/contract-route3-six-node/receipts/numerical/RUN-contract-route3-numerics-r1.json": {
+      "bytes": 387974,
+      "sha256": "3edb57461002093307b2e5b8126dd2d13fa71c7f8e2898089c104dfd9121ed8d"
+    },
+    "experimental/contract-route3-six-node/receipts/performance/RUN-contract-route3-perf-r1.json": {
+      "bytes": 400461,
+      "sha256": "addc9726aedd934a14d6da997fe8c8007efa0a4ca7e077624b459e5f7290353e"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/CODEX_BRIEF_route3.md": {
+      "bytes": 6232,
+      "sha256": "ea3a40c657f90fe7cd01d0c5e5f88eb017ef3f9e2babe52253e45d07064cc2ed"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/LEDGER_ENTRY_route3.md": {
+      "bytes": 2951,
+      "sha256": "1352743ec1456645029794afac69d0dcd8b00a042ba7b65bbec5863b09867fed"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/PREPARATION.json": {
+      "bytes": 2109,
+      "sha256": "07d8ef04dba8140e73534c3772fc87ef22d6f1178218cce07ac987788cd2186f"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/ROUTE3_MMA_DESIGN.md": {
+      "bytes": 15820,
+      "sha256": "c26eaaf77a306609ae3e11c3d3eac7aa01b620a15bb00bf0f019ab6bc1eb410f"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/CODEX_HANDOVER_phase2.md": {
+      "bytes": 4501,
+      "sha256": "17a03f946db456c5214867b8d22957f1370bd5ded926fb7565095a7001606ee1"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/INTEGRATION.md": {
+      "bytes": 6619,
+      "sha256": "61adbdcedd68ccc208f67cea34be43cc5e2928af213e1d15c93f1cbe10ccfdcf"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/PREPARATION.json": {
+      "bytes": 6701,
+      "sha256": "db04679c990ba0565ca9c901e24d958d8e1225fc02aa547d5e599b3787a3839a"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/ROUTE3_GATE_METHOD_DECISION_r1.md": {
+      "bytes": 3587,
+      "sha256": "dbfa7d5f3333d257f391918af160fcdec62ebaf5c5ea0cb1c85a92468c2ca127"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/ROUTE3_PHASE2_REVIEW_r1.md": {
+      "bytes": 5521,
+      "sha256": "2a1a970ec58bae65a44e715ad1115effc281ca6d87990272d35c5bb41dbe51ba"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/ROUTE3_PHASE2_REVIEW_r2.md": {
+      "bytes": 10952,
+      "sha256": "2f0b784f2689eeea9f1cf0b081add800c17943cc5d70408ee03873d99dcadc54"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/archive/route3_decode_r1.cu": {
+      "bytes": 13994,
+      "sha256": "952bb68ea79c28caea889028ba1fcbe7cc79c77e22a5c42546b95388aade63d1"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/route3_decode.cu": {
+      "bytes": 15627,
+      "sha256": "82a38149227507cfe15eb6fb8e2338467c499a720396c9af2588231faf0dc4a6"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/route3_decode.py": {
+      "bytes": 3096,
+      "sha256": "260d9fa4d898a554c6837ed6c87e128977530d117686a20b91345e5ef6154bb2"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/route3_sequence.h": {
+      "bytes": 2829,
+      "sha256": "e2f7fccc9b167d4a390e4ecf24a5c5d8f921a8f654ffed047f4ca303982f3995"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/test_route3_l2policy_local.py": {
+      "bytes": 4193,
+      "sha256": "5e903febcc20d76b9dde4af6c752ed084a84b253edd3c6602536e89bef734221"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/phase2-cuda/test_route3_layout_local.py": {
+      "bytes": 5809,
+      "sha256": "7f6ccffead4d2dfdf940aad2e616ee80d8fae7e006012778b364acb99255a460"
+    },
+    "experimental/contract-route3-six-node/route3-mma-r1/route3_sequence_reference.py": {
+      "bytes": 8929,
+      "sha256": "405d070b98879243ccc1b9e695ed48fcd5bf4c6d5017bc7ae0b24f8e19624b1f"
+    },
+    "experimental/contract-route3-six-node/runtime/engram-adapter/engram_backend.py": {
+      "bytes": 17182,
+      "sha256": "1b4cdaeb0071aefe0a69a190a47e2ce21b68c429d92d36e45b62eaf33ac910aa"
+    },
+    "experimental/contract-route3-six-node/runtime/engram-adapter/module_origins.py": {
+      "bytes": 21502,
+      "sha256": "4ada95fe6391b03048a978674581bee4832bb627cdd476f40c6b85946a158fba"
+    },
+    "experimental/contract-route3-six-node/runtime/engram-adapter/row_store.cpp": {
+      "bytes": 18668,
+      "sha256": "1905059eb5b80c2c9f2fbe10ede6e7084c93c10fa110728af422d7b461825de6"
+    },
+    "experimental/contract-route3-six-node/runtime/engram-adapter/sitecustomize.py": {
+      "bytes": 2890,
+      "sha256": "9130a852bf22c06a3fb00601b2e1bb26c25a366b31dd9430c0978a0338ed3f52"
+    },
+    "experimental/contract-route3-six-node/runtime/engram-adapter/test_adapter_cpu.py": {
+      "bytes": 2505,
+      "sha256": "7d693a303651b5ac71157982cf8d37c4288148f5cdb2614234fdfc7282041d81"
+    },
+    "experimental/contract-route3-six-node/runtime/engram-adapter/verify_shard_manifest.py": {
+      "bytes": 2956,
+      "sha256": "615d51be8bce9d084c1c6090c7061ce644f8f7fe9578b00c70d97595d38e9642"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/__init__.py": {
+      "bytes": 3817,
+      "sha256": "2af24f86d456f688c8eef993a956ff93ff87f1c4b8cdd2f5d6464fc272b98c61"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/_cpu_detect.py": {
+      "bytes": 12357,
+      "sha256": "db3d26a3f2f0217334197bd7b332eead8fc9b7e7cc7ed7eb2a1f2e128f977ed2"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/__init__.py": {
+      "bytes": 696,
+      "sha256": "9cf36f76a5a3afd89a55f3b403d1d1ecf80491e2e152e9059e10d088660988d2"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/__init__.py": {
+      "bytes": 36,
+      "sha256": "f8a9580cb9fe57bee9f6ff0a431c962b483ad9edd99af3f4b875f22c2be7247f"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/bench.py": {
+      "bytes": 7217,
+      "sha256": "e593035b5818c2eef03d18ab4b145bbb6ac585a64d263dd0f85f17fbe4de3a95"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/chat.py": {
+      "bytes": 18049,
+      "sha256": "98c9cad8ad00def8d5cd0d10378ee1372d11c7412bfed86a1e51372c901aa71b"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/config.py": {
+      "bytes": 5076,
+      "sha256": "2127fa56226f14f6fff97a9d4d71b7eaa05ce711225392d57051df31b913dc4a"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/doctor.py": {
+      "bytes": 19343,
+      "sha256": "9d761469e9d78b5e9fe6b31c920cec6afcf113cc4c5753ca4428567e9b146062"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/model.py": {
+      "bytes": 114814,
+      "sha256": "a8e8b2348423bf20aed33021e73e21cb39caac4ba515a1b965f3a97573b76c97"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/quant.py": {
+      "bytes": 18855,
+      "sha256": "abfe1036861bc6370ae71e88552f26aaf58712e941ed733809404a389927093b"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/run.py": {
+      "bytes": 31366,
+      "sha256": "dcb51859456a8e4fdcb7e4b585d4c7002ec28f575cd6415891f35b1d7cbc1238"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/sft.py": {
+      "bytes": 1514,
+      "sha256": "9e5e99e53144392fa88d9fd5f17121cc84630bee73806f48b78d72912dd510b3"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/commands/version.py": {
+      "bytes": 3643,
+      "sha256": "41598173bdb50d387d900ceb0d5962b5cdb7a695e15b41114ff52f9d36753e8a"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/completions/__init__.py": {
+      "bytes": 43,
+      "sha256": "1a1f89ac8a58ba2882b358fab976c6e328a350a24862408c738bd8e792f9ba25"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/completions/_kt": {
+      "bytes": 4943,
+      "sha256": "7ac09e95b960e319c0e483d7eb44fb35a936d258031ed6f03f5e773749a85010"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/completions/kt-completion.bash": {
+      "bytes": 3130,
+      "sha256": "5173052494ee6a5096412b676a047a7d472e7f69d29da86f9c4dfaa5d659409f"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/completions/kt.fish": {
+      "bytes": 6180,
+      "sha256": "5c7b1ecdfcd3d417518c6114b44d359779441dd542292ab9dd2f9e8611dac6ba"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/config/__init__.py": {
+      "bytes": 151,
+      "sha256": "3263fca1609ca04cff61cd23d0725234fb7cdfbc514c31ddcee7f0e13fa61c83"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/config/settings.py": {
+      "bytes": 9690,
+      "sha256": "797e22ad5199c04c7dd0b0b64fe80919e18ce3ae5f97e5e979b8a90ea0aabbdc"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/i18n.py": {
+      "bytes": 78639,
+      "sha256": "ad41ab13b0b46e30f3532694d256451923f439b517ea376917fcd7418ffcc46e"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/main.py": {
+      "bytes": 20150,
+      "sha256": "0c5adf4aada9e9502eede6c299696234a98afa759eef2445b60b4a9e6e7fbcc4"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/requirements/inference.txt": {
+      "bytes": 176,
+      "sha256": "6b5dfe8db8c9d53b04094ea3dd0867ea721a77bdc6de500a5dfea997c06a31d3"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/requirements/sft.txt": {
+      "bytes": 153,
+      "sha256": "3e54cc1b110cd86b9def6af818ca210b2cb056fb8011ee9c1e2f4faa76847919"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/__init__.py": {
+      "bytes": 36,
+      "sha256": "8f3c9644347471470b88301697454ce80f72d966f37be4ae30c3654274fb299e"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/analyze_moe_model.py": {
+      "bytes": 12813,
+      "sha256": "aee9fcb7268602302b7f21a5f2da2b832e8d2fcef09d0f3ffbeef5ce2744a942"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/console.py": {
+      "bytes": 7545,
+      "sha256": "048b0b463d71c9da6ccaacaf1bd7596fa43fe3267e6ba29ca53c986ce18443aa"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/debug_configs.py": {
+      "bytes": 3807,
+      "sha256": "f98f50046270c89adec6c397b4da5b5e7b354408986066c888ce83ac9a886ac8"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/download_helper.py": {
+      "bytes": 4447,
+      "sha256": "ce31135d582e3f705f0cbf64ee73333ad68ca689742f88f5baf1cd17b9b40aac"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/environment.py": {
+      "bytes": 35991,
+      "sha256": "c755dade67f8b1641616b819ef1e95d2e955fe26cdca80f6e4d79349d51b6ac0"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/input_validators.py": {
+      "bytes": 6843,
+      "sha256": "0fb5eec8e2d4370fbbc32f4eb3969cade6c5ff87c919902ea20bbe6a700e6faf"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/kv_cache_calculator.py": {
+      "bytes": 6800,
+      "sha256": "589fe52991f78c9e5f4d8e144ba0c6b86440b8fb4dc0046222be842c4148d733"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/model_discovery.py": {
+      "bytes": 8537,
+      "sha256": "5a048a9313e0d0fccf5bf9f204b239dbcb96f09afa7728b24b934e64f376f815"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/model_registry.py": {
+      "bytes": 17804,
+      "sha256": "fb4e96df63faf5cc287952af3fb680c883f5f519e2b80aa256a2f7384793af97"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/model_scanner.py": {
+      "bytes": 24607,
+      "sha256": "8dc31ee7b77374f89c3d2e6be00c54e5430ea146158bcdb20fb29c1737c11ee1"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/model_table_builder.py": {
+      "bytes": 8691,
+      "sha256": "fe5d6a61d67f4ae27a855ef0d4a91edd17cabc11b50004ce4d5781efd6e80113"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/model_verifier.py": {
+      "bytes": 35092,
+      "sha256": "efd1e7c303a064042988331c224a6080869ef9ea4a9710435f4949d14a80c3dc"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/port_checker.py": {
+      "bytes": 1451,
+      "sha256": "99b1ca7bd05e040e8a0f20b94196261c9fd7960a7dc3b90a118bcd98f9f57b59"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/quant_interactive.py": {
+      "bytes": 12919,
+      "sha256": "abaa53d655a2ed9888cc76be5448df6dfedc832a98c60ff0608db8ea394463e3"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/repo_detector.py": {
+      "bytes": 10439,
+      "sha256": "b6a82745ca13aa6502185efb865a8fc6a81636b60b1176951b2ccacfd9335fb0"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/run_configs.py": {
+      "bytes": 3352,
+      "sha256": "18bc5b5c0fa092c53a392e8c59d8f89b1dd5a6b93880631ad84ffd9e60eef5a2"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/run_interactive.py": {
+      "bytes": 38856,
+      "sha256": "59664cbb29bae0ce6315a7f5050bd43abf181f88cedd6f62aeb1d471a425c3d9"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/sglang_checker.py": {
+      "bytes": 13937,
+      "sha256": "47df2704db47ec1538e6a5ee7333a63ce02830e9066044cf2e73fc91579d8e22"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/tuna_engine.py": {
+      "bytes": 13418,
+      "sha256": "5f238e8fa6bbf780391f12093100d394517511661368b6aed47ee109952bb61c"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/cli/utils/user_model_registry.py": {
+      "bytes": 9237,
+      "sha256": "85fb0f1ae995b8d286f18eb43b8a75e9114fb6df734e6bfb63358e181eba1e71"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/experts.py": {
+      "bytes": 18046,
+      "sha256": "3718aa21a4425a7cbb0d10d33c6aee7931a1bdfcef697cc86abfd64a4b3b7619"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/experts_base.py": {
+      "bytes": 23313,
+      "sha256": "f24ef260d9cd3be88837a1798166f42056b09e9c59cf07841b1a0a680b0b3d02"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/__init__.py": {
+      "bytes": 5705,
+      "sha256": "023b1f28635dab788c8edcd3efe868e15be90857895dc5bd7f068a3a22183c7e"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/amx.py": {
+      "bytes": 34069,
+      "sha256": "b81c4d2ddab055e18c9e297211e57f1f7adb70859e57021cb1c9e098e05f117e"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/arch.py": {
+      "bytes": 10610,
+      "sha256": "9721ea50957e76b66ef39023f6bb0a979d2f2e3cf571ef464b17db341d9b3c0e"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/artifacts.py": {
+      "bytes": 73507,
+      "sha256": "7df780f31d152e0f478c96c4aef0aaf6e1e7ee5baadf5fad153201f84942e91d"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/autograd.py": {
+      "bytes": 24784,
+      "sha256": "394a81d9aa49c9f6896190b58a4696eae925bed854e897b4a17f25c43c01d92b"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/backend.py": {
+      "bytes": 5496,
+      "sha256": "05a1593502d8e3d498935ea8804c7ea445fda558130fddebf9ca1f6baf72079d"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/base.py": {
+      "bytes": 43344,
+      "sha256": "a6577188e6c77488493eff350b72fbc066dd10b0de5c2683e26332bc8f317bc8"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/checkpoint.py": {
+      "bytes": 17939,
+      "sha256": "e36262b37f9dc59125498c380ce304b524e69ec7b9994b6585d5f41fc2707b4e"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/config.py": {
+      "bytes": 24426,
+      "sha256": "6410cec9924dd613d98f4356cddb04651baee504e428c3ce1f271fd6ad99277c"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/conv3d_compat.py": {
+      "bytes": 4626,
+      "sha256": "09f58b13d38f9bc95d96ebee2c2830803f2e5e748fe5ae73780d2cdac827f883"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/dist_utils.py": {
+      "bytes": 11661,
+      "sha256": "56c944297e6f7690d7e4f9abbfd6bd5bae1c4d60417ec8438f9a5d1076c35041"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/ephemeral.py": {
+      "bytes": 21629,
+      "sha256": "191b324c01a28d083ed824dc84541c2fca9e3db8ba4e0e2ba8cd3cb03947847b"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/layer.py": {
+      "bytes": 45502,
+      "sha256": "c663c467c71e082db45f53dfec9c80c5a24615400ccf3b7774573382f128cecf"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/lora.py": {
+      "bytes": 49581,
+      "sha256": "c0e7e01dbc079acc197645dc1b8e006768e3e2fb7176e3ad612e979c6672adf6"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/profiler.py": {
+      "bytes": 5985,
+      "sha256": "a5da1d8854c775e1ddacdfc1a7641cb1c247d3e6fbcc010df0bec040ac4a77e5"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/weight_manifest.py": {
+      "bytes": 17752,
+      "sha256": "9544bd4b9705f132c0a7a5e3300f238e5733e299738dca744bf64177d35c039f"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/weights.py": {
+      "bytes": 33088,
+      "sha256": "cacbb6b920abade91ed453f53ae167233615274e38a7c836794f0f8d9f2e9a19"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/sft/wrapper.py": {
+      "bytes": 53403,
+      "sha256": "4a1ccebb741f49e62e38df6554cd1a0896c29b77ca7911d0cb707e05a444c7c4"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/utils/__init__.py": {
+      "bytes": 420,
+      "sha256": "1882f9b8a49b200b33544d7ad93a6098023a92833c19b398a4f44a4e80054310"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/utils/amx.py": {
+      "bytes": 48451,
+      "sha256": "88c8282c8bc3c3ac2773f74a8eb2cf9e3e13418dca078344d0783c8bfc34c393"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/utils/llamafile.py": {
+      "bytes": 8352,
+      "sha256": "af280e3dd9a537ed7156fbce413b94d3253649cbe56790c7adb4db2937f36838"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/utils/loader.py": {
+      "bytes": 77941,
+      "sha256": "453a352b3c5a7817c7994ecdad248a908e7dbf54d1b641fdd286aac63ccca526"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/utils/moe_kernel.py": {
+      "bytes": 11653,
+      "sha256": "824181b2fea11962ec6dc309352064e5cc783cb47e0c05aea2601b00989dbfd9"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/utils/recipe_gguf_reader.py": {
+      "bytes": 9441,
+      "sha256": "a8cc2a1c1740b22ce31663281e6332416dce18433f538859c1432531fc1bff35"
+    },
+    "experimental/contract-route3-six-node/runtime/kt_kernel/utils/recipe_gguf_storage.py": {
+      "bytes": 1087,
+      "sha256": "7a6ed316850a3aabc39841105b8101f205ffa4a2fb54e6e237a1f261802bf420"
+    },
+    "experimental/contract-route3-six-node/runtime/route3_decode.py": {
+      "bytes": 3449,
+      "sha256": "b9f9f91efa50512f3e5a6dc3a4d5b688412e3e15220c7ac51ca3287471818789"
+    },
+    "experimental/contract-route3-six-node/validation/historical/build_contract_rebalance_r1.py": {
+      "bytes": 4226,
+      "sha256": "ea8de92e3ca89451b5823e3d73d290b3c2a8f0a104e85b941aeb2f09e86f8d37"
+    },
+    "experimental/contract-route3-six-node/validation/historical/build_route3_phase2_r11.py": {
+      "bytes": 4959,
+      "sha256": "ffe4020f0e19ec7e8d32bdd4ef4b8da5e8273a41becd9738d030f395e4182f13"
+    },
+    "experimental/contract-route3-six-node/validation/historical/build_route3_phase2_r13.py": {
+      "bytes": 4959,
+      "sha256": "ad1d0c1a00870d557b6468794c2e307b8062d6f83362955ad381d34a91675c66"
+    },
+    "experimental/contract-route3-six-node/validation/historical/controller_route3_numerics_r1.py": {
+      "bytes": 23851,
+      "sha256": "c73b61d180aab5ab7adbddbbf4e743220ea6279ce5da1b69d4f3985511aa6142"
+    },
+    "experimental/contract-route3-six-node/validation/historical/controller_route3_performance_r1.py": {
+      "bytes": 23721,
+      "sha256": "74c00369f7e55b3c8bc27f5203e56c922052d154abd713792686239c3a78bc85"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/module_origins_fast_r1.py": {
+      "bytes": 21502,
+      "sha256": "4ada95fe6391b03048a978674581bee4832bb627cdd476f40c6b85946a158fba"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/settle_before_reclaim_v2.py": {
+      "bytes": 2755,
+      "sha256": "4d4aae901de029098ac7ee3e7e58e8455a15565b6e21d7d8f56c55181b5c41fb"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/six-cpu-fea64-guard-r1/DERIVATION.json": {
+      "bytes": 1467,
+      "sha256": "5d0885aa73a366133a3eeaa434aa96b32f9df04805c8302f5bd20025d49e61af"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/six-cpu-fea64-guard-r1/cache_stabilization.py": {
+      "bytes": 23222,
+      "sha256": "51b04ae12c5b8aeb3e6aea4a9f947e7752441f6a08e3e73aaf7841c070424291"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/six-cpu-fea64-guard-r1/fea_reserve.py": {
+      "bytes": 322,
+      "sha256": "c86f9649ce05ae16db7a23b4649e702e891b72f0ac35d959abb7f0fc27666c5e"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/six-cpu-fea64-guard-r1/scope_exec.py": {
+      "bytes": 2775,
+      "sha256": "36a17d5b2089967383d2f37268d7d5e4f47e2451baff92a5f500bd63067acfdf"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/six-cpu-fea64-guard-r1/six_cpu_runtime.py": {
+      "bytes": 5065,
+      "sha256": "e94245c7cd86859825af3c7afd3af6c1a2298d91cc1a761cd3663ce258b2291f"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/workflow/HARNESS_PINS.json": {
+      "bytes": 1680,
+      "sha256": "276dd96b9e711d09842d950a80780bbfa74a5a4502fe00b86f43771bddda4cef"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/workflow/server_info_profile.py": {
+      "bytes": 7498,
+      "sha256": "f1596f9f57181fcd1a0f447391d70bbf3dfbaa071d1966b5e885e9745ada3594"
+    },
+    "experimental/contract-route3-six-node/validation/historical/fp32-subtotals-model-r1/workflow/trial_common.py": {
+      "bytes": 11081,
+      "sha256": "d409458d9212cbfb8bf36d0a13ccd1828f3e3f7f0227ee864302232374b19c8b"
+    },
+    "experimental/contract-route3-six-node/validation/historical/launch_route3_numerics_r1.py": {
+      "bytes": 983,
+      "sha256": "d349336657128df3054370a85f5ee856f95f2f177d5e4ed52568b1e777bf70c0"
+    },
+    "experimental/contract-route3-six-node/validation/historical/launch_route3_performance_r1.py": {
+      "bytes": 982,
+      "sha256": "2f0afcde17b96c2f0acbabc2d4133c5617af578c22a10544ffd86ae08a1c4c42"
+    },
+    "experimental/contract-route3-six-node/validation/historical/profile_route3_numerics_r1.py": {
+      "bytes": 7004,
+      "sha256": "34d29205ae0e2c1c6254b095472053d7aefbf0b1d82b678d1685a75945a5e8e0"
+    },
+    "experimental/contract-route3-six-node/validation/historical/profile_route3_performance_r1.py": {
+      "bytes": 5056,
+      "sha256": "8b5c41c8d933b3c5937211a58b8409716efa9c80c62bd4e42b421ebd8dec1a4d"
+    },
+    "experimental/contract-route3-six-node/validation/historical/review_route3_numerics_r1.py": {
+      "bytes": 5353,
+      "sha256": "eaeb66a384c5ee1e35ff89c6f0a0a7ca0c7592414a5924467e3d129f75c91fb1"
+    },
+    "experimental/contract-route3-six-node/validation/historical/review_route3_performance_r1.py": {
+      "bytes": 6151,
+      "sha256": "183bfc9b559fb2f289722280e211f06c2739979458bab9bc94c95f318af1fa3b"
+    },
+    "experimental/contract-route3-six-node/validation/historical/sequence_regression_route3_r1.py": {
+      "bytes": 5225,
+      "sha256": "1b5175d22b82c5e4fed13bf3495a5516ef1f7cf895e02960e66cff1a86a9e277"
+    },
+    "experimental/contract-route3-six-node/validation/historical/six-node-performance-r1/source/bench.py": {
+      "bytes": 5706,
+      "sha256": "1c361c2010d7f69a8f1a93e33f26e7622bb684bd43a2de51b29b63a00b063f40"
+    },
+    "experimental/contract-route3-six-node/validation/kv_checks.py": {
+      "bytes": 12939,
+      "sha256": "eb31f84a7ae96126bfa1fd97e8c3c98527c58d5f515610b15a03fe39c14597b4"
+    }
+  },
+  "files_excluding_self": 271,
+  "schema": 1,
+  "scope": "All added source/receipt files, excluding this manifest itself; inherited upstream recipe remains unchanged."
+}

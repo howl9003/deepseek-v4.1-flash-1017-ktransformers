@@ -1,0 +1,74 @@
+{
+  "utc": "2026-10-28T08:41:36.204280+00:00",
+  "status": "VALIDATION9_INVALIDATED_WRONG_BINARY_REBUILT",
+  "build_hash_audit": [
+    {
+      "build": 3,
+      "recorded": "de5aa40b95f88041722acf03c4289d2689be49685591dabdc60a6efaa105e2b4",
+      "live": "de5aa40b95f88041722acf03c4289d2689be49685591dabdc60a6efaa105e2b4",
+      "matches": true
+    },
+    {
+      "build": 4,
+      "recorded": "e5e4f5018cb85ea98538a94cb6f18c7792a47cb0c5a55a484cc3d41e69d7035d",
+      "live": "e5e4f5018cb85ea98538a94cb6f18c7792a47cb0c5a55a484cc3d41e69d7035d",
+      "matches": true
+    },
+    {
+      "build": 5,
+      "recorded": "c1cb993bcd8ec952d74289b430408a4a1df8e935d220dbbff4dc74e06ada18f2",
+      "live": "c1cb993bcd8ec952d74289b430408a4a1df8e935d220dbbff4dc74e06ada18f2",
+      "matches": true
+    },
+    {
+      "build": 6,
+      "recorded": "628addda32acb8625b65bf231d91aa94c7b98b01eeb0694ab124864551265376",
+      "live": "628addda32acb8625b65bf231d91aa94c7b98b01eeb0694ab124864551265376",
+      "matches": true
+    },
+    {
+      "build": 7,
+      "recorded": "acf58715abe8619d170d3297623631e0d2c5053d84077b36d7f743d72c53debd",
+      "live": "acf58715abe8619d170d3297623631e0d2c5053d84077b36d7f743d72c53debd",
+      "matches": true
+    },
+    {
+      "build": 8,
+      "recorded": "9656ba4fe5e9a8eb9c4a2937fe6550aadb4ead1708c2a5e72a4743767a5b2e1e",
+      "live": "9656ba4fe5e9a8eb9c4a2937fe6550aadb4ead1708c2a5e72a4743767a5b2e1e",
+      "matches": true
+    },
+    {
+      "build": 9,
+      "recorded": "2bcb52e779a2abe88898d4cfe9f6858abcd60abecb6ef7a7ff44f7a355100a4f",
+      "live": "2bcb52e779a2abe88898d4cfe9f6858abcd60abecb6ef7a7ff44f7a355100a4f",
+      "matches": true
+    },
+    {
+      "build": 10,
+      "recorded": "1026daf900deaf87083272dafcc6a6b3553464149b59626054f1e20151972afd",
+      "live": "1026daf900deaf87083272dafcc6a6b3553464149b59626054f1e20151972afd",
+      "matches": true
+    },
+    {
+      "build": 11,
+      "recorded": "51c179a96c838f2b51d9a01707706534a9472fe50752bedbab7c659905dca649",
+      "live": "51c179a96c838f2b51d9a01707706534a9472fe50752bedbab7c659905dca649",
+      "matches": true
+    },
+    {
+      "build": 12,
+      "recorded": "ddd49e3adeeb71552d050f7a1aa5f49f3077b4c31af3e9ca63b8c87b6ac66a85",
+      "live": "55aaebe67ae2741ea5cffb019c8257658819c4138f47d40ca51c5478ca856105",
+      "matches": false
+    }
+  ],
+  "invalidated": [
+    "route3-phase2-validation-r9",
+    "ROUTE3_PHASE2_STRICT_REVIEW_r9.json"
+  ],
+  "failed_closed_comparison": "route3-l2-prices-r1: stopped before cases or prices on binary hash check",
+  "cause": "Validation9 set ROUTE3_EXT_NAME but omitted compile-time ROUTE3_L2_POLICY. native._load() invoked torch cpp_extension.load and rebuilt build12 with default macro0 after its pre-load hash check. build.ninja no longer contains -DROUTE3_L2_POLICY=1; ninja_log records the second compile.",
+  "fix": "Fresh policy build13; direct import of pinned binary, no compiler call; recheck digest after import and at end. Preserve invalidated receipts and failed comparison; use new namespaces.",
+  "no_full_model": true
+}

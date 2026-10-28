@@ -1,0 +1,32 @@
+{
+  "excluded_classes": [
+    "model weights and checkpoint-derived tensors/logprob payloads",
+    "resident evidence captures and raw traces",
+    "evidence archives and compiled binaries",
+    "host caches, temporary hints, credentials and unrelated source trees"
+  ],
+  "files": [
+    {
+      "bytes": 5685016,
+      "reason": "rebuild_native_binary_from_sources",
+      "source": "/scratch/aster/bench/feature-trial-B-contract-route3-numerics-six-r1/packages/kt_kernel/kt_kernel_ext.cpython-312-x86_64-linux-gnu.so"
+    },
+    {
+      "bytes": 43360,
+      "reason": "rebuild_native_binary_from_sources",
+      "source": "/scratch/aster/bench/feature-trial-B-contract-route3-numerics-six-r1/recipe/engram-adapter/librow_store.so"
+    },
+    {
+      "bytes": 22326234,
+      "reason": "over_10_MiB_and_outside_source_receipt_allowlist",
+      "source": "/scratch/aster/bench/six-node-performance-r1/route3-step5-evidence-r1.tar.gz"
+    },
+    {
+      "bytes": 21634521,
+      "reason": "over_10_MiB_and_outside_source_receipt_allowlist",
+      "source": "/scratch/aster/bench/feature-trial-B-contract-route3-numerics-six-r1/packages/deepseek_recipe/_native.abi3.so"
+    }
+  ],
+  "scope": "Only selected recipe source/package/receipt roots are inventoried; model directories and unrelated host trees are not traversed.",
+  "size_limit_bytes": 10485760
+}

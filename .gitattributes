@@ -1,0 +1,3 @@
+# Preserve byte-pinned sources and historical receipts on every platform.
+/experimental/contract-route3-six-node/** -text
+/CREDITS.md -text

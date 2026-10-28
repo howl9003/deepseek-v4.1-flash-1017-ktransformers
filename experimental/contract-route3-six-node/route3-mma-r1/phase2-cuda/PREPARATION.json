@@ -1,0 +1,113 @@
+{
+ "package": "route3-mma-r1/phase2-cuda",
+ "revision": "r2",
+ "date": "2026-10-28",
+ "author": "Claude (Fable 5.1), local draft; no GPU here, nothing compiled or run on fea01",
+ "trigger": "ROUTE3_PHASE1_RESULTS_FOR_CLAUDE.md: best Triton geometry 27.446 ms per 208 calls at M=1, gate 12 ms; 7,216 exactness checks passed; GPU and lock released",
+ "contract_preserved": [
+  "one zero-C mma.sync.aligned.m16n8k32.row.col.f32.e4m3.e4m3.f32 per 32-wide K block, natural k order",
+  "epilogue t = mul.rn.f32(D, As); acc = fma.rn.f32(t, Bs, acc); no ftz, no contraction (-fmad=false and explicit __fmul_rn/__fmaf_rn)",
+  "SPLIT_K = 4 with tiles_per_split = cdiv(cdiv(K,32),4); partials [4,M,N] float32 from 0.0f",
+  "reduce unchanged: Triton _reduce_block_fp8_split_k on the host side"
+ ],
+ "geometry": {
+  "grid": "(N/32, 4)",
+  "threads": 64,
+  "warps": 2,
+  "cols_per_warp": 16,
+  "k_blocks_per_chunk": 8,
+  "stages": 3,
+  "smem_bytes_per_cta": 38496,
+  "ctas_per_sm_by_smem": 2,
+  "swizzle": "chunk16 ^ (row & 7)",
+  "per_block_per_warp": "1 ldmatrix.x4 (A) + 1 ldmatrix.x4 (B) + 2 mma + 8 fmul/ffma; 1 cp.async group + 1 __syncthreads per 8 blocks"
+ },
+ "scale_validation": "in-kernel, every As/Bs used; power of two incl. subnormal; zero/negative/inf/nan/non-power set g_error (bit0 As, bit1 Bs) via atomicOr; read with error_flag(reset) between runs; no pointer caching",
+ "local_selftest": {
+  "file": "test_route3_layout_local.py",
+  "result": "SELFTEST_PASS (5 checks: ldmatrix fragment map, swizzle conflicts, cp.async coverage, split chunking on six shapes, smem budget)"
+ },
+ "not_verified_here": [
+  "compilation (nvcc, sm_89)",
+  "bit identity against the Triton partials",
+  "price"
+ ],
+ "for_codex": "INTEGRATION.md sections 2-5: build via route3_decode.py, default-off dispatch inside fixed_split, exactness matrix, price table, tunables STAGES/BPC",
+ "files": {
+  "route3_sequence.h": {
+   "bytes": 2829,
+   "sha256": "e2f7fccc9b167d4a390e4ecf24a5c5d8f921a8f654ffed047f4ca303982f3995"
+  },
+  "route3_decode.cu": {
+   "bytes": 15627,
+   "sha256": "82a38149227507cfe15eb6fb8e2338467c499a720396c9af2588231faf0dc4a6"
+  },
+  "route3_decode.py": {
+   "bytes": 3096,
+   "sha256": "260d9fa4d898a554c6837ed6c87e128977530d117686a20b91345e5ef6154bb2"
+  },
+  "test_route3_layout_local.py": {
+   "bytes": 5809,
+   "sha256": "7f6ccffead4d2dfdf940aad2e616ee80d8fae7e006012778b364acb99255a460"
+  },
+  "test_route3_l2policy_local.py": {
+   "bytes": 4193,
+   "sha256": "5e903febcc20d76b9dde4af6c752ed084a84b253edd3c6602536e89bef734221"
+  },
+  "INTEGRATION.md": {
+   "bytes": 6619,
+   "sha256": "61adbdcedd68ccc208f67cea34be43cc5e2928af213e1d15c93f1cbe10ccfdcf"
+  },
+  "CODEX_HANDOVER_phase2.md": {
+   "bytes": 4501,
+   "sha256": "17a03f946db456c5214867b8d22957f1370bd5ded926fb7565095a7001606ee1"
+  },
+  "ROUTE3_PHASE2_REVIEW_r1.md": {
+   "bytes": 5521,
+   "sha256": "2a1a970ec58bae65a44e715ad1115effc281ca6d87990272d35c5bb41dbe51ba"
+  },
+  "ROUTE3_PHASE2_REVIEW_r2.md": {
+   "bytes": 10952,
+   "sha256": "2f0b784f2689eeea9f1cf0b081add800c17943cc5d70408ee03873d99dcadc54"
+  },
+  "archive/route3_decode_r1.cu": {
+   "bytes": 13994,
+   "sha256": "952bb68ea79c28caea889028ba1fcbe7cc79c77e22a5c42546b95388aade63d1"
+  }
+ },
+ "handover": "CODEX_HANDOVER_phase2.md (user forwards to Codex)",
+ "codex_results": {
+  "ROUTE3_PHASE2_RESULTS_FOR_CLAUDE.md": "5e0ac8797aa0a7c8423b5e20c98b2f001f8b7b1412e6bae8130c5c9ba9662fc8",
+  "../../../ROUTE3_PHASE2_COUNTER_REVIEW_r1.json": "e1b3d4c63523c7425e3330ea61fadc40b2334c4538819fec3dccec72c5eb0376",
+  "summary": "597 identity cases pass on all variants; BPC8/S3 12.790 ms per 208 calls (gate 12); K=1280 capture 88.39% DRAM, 635.48 GB/s",
+  "ROUTE3_PHASE2_RESULTS_FOR_CLAUDE.md (revision 2)": "8f1277a77dc0038a94c93406e8e28bef91cf9a8b31d9d5294ff4d612336baef9",
+  "../../../ROUTE3_STAGE_AND_TIMING_RESULTS_FOR_CLAUDE_r1.md": "5bd11b285c995acbc19c39b15f50d98618f5617da8eccc54e5a277bd314f1785",
+  "../../../ROUTE3_CHAIN_PRICES_REVIEW_r1.json": "38491dff99f374953390bccabad3c36997039e76599a1f7e8349fcb34cb6c7d7",
+  "../../../ROUTE3_GRAPH_BOUNDARY_AUDIT_r1.json": "01d500a5396c368c1e2cdb7cacbdd7cf140972bce9ae0589a9537dd8a6cf9c45",
+  "summary_r2": "eight identity-clean variants 12.704-14.817 ms per 208 calls at M=1 (gate 12, none pass); chain of 208 projections 8.817 ms vs 12.780 isolated sum; CUDA-core control 8.145 vs 12.395; traced in-graph native 10.975 ms; quant/reduce/gaps 0.472; marked outer minus inner 1.254; full decode graphs already configured for bs 1/2/4"
+ },
+ "review": [
+  "ROUTE3_PHASE2_REVIEW_r1.md",
+  "ROUTE3_PHASE2_REVIEW_r2.md"
+ ],
+ "revision_note_r2": "2026-10-28: ROUTE3_L2_POLICY build switch (weight-stream L2 evict_first cache hint via createpolicy + cp.async .L2::cache_hint on B/Bs only; default 0 reduces token for token to r1 952bb68e...), review r2 with the next component and measurement plan; reply to Codex request 52be71f4-0735-4cb8-98e3-8f35cc548ff7 (reply=result)",
+ "l2_policy": {
+  "switch": "ROUTE3_L2_POLICY=1 in the build environment -> -DROUTE3_L2_POLICY=1, extension name route3_decode_sm89_l2p1",
+  "change": "one createpolicy.fractional.L2::evict_first.b64 per thread; B and Bs copies use cp.async.{cg,ca}.shared.global.L2::cache_hint [dst],[src],size,src-size,policy; A/As, MMA, epilogue, splits, reduce untouched",
+  "data_effect": "none (same bytes to the same smem addresses); bit identity expected by construction, 597-case matrix to be rerun on the new binary",
+  "why": "2.8 ms of the 12.79 ms isolated price is the native kernel running at 474 GB/s after the displacement vs 623 GB/s in the chain and 635 GB/s under ncu's flushed cache; the CUDA-core control carries the same excess; evict_first keeps the weight stream from forcing write-backs of foreign L2 lines (displacement lines in the gate, KV/activations in a token graph)",
+  "expected_original_method_price_ms": "about 10.8 if the write-back reading holds (12.79 minus 0.383 us/MB x 5200 MB); unchanged if it does not",
+  "measurement_rows": [
+   "0 SASS diff default build vs r1 binary",
+   "1 597 identity + 361 flag checks on the policy build",
+   "2 original-method price both builds M=1/4/8/16 (gate row)",
+   "3 original build with an untimed read-only 128 MiB sweep after the displacement (diagnostic, not a gate)",
+   "4 report whether the displacement writes or reads"
+  ],
+  "local_selftest": "test_route3_l2policy_local.py SELFTEST_PASS (macro-0 reduction equals r1 token for token; macro-1 hints B/Bs only)",
+  "not_verified_here": [
+   "compilation (ptxas operand order of the hinted cp.async with src-size)",
+   "price"
+  ]
+ }
+}

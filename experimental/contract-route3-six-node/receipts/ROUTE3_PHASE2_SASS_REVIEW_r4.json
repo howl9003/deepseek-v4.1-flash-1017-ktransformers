@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-28T07:14:20.346298+00:00",
+  "status": "PASS_TO_COMPONENT_IDENTITY",
+  "build_receipt_sha256": "b8d6cdf9f6074b3ca0fef50fb18d5d9b54ed185ec636151462d98fd42c7cfdf6",
+  "binary_sha256": "628addda32acb8625b65bf231d91aa94c7b98b01eeb0694ab124864551265376",
+  "sass_sha256": "863b8561a55ba0fb0d7b215bfe70dd3595350bda8cded61b45aeb5a0fa6c4522",
+  "zero_C_MMA_sites": 8,
+  "separate_FMUL_then_accumulating_FFMA_sites": 32,
+  "registers_per_thread": 94,
+  "shared_bytes_per_CTA": 19248,
+  "local_bytes": 0,
+  "stack_bytes": 0,
+  "ftz_instructions": 0,
+  "no_model": true,
+  "variant": "route3-phase2-tunable-b4s3-r1"
+}

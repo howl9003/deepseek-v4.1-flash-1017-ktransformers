@@ -1,0 +1,38 @@
+{
+  "frozen_inputs": {
+    "/scratch/aster/bench/eight-node-ab-tools/retry_v9/cache_stabilization.py": "ddc3068f450ed2db602649ff7685b10876fa88d6cf6aa940ba64fcdddd01d0fb",
+    "/scratch/aster/bench/eight-node-ab-tools/retry_v9/run_ab.py": "43bf63e32a72ae76a8dec4a52566d0664e5f800614a27ea0582e1e3df6819d8a",
+    "/scratch/aster/bench/fp32-subtotals-model-r1/six-cpu-guard-r1/scope_exec.py": "11a9d3ee9ffa9b666992c1ba888c5f62d33af8a1ffb7adcd548123ee402a5c85"
+  },
+  "private_files": {
+    "cache_stabilization.py": "51b04ae12c5b8aeb3e6aea4a9f947e7752441f6a08e3e73aaf7841c070424291",
+    "fea_reserve.py": "c86f9649ce05ae16db7a23b4649e702e891b72f0ac35d959abb7f0fc27666c5e",
+    "scope_exec.py": "36a17d5b2089967383d2f37268d7d5e4f47e2451baff92a5f500bd63067acfdf",
+    "six_cpu_runtime.py": "e94245c7cd86859825af3c7afd3af6c1a2298d91cc1a761cd3663ce258b2291f",
+    "test_cache_stabilization.py": "fb2a542810206aa7ee0784a994d7852dfc7eb3e2e5b6494797267281846c518d",
+    "tests.log": "47fd0d9e6e214a73fd8298afff3339aad014fe2294850e34941827fd11dfbdf8"
+  },
+  "cpu_nodes": [
+    0,
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "memory_nodes": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "model_cap_gib": 416,
+  "ready_target_gib": 392,
+  "fea_budget_gib": 64,
+  "global_available_floor_gib": 64,
+  "unchanged": "Frozen node4GiB, CMA, swap/OOM/high checks, no cap events during timing,24GiB runtime headroom, host-reload gate unchanged. Added64GiB global floor."
+}

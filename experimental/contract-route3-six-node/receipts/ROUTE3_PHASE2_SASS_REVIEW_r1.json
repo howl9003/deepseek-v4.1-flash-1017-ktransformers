@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-28T05:31:32.259664+00:00",
+  "status": "PASS_TO_COMPONENT_IDENTITY",
+  "source_unchanged": true,
+  "build_receipt_sha256": "3d783d1a17342305684d3bf6bb5e101bb29aaa7a34bf8687012ffee2339d3a2f",
+  "binary_sha256": "de5aa40b95f88041722acf03c4289d2689be49685591dabdc60a6efaa105e2b4",
+  "sass_sha256": "c336cdda06154131fc2159f8259525331179ba5b48c36b0b6420dcb21bb41901",
+  "zero_C_MMA_sites": 16,
+  "separate_FMUL_then_accumulating_FFMA_sites": 64,
+  "registers_per_thread": 72,
+  "shared_bytes_per_CTA": 38496,
+  "local_bytes": 0,
+  "stack_bytes": 0,
+  "ftz_instructions": 0,
+  "no_model": true,
+  "limitations": "Static SASS identity does not prove raw partial identity; that is the next gate."
+}

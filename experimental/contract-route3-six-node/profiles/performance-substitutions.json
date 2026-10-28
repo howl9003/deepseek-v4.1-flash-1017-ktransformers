@@ -1,0 +1,11 @@
+{
+  "${CHECKPOINT}": "/scratch/aster/bench/05yuki-baseline-3991/checkpoint",
+  "${ENGRAM_STATE}": "/scratch/aster/bench/05yuki-main-00fd12a-baseline/state/engram-checkpoint",
+  "${GGUF_MANIFEST}": "/scratch/aster/bench/kt-native-pilot/evidence/expert-inventory/expert-ranges.json",
+  "${GGUF}": "/scratch/aster/models/gguf/DeepSeek-V4.1-Flash-1017-MXFP4.gguf",
+  "${KV_VMM_LIBRARY}": "/scratch/aster/bench/05yuki-main-00fd12a-candidate/build/libkv_vmm.so",
+  "${REPACK_LIBRARY}": "/scratch/aster/bench/05yuki-baseline-3991/recipe_loader_repack_v2/librepack_avx2.so",
+  "${RUNTIME_DEPS}": "/scratch/aster/bench/math-main-r8/runtime-deps",
+  "${TRIAL}": "/scratch/aster/bench/feature-trial-B-contract-route3-fast-six-r1",
+  "${VENV}": "/scratch/aster/bench/05yuki-main-00fd12a-candidate/.venv"
+}

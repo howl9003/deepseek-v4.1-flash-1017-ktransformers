@@ -1,0 +1,42 @@
+{
+  "status": "AUTHENTICATED_LATER_REVISION_DOWNSTREAM_PROPOSAL_DEFERRED",
+  "manifest": {
+    "written_utc": "2026-10-28T03:14:24.871075+00:00",
+    "route": "3: one MMA sequence shared by decode and prefill for the dense FP8 projections",
+    "status": "LOCAL_DRAFT_NOT_RUN_ON_FEA01",
+    "selftest": "route3_sequence_reference.py -> SELFTEST_PASS (local, NumPy)",
+    "ledger": "entry inserted in completion_work/kt_engine_decision/PRECISION_LEDGER.md (28 October section)",
+    "files": {
+      "CODEX_BRIEF_route3.md": {
+        "bytes": 5857,
+        "sha256": "91957275d4acf714b16f965a32267d1da83a34e12f046dde9e996ff6fb9f2953"
+      },
+      "ROUTE3_MMA_DESIGN.md": {
+        "bytes": 15820,
+        "sha256": "c26eaaf77a306609ae3e11c3d3eac7aa01b620a15bb00bf0f019ab6bc1eb410f"
+      },
+      "route3_sequence_reference.py": {
+        "bytes": 8929,
+        "sha256": "405d070b98879243ccc1b9e695ed48fcd5bf4c6d5017bc7ae0b24f8e19624b1f"
+      },
+      "LEDGER_ENTRY_route3.md": {
+        "bytes": 2951,
+        "sha256": "1352743ec1456645029794afac69d0dcd8b00a042ba7b65bbec5863b09867fed"
+      },
+      "DSPARK_CAMPAIGN_r1.md": {
+        "bytes": 10057,
+        "sha256": "15e43d101c420c64f398ff998a2a137b315538874f98bec029998972b9d8b3f4"
+      }
+    },
+    "revision_note": "r1d: DSpark refit-first (section 3a) added; arms B/C now come from the offline sweep; step 6 gated on the final kernel"
+  },
+  "changes": "Brief addsDSparkstep6andDSPARK_CAMPAIGN_r1.md; phase1designhash unchanged;12msstopretained.",
+  "not_authorization": "Package claims userapproval, but no new model campaign launched from that assertion.",
+  "deferred_prerequisites": [
+    "FinalRoute3kernel",
+    "PassedRoute3fullmodel",
+    "M8graph/verifiedfallback",
+    "Full-modelverifybatchidentity"
+  ],
+  "document_discrepancy": "Briefstep6 still namesstaticblock3/gated5 arms; detailedcampaign saysB/C chosenbyofflinepolicy sweep. Resolve before implementation; currentlydownstream ofunmetRoute3gate."
+}

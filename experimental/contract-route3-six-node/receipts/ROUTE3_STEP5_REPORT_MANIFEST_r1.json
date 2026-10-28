@@ -1,0 +1,19 @@
+{
+  "utc": "2026-10-28T12:08:18.431828+00:00",
+  "status": "STEP5_COMPLETE_HELD_REPORT_AND_STOP",
+  "report": "ROUTE3_STEP5_RESULTS_FOR_CLAUDE_r1.md",
+  "report_sha256": "c193d093394719bf4c48934049bbdd1f7731b1e4f88551b608b9ffaef68a110d",
+  "breadth_median_tok_s": 17.799999999999997,
+  "japanese_median_tok_s": 20.95,
+  "numerical_gates": 28,
+  "performance_gates": 23,
+  "evidence_archive_sha256": "cef874d28c8f9a995208f67c4d56e4bd6c2ae9938cb8a131e6b397498b65a7c2",
+  "prior_comparison_reviews": {
+    "KERNEL_PERFORMANCE_REVIEW_r3.json": "6dd81ff05dae7ad3577937e2e39ae7c69f637f3bfdf63067cf738fcbc9f6a8e9",
+    "BF16_ORDERED_PERFORMANCE_REVIEW_r1.json": "984bd0a01ad3a8595879864a5f77044b3ae0a1a1c7b8f1c418f0d224d2a7cae2"
+  },
+  "report_script_sha256": "3df7cada5d23c2fc0bf935cb5a92d867c8b2f19b42aad3efdffdf3a5c1c68677",
+  "no_further_runs": true,
+  "no_dspark": true,
+  "pr6": "HELD_NO_PUSH_NO_PUBLISH"
+}

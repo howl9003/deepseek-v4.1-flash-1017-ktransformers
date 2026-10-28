@@ -1,0 +1,105 @@
+{
+  "counters": {
+    "dram__throughput.avg.pct_of_peak_sustained_elapsed": {
+      "value": 88.39,
+      "original_value": "88.39",
+      "original_unit": "%",
+      "dimension": "percent"
+    },
+    "dram__bytes.sum.per_second": {
+      "value": 635480945489.63,
+      "original_value": "635480945489.63",
+      "original_unit": "byte/s",
+      "dimension": "bytes_per_second"
+    },
+    "smsp__inst_executed.sum": {
+      "value": 13492224.0,
+      "original_value": "13492224",
+      "original_unit": "inst",
+      "dimension": "instructions"
+    },
+    "sm__inst_executed_pipe_tensor.sum": {
+      "value": 163840.0,
+      "original_value": "163840",
+      "original_unit": "inst",
+      "dimension": "instructions"
+    }
+  },
+  "captures": [
+    [
+      "0",
+      "927643"
+    ]
+  ],
+  "warp_instructions_per_tensor_pipe_instruction": 82.35,
+  "expected_source_QMMA_warp_count": 163840,
+  "tensor_counter_matches_expected_QMMA_count": true,
+  "interpretation": "The tensor-pipe metric is reported as measured; equality to the source QMMA count is checked, not assumed.",
+  "format": "Nsight 2026.3 wide raw CSV, imported offline from .ncu-repz",
+  "ancillary": {
+    "gpu__time_duration.sum": {
+      "value": "66336",
+      "unit": "ns"
+    },
+    "launch__grid_size": {
+      "value": "4096",
+      "unit": ""
+    },
+    "launch__block_size": {
+      "value": "64",
+      "unit": ""
+    },
+    "launch__registers_per_thread": {
+      "value": "72",
+      "unit": "register/thread"
+    },
+    "launch__shared_mem_per_block_dynamic": {
+      "value": "38496",
+      "unit": "byte/block"
+    },
+    "launch__shared_mem_per_block": {
+      "value": "39520",
+      "unit": "byte/block"
+    },
+    "launch__occupancy_limit_shared_mem": {
+      "value": "2",
+      "unit": "block"
+    },
+    "launch__sm_count": {
+      "value": "80",
+      "unit": "SM"
+    },
+    "profiler__replayer_passes": {
+      "value": "1",
+      "unit": "pass"
+    }
+  },
+  "status": "COUNTER_CAPTURE_REVIEW_PASS_POSTCHECK_FILENAME_FAILURE_RETAINED",
+  "artifacts": {
+    "RESULT.json": "cca45c59ebe5df6826d1da2b62a0ae08b5cb2ebbb9296a78e6f08a560c359221",
+    "WORKLOAD.json": "22508a1dc88e83a9ab7a09ee611aff31c5f7620ce08490c41eedfda4e83bc007",
+    "ncu.stdout": "5bcfc87f09cb70b384b5300749937d3f1a7744d73ac0d4532431fb0b5b780173",
+    "ncu.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profile.ncu-repz": "5a8985cfd9e90550573251a2b71648d68ef7283bb802b36de648208ad16dadcb",
+    "offline-counters.csv": "91321dbbbbadf006cb43de148f54c865297ebb7beb8c299c8769b48d233789a0",
+    "offline-import.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "no_full_model_acceptance": true,
+  "profiler_timing_is_not_benchmark_timing": true,
+  "capture_postcheck_failed": "Original service expected .ncu-rep; actual .ncu-repz retained. No GPU rerun. Both Nsight and workload completed; system unit failure retained.",
+  "reviewed_utc": "2026-10-28T06:39:12.701496+00:00",
+  "host_release": {
+    "unit": {
+      "LoadState": "loaded",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "MainPID": "0",
+      "Result": "exit-code",
+      "ExecMainStatus": "1"
+    },
+    "gpu_apps": [],
+    "power": "GPU-67d9f495-2d3a-1e93-a617-dd11ba547914, 320.00 W",
+    "shared_lock_free": true,
+    "mem_available_bytes": 514909401088
+  }
+}

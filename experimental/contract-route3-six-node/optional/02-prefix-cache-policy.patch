@@ -1,0 +1,837 @@
+diff --git a/python/sglang/srt/entrypoints/openai/protocol.py b/python/sglang/srt/entrypoints/openai/protocol.py
+index bd36e34..c5fbd7c 100644
+--- a/python/sglang/srt/entrypoints/openai/protocol.py
++++ b/python/sglang/srt/entrypoints/openai/protocol.py
+@@ -422,6 +422,10 @@ class CompletionRequest(PDRoutingFields):
+     cache_salt: Optional[Union[List[str], str]] = None
+     # Priority for the request
+     priority: Optional[int] = None
++    # SGLANG_CACHE_TTL: prefix-cache class, 'user' (default) or 'agent'; the
++    # X-Cache-Class header wins over it. OpenAI SDK: extra_body={"cache_class": "agent"}
++    # Preserve upstream acceptance when TTL is off; validate in apply_cache_class.
++    cache_class: Any = None
+ 
+     # For custom metric labels
+     custom_labels: Optional[Dict[str, str]] = None
+@@ -1029,6 +1033,10 @@ class ChatCompletionRequest(PDRoutingFields):
+     cache_salt: Optional[Union[List[str], str]] = None
+     # Priority for the request
+     priority: Optional[int] = None
++    # SGLANG_CACHE_TTL: prefix-cache class, 'user' (default) or 'agent'; the
++    # X-Cache-Class header wins over it. OpenAI SDK: extra_body={"cache_class": "agent"}
++    # Preserve upstream acceptance when TTL is off; validate in apply_cache_class.
++    cache_class: Any = None
+ 
+     # Deprecated: use routed_dp_rank instead
+     data_parallel_rank: Optional[int] = None
+diff --git a/python/sglang/srt/entrypoints/openai/serving_base.py b/python/sglang/srt/entrypoints/openai/serving_base.py
+index d00b475..8a46aab 100644
+--- a/python/sglang/srt/entrypoints/openai/serving_base.py
++++ b/python/sglang/srt/entrypoints/openai/serving_base.py
+@@ -14,6 +14,11 @@ from fastapi.responses import ORJSONResponse, StreamingResponse
+ from sglang.srt.entrypoints.openai.encoding_dsv32 import DS32EncodingError
+ from sglang.srt.entrypoints.openai.protocol import ErrorResponse, OpenAIServingRequest
+ from sglang.srt.managers.io_struct import EmbeddingReqInput, GenerateReqInput
++from sglang.srt.mem_cache.evict_policy import (  # SGLANG_CACHE_TTL
++    cache_ttl_enabled,
++    normalize_cache_class,
++    with_cache_class_hint,
++)
+ from sglang.srt.observability.req_time_stats import monotonic_time
+ from sglang.srt.runtime_context import get_observability
+ from sglang.srt.server_args import ServerArgs
+@@ -263,6 +268,25 @@ class OpenAIServingBase(ABC):
+             }
+         return custom_labels
+ 
++    def apply_cache_class(self, adapted_request, request, raw_request) -> None:
++        """SGLANG_CACHE_TTL=1: put the request's prefix-cache class into its KV-hint
++        envelope, which reaches the scheduler's Req.kv_hints unchanged. The X-Cache-Class
++        header wins over the body's cache_class; neither = no hint (the cache reads user).
++        Off: nothing is read and the request is as today."""
++        if not cache_ttl_enabled():
++            return
++        header = raw_request.headers.get("x-cache-class") if raw_request is not None else None
++        try:
++            cls = normalize_cache_class(header)
++            if cls is None:
++                cls = normalize_cache_class(getattr(request, "cache_class", None))
++        except ValueError as e:
++            raise HTTPException(status_code=400, detail=f"invalid cache class: {e}") from e
++        if cls is None:
++            return
++        rid = adapted_request.rid if isinstance(adapted_request.rid, str) else None
++        adapted_request.kv_hints = with_cache_class_hint(adapted_request.kv_hints, cls, rid)
++
+     def extract_routing_key(self, raw_request):
+         if raw_request is None:
+             return None
+diff --git a/python/sglang/srt/entrypoints/openai/serving_chat.py b/python/sglang/srt/entrypoints/openai/serving_chat.py
+index 2b9ea28..3cd6930 100644
+--- a/python/sglang/srt/entrypoints/openai/serving_chat.py
++++ b/python/sglang/srt/entrypoints/openai/serving_chat.py
+@@ -1382,6 +1382,7 @@ class OpenAIServingChat(OpenAIServingBase):
+             and envs.SGLANG_ENABLE_REQUEST_HEADER_OVERRIDES.get()
+         ):
+             apply_header_overrides(adapted_request, raw_request.headers)
++        self.apply_cache_class(adapted_request, request, raw_request)  # SGLANG_CACHE_TTL
+ 
+         if processed_messages.uses_response_template:
+             self._set_response_parser_context(
+diff --git a/python/sglang/srt/entrypoints/openai/serving_completions.py b/python/sglang/srt/entrypoints/openai/serving_completions.py
+index e381ddc..ad6edf4 100644
+--- a/python/sglang/srt/entrypoints/openai/serving_completions.py
++++ b/python/sglang/srt/entrypoints/openai/serving_completions.py
+@@ -142,6 +142,7 @@ class OpenAIServingCompletion(OpenAIServingBase):
+             images_config=getattr(request, "images_config", None),
+             mm_processor_kwargs=request.mm_processor_kwargs,
+         )
++        self.apply_cache_class(adapted_request, request, raw_request)  # SGLANG_CACHE_TTL
+ 
+         return adapted_request, request
+ 
+diff --git a/python/sglang/srt/managers/scheduler.py b/python/sglang/srt/managers/scheduler.py
+index 018756c..3cd13e4 100644
+--- a/python/sglang/srt/managers/scheduler.py
++++ b/python/sglang/srt/managers/scheduler.py
+@@ -1994,6 +1994,12 @@ class Scheduler(
+                 self._record_scheduler_state_for_paused_engine()
+                 continue
+ 
++            # SGLANG_CACHE_TTL=1: a clock check; every SGLANG_CACHE_TTL_SWEEP_S
++            # the prefix cache frees its expired unlocked leaves (no-op when off)
++            _cache_ttl_sweep = getattr(self.tree_cache, "maybe_ttl_sweep", None)
++            if _cache_ttl_sweep is not None:
++                _cache_ttl_sweep()
++
+             # Get the next batch to run
+             plan = self.get_next_batch_to_run(
+                 running_batch=self.running_batch, last_batch=self.last_batch
+@@ -2039,6 +2045,12 @@ class Scheduler(
+                 self._record_scheduler_state_for_paused_engine()
+                 continue
+ 
++            # SGLANG_CACHE_TTL=1: a clock check; every SGLANG_CACHE_TTL_SWEEP_S
++            # the prefix cache frees its expired unlocked leaves (no-op when off)
++            _cache_ttl_sweep = getattr(self.tree_cache, "maybe_ttl_sweep", None)
++            if _cache_ttl_sweep is not None:
++                _cache_ttl_sweep()
++
+             # Get the next batch to run
+             plan = self.get_next_batch_to_run(
+                 running_batch=self.running_batch, last_batch=self.last_batch
+diff --git a/python/sglang/srt/mem_cache/base_prefix_cache.py b/python/sglang/srt/mem_cache/base_prefix_cache.py
+index cfa94d5..aed3d21 100644
+--- a/python/sglang/srt/mem_cache/base_prefix_cache.py
++++ b/python/sglang/srt/mem_cache/base_prefix_cache.py
+@@ -70,6 +70,8 @@ class MatchPrefixParams:
+     # Mamba specific
+     cow_mamba: bool = False
+     req: Optional[Req] = None
++    # SGLANG_CACHE_TTL: 'user' | 'agent'; None = from req.kv_hints, else user
++    cache_class: Optional[str] = None
+ 
+ 
+ @dataclasses.dataclass
+@@ -107,6 +109,9 @@ class InsertParams:
+     # off). See UnifiedTreeNode.rotation_base.
+     rotation_base: Optional[int] = None
+ 
++    # SGLANG_CACHE_TTL: class the inserted path is stamped with (None = user)
++    cache_class: Optional[str] = None
++
+     def get_evicted_seqlen(self, component_type: ComponentType) -> int:
+         return self.component_evicted_seqlens.get(component_type, 0)
+ 
+diff --git a/python/sglang/srt/mem_cache/evict_policy.py b/python/sglang/srt/mem_cache/evict_policy.py
+index 7a6e209..1e39b2d 100644
+--- a/python/sglang/srt/mem_cache/evict_policy.py
++++ b/python/sglang/srt/mem_cache/evict_policy.py
+@@ -98,3 +98,210 @@ class SLRUStrategy(EvictionStrategy):
+ 
+         is_protected = 1 if node.hit_count >= self.protected_threshold else 0
+         return (is_protected, node.last_access_time)
++
++
++# ---- SGLANG_CACHE_TTL=1: prefix-cache expiry by request class ------------------
++# Default off: nothing below is used and the cache is today's pure policy (LRU here).
++import math as _math
++import os as _os
++import time as _time
++from typing import Any as _Any
++from typing import Optional as _Optional
++
++CACHE_CLASS_USER = "user"
++CACHE_CLASS_AGENT = "agent"
++CACHE_CLASSES = (CACHE_CLASS_USER, CACHE_CLASS_AGENT)
++# The class travels in the request's KV-hint envelope (managers/kv_hints.py) as one action of
++# this type with payload {"class": "agent" | "user"}; consumers ignore types they do not know.
++CACHE_CLASS_HINT_TYPE = "cache_class"
++CACHE_CLASS_HINT_VERSION = "1"
++
++
++def cache_ttl_enabled() -> bool:
++    return _os.environ.get("SGLANG_CACHE_TTL", "0") == "1"
++
++
++def normalize_cache_class(value: _Any) -> _Optional[str]:
++    """'agent' / 'user' (case and blanks ignored); None for None or ''; ValueError otherwise."""
++    if value is None:
++        return None
++    v = str(value).strip().lower()
++    if not v:
++        return None
++    if v not in CACHE_CLASSES:
++        raise ValueError(f"cache class must be one of {CACHE_CLASSES}, got {value!r}")
++    return v
++
++
++def cache_class_from_kv_hints(kv_hints: _Any) -> _Optional[str]:
++    """The class a KV-hint envelope names (its last cache_class action), else None."""
++    found = None
++    for action in getattr(kv_hints, "actions", None) or ():
++        if getattr(action, "action_type", None) != CACHE_CLASS_HINT_TYPE:
++            continue
++        try:
++            found = normalize_cache_class((getattr(action, "payload", None) or {}).get("class"))
++        except (ValueError, AttributeError):
++            found = None
++    return found
++
++
++def cache_class_of_req(req: _Any) -> _Optional[str]:
++    if req is None:
++        return None
++    return cache_class_from_kv_hints(getattr(req, "kv_hints", None))
++
++
++def with_cache_class_hint(kv_hints: _Any, cache_class: str, message_id: _Optional[str] = None):
++    """kv_hints (None, a dict or an envelope) with its cache_class action set to cache_class."""
++    from sglang.srt.managers.kv_hints import (
++        KvHintAction,
++        KvHintsEnvelope,
++        decode_kv_hints_envelope,
++    )
++
++    action = KvHintAction(
++        action_id=CACHE_CLASS_HINT_TYPE,
++        action_type=CACHE_CLASS_HINT_TYPE,
++        action_version=CACHE_CLASS_HINT_VERSION,
++        payload={"class": cache_class},
++    )
++    if not kv_hints:
++        return KvHintsEnvelope(
++            protocol_version="1", message_id=message_id or "cache-class", actions=[action]
++        )
++    env = decode_kv_hints_envelope(kv_hints)
++    keep = [a for a in env.actions if a.action_type != CACHE_CLASS_HINT_TYPE]
++    return KvHintsEnvelope(
++        protocol_version=env.protocol_version, message_id=env.message_id, actions=keep + [action]
++    )
++
++
++class CacheTTLPolicy:
++    """Inactivity expiry for radix nodes by request class.
++
++    A node keeps one monotonic stamp per class (``_ttl_agent_ts`` / ``_ttl_user_ts``: the
++    newest access by that class). Its deadline is the later of agent_ts + agent_s and
++    user_ts + user_s over the classes that touched it, so a node touched by both keeps the
++    longer life; it is expired once the clock is past that deadline. ``clock`` is injectable
++    (tests use a fake one)."""
++
++    def __init__(self, agent_s=1800.0, user_s=43200.0, sweep_s=60.0, relend_tokens=0, clock=None):
++        self.agent_s = float(agent_s)
++        self.user_s = float(user_s)
++        self.sweep_s = float(sweep_s)
++        self.relend_tokens = int(relend_tokens)
++        for name in ("agent_s", "user_s", "sweep_s"):
++            value = getattr(self, name)
++            if not _math.isfinite(value) or value <= 0:
++                raise ValueError(f"cache TTL {name} must be finite and positive")
++        if self.relend_tokens < 0:
++            raise ValueError("cache TTL relend_tokens must be nonnegative")
++        self.clock = clock or _time.monotonic
++        self.next_sweep = None
++        self.sweep_on = True
++        self.relend_from = None  # slots the hot lend held when a relend gave them back
++        self.stats = {"sweeps": 0, "swept_tokens": 0, "swept_nodes": 0, "relends": 0}
++
++    @classmethod
++    def from_env(cls):
++        if not cache_ttl_enabled():
++            return None
++        env = _os.environ
++        return cls(
++            agent_s=float(env.get("SGLANG_CACHE_TTL_AGENT_S", "1800") or 1800),
++            user_s=float(env.get("SGLANG_CACHE_TTL_USER_S", "43200") or 43200),
++            sweep_s=float(env.get("SGLANG_CACHE_TTL_SWEEP_S", "60") or 60),
++            relend_tokens=int(env.get("SGLANG_CACHE_TTL_RELEND_TOKENS", "0") or 0),
++        )
++
++    def describe(self) -> str:
++        return (
++            f"agent {self.agent_s:g} s, user {self.user_s:g} s, sweep every {self.sweep_s:g} s"
++            + (f", hot relend at >= {self.relend_tokens} tokens freed" if self.relend_tokens else "")
++        )
++
++    def stamp_path(self, node, root, cache_class: str, now=None) -> None:
++        """Stamp node and its ancestors (root excluded) as accessed by cache_class now."""
++        now = self.clock() if now is None else now
++        attr = "_ttl_agent_ts" if cache_class == CACHE_CLASS_AGENT else "_ttl_user_ts"
++        while node is not None and node is not root:
++            # A newly split parent must inherit the old path's other class
++            # before this access gives it its first stamp. Otherwise an agent
++            # hit could shorten a user's existing lifetime on the shared part.
++            self._inherit_child_stamps(node)
++            setattr(node, attr, now)
++            node = node.parent
++
++    def _inherit_child_stamps(self, node) -> None:
++        """Resolve unstamped split fragments without inventing a user access."""
++        order, stack = [], [node]
++        while stack:
++            current = stack.pop()
++            if (getattr(current, "_ttl_agent_ts", None) is None
++                    and getattr(current, "_ttl_user_ts", None) is None):
++                order.append(current)
++                stack.extend(getattr(current, "children", {}).values())
++        for current in reversed(order):
++            for attr in ("_ttl_agent_ts", "_ttl_user_ts"):
++                stamps = [getattr(child, attr, None)
++                          for child in getattr(current, "children", {}).values()]
++                stamps = [stamp for stamp in stamps if stamp is not None]
++                if stamps:
++                    setattr(current, attr, max(stamps))
++
++    def deadline(self, node, now) -> float:
++        agent = getattr(node, "_ttl_agent_ts", None)
++        user = getattr(node, "_ttl_user_ts", None)
++        if agent is None and user is None:
++            # Unstamped: a split fragment past the refreshed path, or a node an internal path
++            # made. Inherit the children's newest stamps (a split parent's child holds the
++            # original's), else count it a user access now (the conservative class).
++            self._inherit_child_stamps(node)
++            agent = getattr(node, "_ttl_agent_ts", None)
++            user = getattr(node, "_ttl_user_ts", None)
++            if agent is None and user is None:
++                user = now
++            node._ttl_agent_ts, node._ttl_user_ts = agent, user
++        d = -_math.inf
++        if agent is not None:
++            d = agent + self.agent_s
++        if user is not None:
++            d = max(d, user + self.user_s)
++        return d
++
++    def resolve_unstamped(self, root, now) -> int:
++        """Stamp every unstamped node, children first, so a split fragment inherits from the
++        child it was cut off before that child can be evicted. O(nodes), once a sweep."""
++        order, stack = [], [root]
++        while stack:
++            node = stack.pop()
++            order.append(node)
++            stack.extend(node.children.values())
++        count = 0
++        for node in reversed(order):  # every child before its parent
++            if node is root:
++                continue
++            if getattr(node, "_ttl_agent_ts", None) is None and getattr(node, "_ttl_user_ts", None) is None:
++                self.deadline(node, now)
++                count += 1
++        return count
++
++    def is_expired(self, node, now=None) -> bool:
++        now = self.clock() if now is None else now
++        return now > self.deadline(node, now)
++
++
++class TTLStrategy(EvictionStrategy):
++    """Expired nodes first, then the wrapped policy's order (LRU on this stack)."""
++
++    def __init__(self, inner: EvictionStrategy, policy: CacheTTLPolicy):
++        self.inner = inner
++        self.policy = policy
++
++    def get_priority(self, node):
++        return (0 if self.policy.is_expired(node) else 1, self.inner.get_priority(node))
++
++    def __getattr__(self, name):
++        # policy knobs other code reads off the strategy (e.g. TLRU's threshold)
++        return getattr(self.__dict__["inner"], name)
+diff --git a/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py b/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py
+index 60be6a3..c47a19e 100644
+--- a/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py
++++ b/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py
+@@ -657,6 +657,28 @@ def _deepseek_v4_num_host_pages(
+     ratio = get_memory().hicache_ratio
+     full_host_pages = int(device_full_pages * ratio)
+     swa_host_pages = int(device_swa_pages * ratio)
++    # kv_persist: the host tiers in tokens, apart from the device pools (the
++    # device SWA pool is capped to a few requests' windows; its host mirror must hold
++    # one window per cached chunk boundary). 0 = ratio x the device pool.
++    import os as _os
++
++    _kt_full = int(_os.environ.get("KT_HICACHE_FULL_HOST_TOKENS", "0") or 0)
++    _kt_swa = int(_os.environ.get("KT_HICACHE_SWA_HOST_TOKENS", "0") or 0)
++    if _kt_full < 0 or _kt_swa < 0:
++        raise ValueError("KT_HICACHE_FULL/SWA_HOST_TOKENS must be nonnegative integers")
++    if _kt_full > 0:
++        full_host_pages = -(-_kt_full // page_size)
++    if _kt_swa > 0:
++        swa_host_pages = -(-_kt_swa // swa_page_size)
++    logger.info(
++        "DSV4 HiCache host pages: full=%d (%d tokens, %s), swa=%d (%d tokens, %s); "
++        "device full=%d swa=%d pages",
++        full_host_pages, full_host_pages * page_size,
++        "KT_HICACHE_FULL_HOST_TOKENS" if _kt_full > 0 else f"ratio {ratio}",
++        swa_host_pages, swa_host_pages * swa_page_size,
++        "KT_HICACHE_SWA_HOST_TOKENS" if _kt_swa > 0 else f"ratio {ratio}",
++        device_full_pages, device_swa_pages,
++    )
+ 
+     # NPU sizes the independent C128 host pool from its device page count.
+     # For example, host pages = device pages * hicache_ratio.
+@@ -1872,6 +1894,10 @@ class _DeepSeekV4Strategy(StackStrategy):
+         enable_storage_metrics=False,
+     ):
+         layer_mappings = _resolve_deepseek_v4_layer_mappings(kvcache)
++        # kv_persist: KT_HICACHE_TRACE=1 logs the host tier's decisions
++        from sglang.srt.mem_cache import kt_hicache_trace
++
++        kt_hicache_trace.install(cache)
+         host_pool_group, cache_controller = build_deepseek_v4_hicache_stack(
+             params=params,
+             kvcache=kvcache,
+diff --git a/python/sglang/srt/mem_cache/kt_hicache_trace.py b/python/sglang/srt/mem_cache/kt_hicache_trace.py
+new file mode 100644
+index 0000000..cf66ad8
+--- /dev/null
++++ b/python/sglang/srt/mem_cache/kt_hicache_trace.py
+@@ -0,0 +1,157 @@
++"""HiCache tracing for the DeepSeek V4 host tier (KT_HICACHE_TRACE=1; optional prefix policy).
++
++Installed by the DeepSeek V4 HiCache stack builder (prefix-cache-policy patch). Off by
++default: install() returns at once and nothing is wrapped. On, it wraps a few
++methods of the one UnifiedRadixCache instance and prints a line for each event
++that decides whether an evicted prefix can come back from host memory:
++
++- match: a prefix lookup of at least KT_HICACHE_TRACE_MIN tokens (default 4096):
++  device hit, host hit (FULL), SWA host hit, full-KV path length, and the free
++  host pages of the KV (logical anchor) and SWA pools;
++- backup-fail: a write-through D->H backup that could not get host pages;
++- evict-host: host-pool reclaim (which component, asked, freed);
++- load-back: an H->D reload attempt and whether it was committed;
++- evict-leaf: a device-leaf eviction that deleted an unbacked node (its KV is
++  gone) instead of demoting it to host.
++
++Only reads state and counts; it never changes what the cache does.
++"""
++import os
++import time
++
++ENABLED = os.environ.get("KT_HICACHE_TRACE", "0") == "1"
++MIN_TOKENS = 4096
++if ENABLED:
++    try:
++        MIN_TOKENS = int(os.environ.get("KT_HICACHE_TRACE_MIN", "4096"))
++    except ValueError as exc:
++        raise ValueError("KT_HICACHE_TRACE_MIN must be a nonnegative integer") from exc
++    if MIN_TOKENS < 0:
++        raise ValueError("KT_HICACHE_TRACE_MIN must be a nonnegative integer")
++STATS = {"match": 0, "backup_ok": 0, "backup_fail": 0, "backup_tokens": 0,
++         "evict_host_calls": 0, "evict_host_freed": {}, "load_ok": 0, "load_fail": 0,
++         "leaf_demote": 0, "leaf_delete": 0, "leaf_delete_tokens": 0}
++
++
++def _log(msg: str) -> None:
++    print(f"[kt-hicache {time.strftime('%H:%M:%S')}] {msg}", flush=True)
++
++
++def _free_pages(cache) -> str:
++    """'kv=<free tokens> swa=<free tokens>' of the host pools, best effort."""
++    parts = []
++    try:
++        parts.append(f"kv={cache.cache_controller.mem_pool_host.available_size()}")
++    except Exception:
++        parts.append("kv=?")
++    try:
++        group = cache.host_pool_group
++        for name, entry in group.entry_map.items():
++            if str(name).lower().endswith("swa"):
++                parts.append(f"swa={entry.host_pool.available_size()}")
++    except Exception:
++        pass
++    return " ".join(parts)
++
++
++def _key_len(params) -> int:
++    key = getattr(params, "key", None)
++    try:
++        return len(key) if key is not None else 0
++    except Exception:
++        return 0
++
++
++def install(cache) -> bool:
++    """Wrap the cache's methods (instance attributes). Returns whether it did."""
++    if not ENABLED or getattr(cache, "_kt_hicache_trace", False):
++        return False
++    cache._kt_hicache_trace = True
++
++    orig_match = cache.match_prefix
++
++    def match_prefix(params, *a, **kw):
++        result = orig_match(params, *a, **kw)
++        n = _key_len(params)
++        if n >= MIN_TOKENS:
++            STATS["match"] += 1
++            _log(f"match {n} tokens: device {getattr(result, 'device_prefix_len', '?')}, "
++                 f"host {getattr(result, 'host_hit_length', '?')}, "
++                 f"swa host {getattr(result, 'swa_host_hit_length', '?')}, "
++                 f"full-kv path {getattr(result, 'full_kv_hit_length', '?')}; free host {_free_pages(cache)}")
++        return result
++
++    cache.match_prefix = match_prefix
++
++    if hasattr(cache, "_execute_kv_backup"):
++        orig_backup = cache._execute_kv_backup
++
++        def _execute_kv_backup(node_id, device_value, comp_xfers, sidecar_xfers):
++            host = orig_backup(node_id, device_value, comp_xfers, sidecar_xfers)
++            n = len(device_value)
++            swa = sum(len(x.device_indices) for xs in (comp_xfers or {}).values() for x in xs
++                      if getattr(x, "device_indices", None) is not None)
++            if host is None:
++                STATS["backup_fail"] += 1
++                _log(f"backup-fail node {node_id}: {n} KV tokens, {swa} component tokens; free host {_free_pages(cache)}")
++            else:
++                STATS["backup_ok"] += 1
++                STATS["backup_tokens"] += n
++                if STATS["backup_ok"] in (1, 10, 100) or STATS["backup_ok"] % 1000 == 0:
++                    _log(f"backup {STATS['backup_ok']} ok ({STATS['backup_tokens']} KV tokens so far, "
++                         f"this one {n} + {swa} component tokens); free host {_free_pages(cache)}")
++            return host
++
++        cache._execute_kv_backup = _execute_kv_backup
++
++    if hasattr(cache, "evict_host"):
++        orig_evict_host = cache.evict_host
++
++        def evict_host(num_tokens, *a, **kw):
++            freed = orig_evict_host(num_tokens, *a, **kw)
++            comp = str(a[0] if a else kw.get("component_type", "full"))
++            STATS["evict_host_calls"] += 1
++            STATS["evict_host_freed"][comp] = STATS["evict_host_freed"].get(comp, 0) + int(freed or 0)
++            _log(f"evict-host {comp}: asked {num_tokens}, freed {freed} "
++                 f"({STATS['evict_host_freed'][comp]} so far); free host {_free_pages(cache)}")
++            return freed
++
++        cache.evict_host = evict_host
++
++    if hasattr(cache, "load_back"):
++        orig_load = cache.load_back
++
++        def load_back(node_id, mem_quota=None, req=None):
++            ok = orig_load(node_id, mem_quota, req=req)
++            STATS["load_ok" if ok else "load_fail"] += 1
++            _log(f"load-back node {node_id}: {'committed' if ok else 'declined'} (quota {mem_quota}); "
++                 f"{STATS['load_ok']} ok, {STATS['load_fail']} declined")
++            return ok
++
++        cache.load_back = load_back
++
++    tree = getattr(cache, "tree_core", None)
++    if tree is not None and hasattr(tree, "evict_device_leaf") and hasattr(tree, "node_by_id"):
++        orig_leaf = tree.evict_device_leaf
++
++        def evict_device_leaf(node_id, is_write_back):
++            try:
++                node = tree.node_by_id(node_id)
++                backed, n = bool(node.backuped), len(node.key)
++            except Exception:
++                backed, n = True, 0
++            res = orig_leaf(node_id, is_write_back)
++            if backed:
++                STATS["leaf_demote"] += 1
++            elif not is_write_back:
++                STATS["leaf_delete"] += 1
++                STATS["leaf_delete_tokens"] += n
++                _log(f"evict-leaf node {node_id}: {n} tokens deleted without a host copy "
++                     f"({STATS['leaf_delete']} such, {STATS['leaf_delete_tokens']} tokens; "
++                     f"{STATS['leaf_demote']} demoted to host)")
++            return res
++
++        tree.evict_device_leaf = evict_device_leaf
++
++    _log(f"tracing on (prefixes from {MIN_TOKENS} tokens); free host {_free_pages(cache)}")
++    return True
+diff --git a/python/sglang/srt/mem_cache/unified_cache/components/swa.py b/python/sglang/srt/mem_cache/unified_cache/components/swa.py
+index e30a21c..daeae3d 100644
+--- a/python/sglang/srt/mem_cache/unified_cache/components/swa.py
++++ b/python/sglang/srt/mem_cache/unified_cache/components/swa.py
+@@ -2,9 +2,14 @@ from __future__ import annotations
+ 
+ from typing import TYPE_CHECKING, Callable, Optional, Sequence
+ 
++import os
++
+ import torch
+ 
+ from sglang.srt.environ import envs
++
++# kv_persist: write-through copies only the tail SWA window of an insert
++_KT_SWA_TAIL_ONLY = os.environ.get("KT_HICACHE_SWA_TAIL_ONLY", "0") == "1"
+ from sglang.srt.mem_cache.base_prefix_cache import (
+     DecLockRefParams,
+     EvictParams,
+@@ -120,8 +125,24 @@ class SWAComponent(TreeComponent):
+         if self.tree_core.is_host_memory_buffer_only:
+             cd = node.component_data[self.component_type]
+             return [node] if cd.value is not None else []
++        if (
++            _KT_SWA_TAIL_ONLY
++            and not self.tree_core.is_write_back
++            and self._kt_child_holds_swa(node)
++        ):
++            # A child holds the window past this node: only that tail is a match
++            # boundary worth a host copy (write-through backs every chain node).
++            return []
+         return self._collect_unbacked_swa_nodes_in_window(node)
+ 
++    def _kt_child_holds_swa(self, node: UnifiedTreeNode) -> bool:
++        ct = self.component_type
++        return any(
++            child.component_data[ct].value is not None
++            or child.component_data[ct].host_value is not None
++            for child in node.children.values()
++        )
++
+     def _collect_unbacked_swa_nodes_in_window(
+         self, node: UnifiedTreeNode
+     ) -> list[UnifiedTreeNode]:
+diff --git a/python/sglang/srt/mem_cache/unified_radix_cache.py b/python/sglang/srt/mem_cache/unified_radix_cache.py
+index 2c5b195..63f1e0d 100644
+--- a/python/sglang/srt/mem_cache/unified_radix_cache.py
++++ b/python/sglang/srt/mem_cache/unified_radix_cache.py
+@@ -52,6 +52,12 @@ from sglang.srt.mem_cache.buffer_mode.storage_existence_cache import (
+     default_belief_policy,
+ )
+ from sglang.srt.mem_cache.common import RetractionBackup
++from sglang.srt.mem_cache.evict_policy import (  # SGLANG_CACHE_TTL
++    CACHE_CLASS_USER,
++    CacheTTLPolicy,
++    TTLStrategy,
++    cache_class_of_req,
++)
+ from sglang.srt.mem_cache.hicache_storage import (
+     PoolHitPolicy,
+     PoolName,
+@@ -197,6 +203,10 @@ class _OngoingPrefetch(NamedTuple):
+ 
+ 
+ class UnifiedRadixCache(BasePrefixCache):
++    # SGLANG_CACHE_TTL: the expiry policy, set in __init__ (None = off). A class
++    # default so instances built without __init__ (tests, wrappers) read off.
++    _cache_ttl = None
++
+     def __init__(
+         self,
+         params: CacheInitParams,
+@@ -304,6 +314,29 @@ class UnifiedRadixCache(BasePrefixCache):
+         )
+         self.pp_rank = params.pp_rank
+         self.pp_size = params.pp_size
++        # SGLANG_CACHE_TTL=1: expiry by request class. Expired nodes sort first in
++        # the Full eviction heap (installed before any eviction binds get_priority) and
++        # maybe_ttl_sweep frees them without pressure. Python TreeCore, TP=PP=1 only: the
++        # stamps are per-rank monotonic times, so ranks could disagree at a boundary.
++        self._cache_ttl = CacheTTLPolicy.from_env()
++        if self._cache_ttl is not None:
++            why = (
++                "the cache is disabled"
++                if self.disable
++                else "not the Python TreeCore"
++                if not isinstance(self.tree_core, UnifiedTreeCore)
++                else "TP or PP > 1"
++                if self.tp_world_size > 1 or self.pp_size > 1
++                else None
++            )
++            if why is not None:
++                logger.warning(f"[cache-ttl] SGLANG_CACHE_TTL=1 ignored: {why}")
++                self._cache_ttl = None
++            else:
++                self.tree_core.eviction_strategy = TTLStrategy(
++                    self.tree_core.eviction_strategy, self._cache_ttl
++                )
++                logger.info(f"[cache-ttl] on: {self._cache_ttl.describe()}")
+         self.work_list: list[torch.distributed.Work] = []
+ 
+         # HiCache D↔H defaults (overridden by init_hicache)
+@@ -618,6 +651,14 @@ class UnifiedRadixCache(BasePrefixCache):
+         if self.disable:
+             return self.tree_core.empty_match_result
+         result = self.tree_core.match_prefix(params)
++        if self._cache_ttl is not None:
++            # SGLANG_CACHE_TTL: the nodes the match refreshed (best_match_node -> root);
++            # internal matches without a request or a class stamp nothing.
++            cls = params.cache_class or cache_class_of_req(params.req)
++            if cls is None and params.req is not None:
++                cls = CACHE_CLASS_USER
++            if cls is not None:
++                self._cache_ttl_stamp(result.best_match_node, cls)
+         # Apply the walk's actions (e.g. a pending write-through relocation on
+         # a split) before the finalizers, which can evict or raise.
+         self._apply_cache_actions(result.cache_actions)
+@@ -666,6 +707,12 @@ class UnifiedRadixCache(BasePrefixCache):
+                 if step.result is not None:
+                     # Walk actions flow through the steps; the result is action-free.
+                     assert not step.result.cache_actions
++                    if self._cache_ttl is not None:
++                        # SGLANG_CACHE_TTL: the inserted path (last node -> root)
++                        self._cache_ttl_stamp(
++                            step.result.last_device_node,
++                            params.cache_class or CACHE_CLASS_USER,
++                        )
+                     return step.result
+                 step = self.tree_core.resume_insert()
+         finally:
+@@ -1171,6 +1218,7 @@ class UnifiedRadixCache(BasePrefixCache):
+         insert_params = InsertParams(
+             prev_prefix_len=req.kv.cache_protected_len,
+             inserted_len=req.kv.cache_inserted_len,
++            cache_class=cache_class_of_req(req),  # SGLANG_CACHE_TTL
+             priority=req.priority or 0,
+             session_id=req.session_id,
+             rotation_base=req.kv_rotation_base,
+@@ -1357,6 +1405,131 @@ class UnifiedRadixCache(BasePrefixCache):
+                 req, is_finished=False, insert_params=insert_params
+             )
+ 
++    # ---- SGLANG_CACHE_TTL=1: expiry by request class ----
++
++    def _cache_ttl_stamp(self, node_id, cache_class: str) -> None:
++        node = self.tree_core._node_arena.get(node_id) if node_id is not None else None
++        if node is not None:
++            self._cache_ttl.stamp_path(node, self.tree_core.root_node, cache_class)
++
++    def ttl_sweep(self) -> int:
++        """Free every expired, unlocked device leaf, and the ancestors that become expired
++        leaves on the way, through the normal eviction walk (frees, SWA cascade, HiCache
++        demote and metrics as under pressure). The walk pops expired leaves first (the
++        TTLStrategy key) and stops as soon as no expired evictable leaf is left, so a live
++        node is never taken. Returns the Full tokens freed."""
++        ttl = self._cache_ttl
++        if ttl is None or self.disable:
++            return 0
++        core = self.tree_core
++        leaves = core.evictable_device_leaves
++        full = self.components[BASE_COMPONENT_TYPE]
++        held = (
++            (lambda n: full.session_ref(n) > 0)
++            if self.enable_session_radix_cache
++            else (lambda n: False)
++        )
++        now = ttl.clock()
++        ttl.resolve_unstamped(core.root_node, now)
++
++        def expired(n):
++            # session-referenced leaves sort after every unreferenced one: leave them be
++            return not held(n) and ttl.is_expired(n, now)
++
++        cands = [n for n in leaves if expired(n)]
++        if not cands:
++            return 0
++
++        def done() -> bool:
++            while cands:
++                if cands[-1] in leaves and expired(cands[-1]):
++                    return False
++                cands.pop()
++            # parents the walk turned into leaves
++            cands.extend(n for n in leaves if expired(n))
++            return not cands
++
++        nodes_before = len(core._node_arena)
++        result = self._evict(
++            EvictParams(num_tokens=self.full_evictable_size()),
++            allocation_reclaim_satisfied=done,
++        )
++        ttl.stats["sweeps"] += 1
++        ttl.stats["swept_tokens"] += result.num_tokens_evicted
++        ttl.stats["swept_nodes"] += max(0, nodes_before - len(core._node_arena))
++        return result.num_tokens_evicted
++
++    def maybe_ttl_sweep(self) -> int:
++        """Scheduler loop hook: a clock check, and a sweep every SGLANG_CACHE_TTL_SWEEP_S."""
++        ttl = self._cache_ttl
++        if ttl is None or not ttl.sweep_on:
++            return 0
++        if ttl.relend_from is not None:
++            self._cache_ttl_relend_check()
++        now = ttl.clock()
++        if ttl.next_sweep is None:
++            ttl.next_sweep = now + ttl.sweep_s
++            return 0
++        if now < ttl.next_sweep:
++            return 0
++        ttl.next_sweep = now + ttl.sweep_s
++        t0 = time.perf_counter()
++        nodes = ttl.stats["swept_nodes"]
++        try:
++            freed = self.ttl_sweep()
++        except Exception:
++            # an optional policy must not take the scheduler down; eviction order stays
++            logger.exception("[cache-ttl] sweep failed; periodic sweeps are off from here")
++            ttl.sweep_on = False
++            return 0
++        if freed:
++            logger.info(
++                f"[cache-ttl] sweep {ttl.stats['sweeps']}: freed {freed} tokens in "
++                f"{ttl.stats['swept_nodes'] - nodes} nodes in "
++                f"{(time.perf_counter() - t0) * 1e3:.1f} ms; evictable now "
++                f"{self.evictable_size()}, available "
++                f"{self.token_to_kv_pool_allocator.available_size()}"
++            )
++            if ttl.relend_tokens and freed >= ttl.relend_tokens:
++                self._cache_ttl_relend(freed)
++        return freed
++
++    def _cache_ttl_relend(self, freed: int) -> None:
++        """SGLANG_CACHE_TTL_RELEND_TOKENS: an active hot lend never grows (kt_kv_hot_lend.tick
++        lends only when nothing is lent), so give it back now; the next decode tick lends
++        again over the larger free list (release ~0.85 s + lend ~2.8 s on fea01)."""
++        try:
++            from sglang.srt.layers.moe import kt_kv_hot_lend as hot
++            from sglang.srt.layers.moe import kt_kv_prefill_lend as lend
++
++            if lend.STATE.get("lent") is not None and lend.STATE.get("owner") == "hot":
++                slots = int(hot.STATE.get("lent_slots", 0) or 0)
++                lend.hot_release("cache ttl sweep")
++                self._cache_ttl.stats["relends"] += 1
++                self._cache_ttl.relend_from = slots
++                logger.info(
++                    f"[cache-ttl] hot relend: {slots} slots given back after {freed} tokens "
++                    "were freed; the next decode forward lends over the larger free list"
++                )
++        except Exception as e:  # no hot lend in this build
++            logger.warning(f"[cache-ttl] hot relend unavailable ({type(e).__name__}: {e})")
++
++    def _cache_ttl_relend_check(self) -> None:
++        """After a relend: log the slot count once the next lend has happened."""
++        try:
++            from sglang.srt.layers.moe import kt_kv_hot_lend as hot
++
++            slots = int(hot.STATE.get("lent_slots", 0) or 0)
++        except Exception:
++            self._cache_ttl.relend_from = None
++            return
++        if slots:
++            logger.info(
++                f"[cache-ttl] hot lend after relend: {slots} slots "
++                f"(was {self._cache_ttl.relend_from})"
++            )
++            self._cache_ttl.relend_from = None
++
+     # ---- Internal Helpers ----
+ 
+     def _apply_cache_actions(

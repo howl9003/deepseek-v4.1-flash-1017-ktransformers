@@ -1,0 +1,65 @@
+{
+  "status": "IDENTITY_PASS_PRICE_ABOVE_12MS",
+  "result_sha256": "851866b6e6fa3c80193d1a4f4aa86c3ad0d665f35cf0d7a219b05b83c4ab4bd2",
+  "counts": {
+    "e8m0_all_finite_codes": 4,
+    "scale_domain_strided": 6,
+    "reference_batch_invariance_raw": 66,
+    "cuda_raw_partials": 36,
+    "cuda_to_prefill_boundary_raw": 30,
+    "permutation_raw": 6,
+    "partition_raw": 6,
+    "changed_graph_raw": 36,
+    "reference_batch_invariance_output": 66,
+    "cuda_reduced_output": 36,
+    "public_fixed_reference": 66,
+    "default_off": 66,
+    "enabled_public_dispatch": 36,
+    "unchanged_prefill_dispatch": 30,
+    "changed_graph_output": 36,
+    "changed_public_graph": 36,
+    "native_all_power_domain": 2,
+    "native_invalid_scales": 18,
+    "native_changed_scale_graph": 15
+  },
+  "flag_checks": 361,
+  "timing_cells": 78,
+  "selection": {
+    "totals_208_calls_ms": {
+      "cuda_phase2": {
+        "1": 12.746496185660362,
+        "4": 12.88729614019394,
+        "8": 13.040128275752068,
+        "16": 13.359615981578827
+      },
+      "triton_phase1_best": {
+        "1": 27.377663806080818,
+        "4": 28.485119998455048,
+        "8": 28.882175728678703
+      },
+      "fixed_transpose": {
+        "1": 23.318015545606613,
+        "4": 30.244352236390114,
+        "8": 30.62809592485428
+      },
+      "current_core": {
+        "1": 12.352768033742905,
+        "4": 13.424384012818336,
+        "8": 20.774912238121033
+      }
+    },
+    "payload_bytes": 5200199680,
+    "bandwidth_floor_ms": 7.065488695652174,
+    "weight_bytes_per_us": 407970.91249673424,
+    "target_10ms_met": false,
+    "gate_12ms_met": false
+  },
+  "memory_peak_bytes": 825667584,
+  "cuda_peak_bytes": 1404134400,
+  "no_model": true,
+  "pr6": "HELD_NO_PUSH_NO_PUBLISH",
+  "validation_loader": "direct_pinned_binary_no_compiler",
+  "loaded_binary_sha256": "88ec38312bbd2317f01ae31d6e7535c19c9ea163d0356e410a755d00eeecc3be",
+  "binary_sha256_after_validation": "88ec38312bbd2317f01ae31d6e7535c19c9ea163d0356e410a755d00eeecc3be",
+  "binary_provenance_verified": true
+}

@@ -1,0 +1,20 @@
+{
+  "utc": "2026-10-28T06:04:39.873590+00:00",
+  "status": "REVIEWER_READY_CAPTURE_STILL_AWAITING_INTERACTIVE_AUTH",
+  "reviewer_sha256": "694c60490089077405dcce175f8423b24d6c70178b1a767f96bd45548b791c09",
+  "selftest": "1 positive and6negative synthetic CSV fixtures passed; not hardware measurements",
+  "rejects": [
+    "missing counters",
+    "duplicate counters or launches",
+    "zero tensor count",
+    "non-finite counters",
+    "unrecognized units",
+    "incomplete workload or binary report",
+    "memory violations"
+  ],
+  "prepared_capture_manifest_sha256": "2c53d6d43324c96b49d2009bebe7dabd25d8179b8ccf7d003e8316a1a59bdadd",
+  "remote_preflight": "9 files authenticated; capture_exists=false",
+  "profile_service_snapshot": "LoadState=not-found;ActiveState=inactive;MainPID=0; GPU compute-app list empty",
+  "new_gpu_runs": 0,
+  "prepared_capture_files_changed": false
+}

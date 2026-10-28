@@ -1,0 +1,64 @@
+{
+  "status": "MATCHED_GATE_FAIL_NO_MODEL",
+  "result_sha256": "e79f43ebd65ed2e253cf2ab3af97ecb747073e585c7a704ac0dfd055c231200a",
+  "checks": 240,
+  "check_counts": {
+    "raw_against_accepted": 48,
+    "eager_output": 48,
+    "graph_output": 48,
+    "changed_graph": 48,
+    "restored_graph": 48
+  },
+  "flags": 96,
+  "gate_cells": 48,
+  "diagnostic_cells": 6,
+  "samples_per_cell": 15,
+  "totals_208_calls_ms": {
+    "default_original_method": {
+      "1": 12.764928117394447,
+      "4": 12.861696168780327,
+      "8": 13.10668796300888,
+      "16": 13.46406389772892
+    },
+    "policy_original_method": {
+      "1": 12.732160091400146,
+      "4": 12.815872147679329,
+      "8": 12.936448156833649,
+      "16": 13.23315204679966
+    },
+    "default_read_sweep_diagnostic": {
+      "1": 10.317824244499207
+    }
+  },
+  "gate": {
+    "threshold_ms": 12.0,
+    "method_unchanged": true,
+    "policy_m1_ms": 12.732160091400146,
+    "policy_pass": false,
+    "diagnostic_never_used_for_gate": true
+  },
+  "displacement": {
+    "operation": "eviction.add_(1)",
+    "elements": 67108864,
+    "dtype": "float32",
+    "bytes": 268435456,
+    "access": "read-modify-write",
+    "synchronize_before_start_event": true
+  },
+  "diagnostic": {
+    "operation": "read_buffer.sum()",
+    "input_bytes": 134217728,
+    "input_access": "read-only",
+    "result_access": "reduction result/workspace may be written",
+    "position": "after ordinary displacement; result synchronized before start event",
+    "caveat": "Changes preconditioning; not a gate or proof of a completely clean L2 or of a unique causal mechanism."
+  },
+  "default_binary_sha256": "51c179a96c838f2b51d9a01707706534a9472fe50752bedbab7c659905dca649",
+  "policy_binary_sha256": "88ec38312bbd2317f01ae31d6e7535c19c9ea163d0356e410a755d00eeecc3be",
+  "memory_peak_bytes": 704462848,
+  "cuda_peak_bytes": 548538368,
+  "no_model": true,
+  "production_source_unchanged": true,
+  "binary_provenance_verified": true,
+  "interpretation": "A read-sweep difference can establish sensitivity to preconditioning, not uniquely dirty-line writeback; absence of a difference does not uniquely prove launch overhead. Policy timing cannot establish production KV benefit."
+}

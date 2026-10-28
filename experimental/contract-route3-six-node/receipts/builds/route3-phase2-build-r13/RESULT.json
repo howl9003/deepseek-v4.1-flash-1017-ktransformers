@@ -1,0 +1,46 @@
+{
+  "status": "BUILD_PASS_SASS_REVIEW_REQUIRED_NO_IDENTITY_OR_PRICE_YET",
+  "started_utc": "2026-10-28T08:41:52.770637+00:00",
+  "preparation_sha256": "5284c6ee32b2dba0a881ab540dc0e75a43a801e6a2f4d768c3293e22e42c2fb1",
+  "package": "/scratch/aster/bench/six-node-performance-r1/route3-phase2-l2-policy-r1/phase2-cuda",
+  "no_model": true,
+  "selector_default_off": true,
+  "memory_peak_bytes": 3415904256,
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "swap_bytes": 0,
+  "ROUTE3_L2_POLICY": 1,
+  "include_path_fix": "/scratch/aster/bench/05yuki-main-00fd12a-candidate/.venv/lib/python3.12/site-packages/nvidia/cu13/include",
+  "cusparse_header_sha256": "23f0be6da496494dfc2368cbdca0f3c4b192b8e4fcaaf012760d4a50d5060522",
+  "binary": "/scratch/aster/bench/six-node-performance-r1/route3-phase2-build-r13/extensions/route3_phase2_l2p1_r2/route3_phase2_l2p1_r2.so",
+  "binary_sha256": "88ec38312bbd2317f01ae31d6e7535c19c9ea163d0356e410a755d00eeecc3be",
+  "smem_bytes": 38496,
+  "cuobjdump": {
+    "path": "/scratch/aster/bench/05yuki-main-00fd12a-candidate/.venv/lib/python3.12/site-packages/triton/backends/nvidia/bin/cuobjdump",
+    "sha256": "8f240516056740fee62c40eec6e1ba5d3d5ab5a309fbba4b0fe26fd54c79767d"
+  },
+  "resources.txt": {
+    "sha256": "1978379ce00ccecb6138085d4a0537d3aec375f3e12b0f48c2dc43d7c72d79d8",
+    "bytes": 443
+  },
+  "kernel.sass": {
+    "sha256": "61eb5d782b20c6d3fa6e2cd50f8e537144420d5f27f81cc6fccce597128f2129",
+    "bytes": 674151
+  },
+  "kernel.ptx": {
+    "sha256": "372e73306dd0dd673d283f87019b2da7210f9092be1103803cbdd3669b4c4266",
+    "bytes": 103
+  },
+  "sass_counts": {
+    "QMMA.16832.F32.E4M3.E4M3": 16,
+    "FMUL": 64,
+    "FFMA": 64,
+    "LDL": 0,
+    "STL": 0,
+    "LDSM": 16,
+    "BAR.SYNC": 1,
+    "LDGSTS": 66,
+    "LDGDEPBAR": 3
+  },
+  "resources": "\nFatbin elf code:\n================\narch = sm_89\ncode version = [1,8]\nhost = linux\ncompile_size = 64bit\n\nResource usage:\n Common:\n  GLOBAL:50 CONSTANT[4]:376\n Function _ZN6route320route3_decode_kernelEPKhPKfS1_S3_Pfiiiii:\n  REG:72 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:412 TEXTURE:0 SURFACE:0 SAMPLER:0\n Function _ZN3cub16_V_300304_SM_8906detail11EmptyKernelIvEEvv:\n  REG:4 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:352 TEXTURE:0 SURFACE:0 SAMPLER:0\n",
+  "finished_utc": "2026-10-28T08:42:37.769117+00:00"
+}

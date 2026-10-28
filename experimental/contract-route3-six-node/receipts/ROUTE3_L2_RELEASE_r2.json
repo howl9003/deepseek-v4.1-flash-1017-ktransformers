@@ -1,0 +1,28 @@
+{
+  "utc": "2026-10-28T08:52:08.097146+00:00",
+  "units": {
+    "codex-route3-phase2-build-r13.service": {
+      "SubState": "exited",
+      "InvocationID": "6cb440c3b0cb4a0989c6531cf621cda9",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-phase2-validation-r10.service": {
+      "SubState": "exited",
+      "InvocationID": "1f7b1f36d8524a1a861fbbc3e915ba3c",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-l2-prices-r2.service": {
+      "SubState": "exited",
+      "InvocationID": "5c4b1693eb8b4261b19b73029bee9c11",
+      "MainPID": "0",
+      "Result": "success"
+    }
+  },
+  "gpu_apps": "",
+  "shared_lock_free": true,
+  "power": "GPU-67d9f495-2d3a-1e93-a617-dd11ba547914, 320.00 W",
+  "host_reload_sha256": "eb31f84a7ae96126bfa1fd97e8c3c98527c58d5f515610b15a03fe39c14597b4",
+  "mem_available_bytes": 518772498432
+}

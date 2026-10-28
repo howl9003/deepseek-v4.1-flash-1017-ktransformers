@@ -1,0 +1,119 @@
+{
+  "utc": "2026-10-28T02:19:16.104606+00:00",
+  "status": "PERFORMANCE_CHECKS_PASS_HELD",
+  "gates": {
+    "exact_owner": true,
+    "owner_success": true,
+    "run_complete": true,
+    "client_complete": true,
+    "authenticated_client": true,
+    "authenticated_manifest": true,
+    "clean_scope": true,
+    "no_outer_cleanup_errors": true,
+    "validated_source_unchanged": true,
+    "numerical26_pass": true,
+    "same_source_as_numerical": true,
+    "same_native_as_numerical": true,
+    "frozen_host_reload": true,
+    "historical_client_hash": true,
+    "four_japanese_two_prefill_six_breadth": true,
+    "both_clients_success": true,
+    "reported_rates_match": true,
+    "model_cap_and_reserve": true,
+    "six_nodes": true,
+    "no_swap": true,
+    "no_client_memory_events": true,
+    "final_host_reserve": true,
+    "recorded_historical_env_matches": true
+  },
+  "failed": [],
+  "unit": {
+    "InvocationID": "5e26a85926e541c197778c4e9c7a23df",
+    "MainPID": "0",
+    "Result": "success"
+  },
+  "evidence": {
+    "/scratch/aster/bench/feature-trial-B-bf16-ordered-fast-six-r1/RUN-bf16-ordered-perf-r1.json": "67ce228e15ffcdc8ae663309dd80c06ef4e048c0eb574ac7857d9242d28e160f",
+    "/scratch/aster/bench/feature-trial-B-bf16-ordered-fast-six-r1/supplemental-bf16-ordered-perf-r1/RESULT.json": "0e2f3aee2aa35eb3e79992869a446702b76622fbc9edb8f14a26ae1cd9a52d44",
+    "/scratch/aster/bench/feature-trial-B-bf16-ordered-fast-six-r1/BF16_ORDERED_PERF_PREPARED_r1.json": "076c1640ec3b916e41e60eb3ff26e04756517a5e504a76feaa5149c6de1a6bde",
+    "/scratch/aster/bench/six-node-performance-r1/BF16_ORDERED_NUMERICAL_REVIEW_r2.json": "470e837edede3cd85bc0834fc4554c19655c27173fb94d0c9d3cfcf6660b63dc",
+    "/scratch/aster/bench/six-node-performance-r1/MATCHED_BF16_ORDERED_PERFORMANCE_PROFILE_r1.json": "493ed7bad695d65612440070d81329176709ee786d95abb15290a571ccfbaafd",
+    "/scratch/aster/bench/feature-trial-B-bf16-ordered-fast-six-r1/model-bf16-ordered-perf-r1/server/memory-before-client.json": "b377d2eb276fdff32dfcf754ca7eb68b00e24896c63cec9a6c114127abeb9bc6",
+    "/scratch/aster/bench/feature-trial-B-bf16-ordered-fast-six-r1/model-bf16-ordered-perf-r1/server/memory-after-client.json": "138e7c657ac288730dde32f805c82aee42ce0120dde4272fbb979d909ee38448",
+    "/scratch/aster/bench/feature-trial-B-bf16-ordered-fast-six-r1/supplemental-bf16-ordered-perf-r1/historical.log": "fa9209aaa93c04a0e95f679ec7c6b6b4349c4effcb6d115a34627d980bec09b4",
+    "/scratch/aster/bench/feature-trial-B-bf16-ordered-fast-six-r1/supplemental-bf16-ordered-perf-r1/breadth.log": "ddb351f61f6480379a9f6583926b0d78cdbf3398ade7c21e0c01e674a22cd479"
+  },
+  "japanese_tok_s": [
+    16.6,
+    17.0,
+    16.9,
+    16.8
+  ],
+  "japanese_median_tok_s": 16.85,
+  "prefill35000_seconds": [
+    653.69,
+    635.27
+  ],
+  "breadth": [
+    {
+      "workload": "Chinese prose",
+      "tok_s": 16.2
+    },
+    {
+      "workload": "English prose",
+      "tok_s": 16.1
+    },
+    {
+      "workload": "English technical prose",
+      "tok_s": 15.3
+    },
+    {
+      "workload": "math",
+      "tok_s": 15.9
+    },
+    {
+      "workload": "JSON",
+      "tok_s": 15.7
+    },
+    {
+      "workload": "Python code",
+      "tok_s": 17.2
+    }
+  ],
+  "post_timing_repeat": {
+    "text_equal": true,
+    "selected_logprobs_exact": true,
+    "full_acceptance": false
+  },
+  "memory": {
+    "final_charge_gib": 398.9986686706543,
+    "whole_run_peak_gib": 416.0,
+    "final_available_gib": 103.24085235595703,
+    "swap_bytes": 0,
+    "ready_events": {
+      "low": 0,
+      "high": 0,
+      "max": 5939,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "after_events": {
+      "low": 0,
+      "high": 0,
+      "max": 5939,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    }
+  },
+  "allocation_warning_lines": [],
+  "limitations": [
+    "This performance profile differs explicitly from numerical acceptance: historical hot/stream/cache/concurrency settings. The separate26-gate numerical run is the acceptance evidence.",
+    "Six CPU nodes42workers vs historical8nodes56workers; math selectors and approximate replay exclusion are explicit additional differences. Historical unrecorded environment and power/unlock state remain unknown.",
+    "Single completed campaign; no30+tok/s result, no statistical cross-run speedup claim. Post-timing repeated8token probe is descriptive, not a substitute for the full gates."
+  ],
+  "pr6": "HELD_NO_PUSH_NO_PUBLISH"
+}

@@ -1,0 +1,23 @@
+{
+  "utc": "2026-10-28T03:30:25.214985+00:00",
+  "units": {
+    "codex-kernel-numerics-r4.service": {
+      "InvocationID": "8984f186e9784fa8bfa0413046b20104",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-after-k4-r1.service": {
+      "InvocationID": "844ea6f83a3a49c3bd14b0dd8efca013",
+      "MainPID": "0",
+      "Result": "success"
+    },
+    "codex-route3-geometry-r1.service": {
+      "InvocationID": "62157bd14b784541a103a0ca0fb91ba5",
+      "MainPID": "0",
+      "Result": "success"
+    }
+  },
+  "gpu_apps": [],
+  "gpu_state": "GPU-67d9f495-2d3a-1e93-a617-dd11ba547914, 320.00 W, 4 MiB",
+  "shared_lock_free": true
+}

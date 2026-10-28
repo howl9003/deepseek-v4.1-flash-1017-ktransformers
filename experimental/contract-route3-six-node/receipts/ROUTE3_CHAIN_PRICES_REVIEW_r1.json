@@ -1,0 +1,36 @@
+{
+  "status": "DIAGNOSTIC_REVIEW_PASS_NOT_A_GATE_PASS",
+  "result_sha256": "08a15d39d0c06da283f132642da6b18c5c2cf70412daff288b77a0c878415005",
+  "checks": 2930,
+  "check_counts": {
+    "raw_before_reduce": 416,
+    "eager_public": 624,
+    "chain_base": 624,
+    "chain_changed": 624,
+    "chain_restored": 624,
+    "isolated_matches_chain": 18
+  },
+  "flags": 20,
+  "timing_cells": 21,
+  "unique_weight_allocations": 208,
+  "weight_bytes": 5200199680,
+  "totals": {
+    "original_b8s3": {
+      "chain_ms": 8.81663990020752,
+      "isolated_sum_ms": 12.780032142996788
+    },
+    "b8s2": {
+      "chain_ms": 8.59443187713623,
+      "isolated_sum_ms": 12.679936274886131
+    },
+    "current_core": {
+      "chain_ms": 8.144512176513672,
+      "isolated_sum_ms": 12.39526416361332
+    }
+  },
+  "memory_peak_bytes": 685817856,
+  "cuda_peak_bytes": 5674658304,
+  "no_model": true,
+  "gate_method_unchanged": true,
+  "limitation": "208 independent projections with cloned archetype weights and fixed synthetic order, M1 only. No MoE, attention, cross-projection data dependency, KV or full model. Grouped launch timing is diagnostic, not a replacement for the original cold per-call gate or an end-to-end throughput prediction."
+}
