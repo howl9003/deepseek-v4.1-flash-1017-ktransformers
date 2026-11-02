@@ -34,6 +34,16 @@ By domain, KL / top-1:
 ## What it does not cover
 
 - **Top 256, not the full distribution.** A native id outside our kept top 256 takes our smallest kept probability, which overstates Q there. That applied to 138,489 ids out of about 32.6 million, 0.4%, and it nudges KL down a little. The floor and NVFP4 arms were scored on the full distribution.
-- **Prefill path.** Teacher forcing runs the panel through prefill, not decode. My decode-against-prefill check crashed on a short conversation (a client bug, after all 199 were saved), so it gave no result here. The gate's replay fixtures do cover prefill against decode, exact vs C1.
+- **Prefill path.** Teacher forcing runs the panel through prefill, not decode. The check against decode crashed in this capture on an off-by-one of mine: the forced prompt left out the last generated token. An earlier version of this note blamed a short conversation, which was wrong. Run separately on 2 Nov on the serving profile: eight conversations at 256 tokens and eight at 1,024, 32 tokens each. All 512 positions agree within 4.5e-7 nats, about one float32 step of the logprob, and 246 are bit-equal. So this score applies to decode.
 - **Reference on Ada.** DeepSeek's kernels running on an Ada card, not Hopper or Blackwell. On sudoingX's GB10 the same panel reads NLL 0.47031, ours 0.47077.
-- **One capture,** performance-profile settings, one session.
+- **One capture,** performance-profile settings, one session. Seven conversations repeated on the serving profile a day later match this capture bit for bit.
+
+## Context-free rows
+
+A few rows predict `<`, newline, `#` and `##` in nearly the same proportions wherever it happens, although the next token is obvious, for example "Yellow leaves can be" followed by " caused". Reference 3 rows, this build 3, FP4 KV 5, all between tokens 47 and 104, which hold 4.7% of the panel. Two rows are common to all three. They cost under 1% of the KL.
+
+- **The reference does it too.** Changing only its MoE batch size turns row 76,101 bad and row 152,61 good.
+- **They are deterministic and depend only on earlier tokens.** On the serving profile, six rows asked with the prompt cut at up to twelve lengths gave identical bits at every length, including with nothing after the row.
+- **So it reaches real output.** Row 41,104 is context-free with the prompt ending right there, so a reply could hit it. It is not an effect of teacher forcing.
+
+The cause is open: see `BLANK_ROWS_RESULTS_r1.md` when that report lands. Everything run so far shares this box's weights, tables and card, so this does not show the model itself does it. Evidence: `blank_rows.py`, `kl_outliers.py`, `blank_by_length.py`, `decode_prefill_check.py`, `blank-by-length-served-r1.json` and `decode-vs-prefill-served-r1.json` on fea01.

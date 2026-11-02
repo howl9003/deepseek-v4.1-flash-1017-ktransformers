@@ -35,6 +35,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.request
 
 sys.path[:0]=['/scratch/aster/bench/fp32-subtotals-model-r1','/scratch/aster/bench/fp32-subtotals-model-r1/workflow']
 from trial_common import BASE,GIB,inventory,source_inventory,load_frozen,read,require,require_programme,save,sha,verify_pair
@@ -79,7 +80,7 @@ def unloaded(life):
     require(not loaded,'Qwen/model remains loaded; this workflow never unloads it')
 
 def headroom(ab,trial,record,*,fresh):
-    timeout,available,node=(600,480,51) if fresh else (300,128,16)
+    timeout,available,node=(600,448,51) if fresh else (300,128,16)
     deadline=time.monotonic()+timeout;rows=[]
     record['prelaunch_headroom' if fresh else 'post_cleanup_headroom']=rows
     while time.monotonic()<deadline:
@@ -241,6 +242,14 @@ def effective_gate(trial,cg,mods,output):
 
 from settle_before_reclaim_v2 import wait as post_ready_settle, recording_snapshot
 
+def hold_requests(hold):
+    """llama-swap passes requests as soon as the server answers, minutes before the frozen settle ends, and one landing inside it reads page cache past the 392 GiB check and ends the load.
+    So requests wait in the server until the settled baseline is taken. The memory checks are unchanged. Released without emptying torch's cache, so the lent memory stays as it was measured."""
+    path,body=('/pause_generation',{'mode':'in_place'}) if hold else ('/continue_generation',{'torch_empty_cache':False})
+    request=urllib.request.Request('http://127.0.0.1:18209'+path,json.dumps(body).encode(),{'Content-Type':'application/json'})
+    with urllib.request.urlopen(request,timeout=30) as response:
+        require(response.status==200,f'{path} refused')
+
 def run_scope(args,mods,prepared,record):
     trial=args.trial;ab,life=mods.run_ab,mods.scope_lifecycle
     kind=args.phase;out=args.run_dir/'server';out.mkdir(parents=True,exist_ok=False)
@@ -295,6 +304,7 @@ def run_scope(args,mods,prepared,record):
                         try:ab.http('/health',timeout=2)
                         except (urllib.error.URLError,TimeoutError,ConnectionError):
                             time.sleep(2);continue
+                        hold_requests(True);record['requests_held_utc']=ab.now()
                         # v7: let post-readiness allocation finish before the frozen settle (read-only wait).
                         record['post_ready_settle']=post_ready_settle(cg,ab,proc,out/'POST_READY_SETTLE.json')
                         require(time.monotonic()<deadline,'startup deadline exceeded during the post-readiness wait')
@@ -303,7 +313,7 @@ def run_scope(args,mods,prepared,record):
                         settled=mods.cache_stabilization.stabilize(cg,out/'CACHE_STABILIZATION.json',
                             snapshot=recording_snapshot(ab.snapshot,out/'CACHE_SAMPLES.jsonl'),check_memory=ab.check_memory,memory_events=ab.memory_events)
                         launch_pid=effective_gate(trial,cg,mods,out)
-                        ab.http('/health',timeout=2);require(proc.poll() is None,'server exited after settling')
+                        require(proc.poll() is None,'server exited after settling')    # /health would wait on the hold; effective_gate has just had an answer from the server
                         require(time.monotonic()<deadline,'startup deadline exceeded during stabilization')
                         ready=ab.memory_events(settled);save(out/'memory-before-client.json',settled)
                         record.update(status='CLIENT',ready_events=ready,ready_utc=ab.now())
@@ -313,6 +323,7 @@ def run_scope(args,mods,prepared,record):
                         record['residency']={'status':'ACTIVE','cgroup':str(cg),'launch_pid':launch_pid,'since_utc':ab.now(),'stop_file':str(args.run_dir/'RESIDENT_STOP'),
                             'memory_cap_gib':416,'swap_max_bytes':0,'health_interval_seconds':30,'automatic_restart':False}
                         save(args.run_dir/'SERVING.json',record['residency'])
+                        hold_requests(False);record['requests_released_utc']=ab.now()
                         resident=True;print('SERVING',flush=True)
                 elif client is not None and client.poll() is not None:
                     require(client.returncode==0,'supplemental client failed')
