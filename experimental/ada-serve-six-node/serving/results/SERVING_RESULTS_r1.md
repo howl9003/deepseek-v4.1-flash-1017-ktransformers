@@ -45,7 +45,9 @@ DeepSeek Harness against this server (direct to the port, not yet through the se
 
 The first four-session try failed on the gate's queue of 4: dsh sends more than one request per session at the start, and two sessions got "The request queue is full". Serving now waits on 32. The first launcher test failed too: my resident loop treated a slow `/health` as fatal, and the server cannot answer it during a prefill window. Misses are now counted, not fatal; the memory guards are unchanged.
 
-Stopping takes about 110 s until the GPU is free, clean, nothing left in the scope. A load takes about 18 minutes.
+Stopping takes about 110 s until the GPU is free, clean, nothing left in the scope. A load takes about 18 minutes from a controller, 14 through the selector on the second attempt (the page cache was warm).
+
+**Through the selector (2 Nov, after the owner's install):** a request to the gateway for `deepseek-v4.1-flash-sglang` loaded the model and answered in 835 s. llama-swap reports it ready, and the launcher reached resident. dsh's default now points at this entry through the gateway; four sessions all completed in 100 s. The first selector attempt failed in 3 s: the launcher's "is a model loaded" check, copied from the bench controller, saw this entry itself. It now ignores this one entry and still refuses any other.
 
 ## Also checked
 

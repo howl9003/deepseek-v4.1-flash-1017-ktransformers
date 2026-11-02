@@ -274,6 +274,8 @@ def run_scope(args,mods,prepared,record):
                 if proc.poll() is not None:
                     require(kind=='cache' and proc.returncode==0,'owned payload failed or server exited')
                     record['cache_prepared']=check_cache(trial);record['status']='CACHE_PREPARED';break
+                if not resident and (args.run_dir/'RESIDENT_STOP').exists():    # asked to stop while still loading
+                    record['stopped_while_loading']=True;break
                 if resident:
                     require(cg is not None and cg.exists(),'resident scope disappeared')
                     if (args.run_dir/'RESIDENT_STOP').exists():
