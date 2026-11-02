@@ -24,11 +24,11 @@ Two rounds, one load, six-workload breadth median as the rate.
 - Serving gate: frozen feature client, `kv_status` PASS, host-reload gate unchanged, SHA256 `eb31f84a7ae96126bfa1fd97e8c3c98527c58d5f515610b15a03fe39c14597b4`. `ada-gate-engram-20261101-r1`, `receipts/gate/`.
 - These are single matched campaigns, not a confidence interval.
 
-**What the rate was measured on.** 32.98 comes from the performance profile: single request, radix off. The serving gate runs the same selectors with four running and queued requests, radix and host HiCache on, and proves behaviour, not speed. Decode under that profile is not measured here.
+**What the rate was measured on.** 32.98 comes from the performance profile: single request, radix off. The serving gate runs the same selectors with four running and queued requests, radix and host HiCache on, and proves behaviour, not speed. The serving profile was timed separately: breadth 33.15 on one session, 51.1 tok/s total on four. See `serving/`.
 
 ## What exact means here
 
-Identity runs compare against C1, never against DeepSeek's reference. Experts sit on the reference grid; dense FP8 is Route 3 with Ada truncation, bit-identical only to itself. Measured distance from DeepSeek's own inference code running on Ada, 24 pieces, 11,496 positions: the served build NLL +0.0034 (SE 0.0044), mean absolute change 0.130; the reference against itself with only MoE batching changed +0.0036 (SE 0.0041), 0.121. `results/reference-panel-r1/REFERENCE_PIECES_RESULTS_r1.md`. A public-panel KL for this build has not been captured yet. `PRECISION_LEDGER.md` lists every non-bit-identical step.
+Identity runs compare against C1, never against DeepSeek's reference. Experts sit on the reference grid; dense FP8 is Route 3 with Ada truncation, bit-identical only to itself. Measured distance from DeepSeek's own inference code running on Ada, 24 pieces, 11,496 positions: the served build NLL +0.0034 (SE 0.0044), mean absolute change 0.130; the reference against itself with only MoE batching changed +0.0036 (SE 0.0041), 0.121. `results/reference-panel-r1/REFERENCE_PIECES_RESULTS_r1.md`. On sudoingX's public panel this build scores KL 0.0111 and top-1 96.74%, 1.11x the reference's own noise floor: `serving/results/SERVED_PANEL_RESULTS_r1.md`. `PRECISION_LEDGER.md` lists every non-bit-identical step.
 
 ## Contents
 
@@ -37,7 +37,7 @@ Identity runs compare against C1, never against DeepSeek's reference. Experts si
 - `runtime/`: installed KT Python layer, Engram adapter with the batched `io_submit` row store, Route 3 and `wo_a` wrappers, path A expert and prefill wrappers.
 - `native/`: sources of path A decode, expert and prefill kernels, and the `wo_a` CUDA kernel. Route 3's kernel is unchanged: `../contract-route3-six-node/route3-mma-r1/phase2-cuda`.
 - `profiles/`: `*-as-run.json` holds the exact launch arguments and environment of the performance, identity and gate loads; `*-template.json` replaces host paths with the variables in `*-substitutions.json`.
-- `tools/`: the chain that staged and ran these loads, including the panel capture chain, not yet run. They are records of what ran on fea01, with its paths and guards in them.
+- `tools/`: the chain that staged and ran these loads, including the panel capture chain. They are records of what ran on fea01, with its paths and guards in them.
 - `results/`: write-ups, each selector's apply script and test, and the reference-panel tools. `validation/`: the frozen feature client and `kv_checks.py`.
 - `receipts/`: run receipts of the three loads and native build results.
 
