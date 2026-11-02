@@ -357,3 +357,7 @@ padding-page fix (#3) is no longer carried: SGLang main's sparse attention with 
 Apache-2.0 (see `LICENSE`), except `engram-adapter/`, which is derived from 0xSero's
 engram adapter under the MIT License (see the headers of its files). The model weights
 are under DeepSeek's license (see the model card).
+
+## Fork branch: Ada serving build
+
+This branch adds `experimental/ada-serve-six-node`, the build the owner chose for serving on 2 November 2026: breadth median 32.98 tok/s on one RTX 4080 SUPER at 320 W, six NUMA nodes, 42 workers, exact vs C1, serving gate passed. It adds the source overlays, profiles, selector list, tools and write-ups. Everything above this section is the upstream recipe, unchanged. Its pins differ from that snapshot's base, so read the snapshot's `README.md` and `BUILD.md` first.

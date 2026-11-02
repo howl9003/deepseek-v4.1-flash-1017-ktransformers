@@ -1,0 +1,295 @@
+{
+  "status": "G0_NATIVE_BUILDS_COMPLETE_SASS_REVIEW_IMPORTS_PENDING",
+  "steps": [
+    {
+      "label": "kt-configure",
+      "command": [
+        "/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/bin/cmake",
+        "-S",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/ktransformers/kt-kernel",
+        "-B",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/kt-build",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DKTRANSFORMERS_USE_CUDA=ON",
+        "-DCMAKE_CUDA_ARCHITECTURES=89;120a",
+        "-DCMAKE_CUDA_COMPILER=/usr/local/cuda-13.3/bin/nvcc",
+        "-DCPUINFER_ENABLE_LTO=OFF",
+        "-DKTRANSFORMERS_ENABLE_CPPTRACE=OFF",
+        "-DLLAMA_NATIVE=OFF",
+        "-DLLAMA_AVX=ON",
+        "-DLLAMA_AVX2=ON",
+        "-DLLAMA_FMA=ON",
+        "-DLLAMA_F16C=ON",
+        "-DLLAMA_AVX512=OFF",
+        "-DLLAMA_AVX512_VNNI=OFF",
+        "-DLLAMA_AVX512_BF16=OFF",
+        "-DLLAMA_AVX512_VBMI=OFF",
+        "-DLLAMA_BUILD_TESTS=OFF",
+        "-DLLAMA_BUILD_EXAMPLES=OFF",
+        "-DLLAMA_BUILD_SERVER=OFF",
+        "-DPYTHON_EXECUTABLE=/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/bin/python",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DKT_ENABLE_CONTRACT_V2=ON",
+        "-DKT_CUDA_STRICT_MATH=ON"
+      ],
+      "returncode": 0,
+      "seconds": 3.232910674996674
+    },
+    {
+      "label": "kt-build",
+      "command": [
+        "/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/bin/cmake",
+        "--build",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/kt-build",
+        "--target",
+        "kt_kernel_ext",
+        "-j",
+        "6"
+      ],
+      "returncode": 0,
+      "seconds": 174.0612596279825
+    },
+    {
+      "label": "expert-static-r3-compile",
+      "command": [
+        "/usr/local/cuda-13.3/bin/nvcc",
+        "-c",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/sources/expert-static-r3/patha_expert_static.cu",
+        "-o",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/expert-static-r3/kernel.o",
+        "-O3",
+        "-std=c++20",
+        "-gencode=arch=compute_89,code=sm_89",
+        "-gencode=arch=compute_120a,code=sm_120a",
+        "-fmad=false",
+        "--expt-relaxed-constexpr",
+        "-Xptxas=-v",
+        "--compiler-options=-fPIC",
+        "-DTORCH_EXTENSION_NAME=patha_expert_static_sm89_e0_s3_b8_t0",
+        "-DTORCH_API_INCLUDE_EXTENSION_H",
+        "-D_GLIBCXX_USE_CXX11_ABI=1",
+        "-D__CUDA_NO_HALF_OPERATORS__",
+        "-D__CUDA_NO_HALF_CONVERSIONS__",
+        "-D__CUDA_NO_BFLOAT16_CONVERSIONS__",
+        "-D__CUDA_NO_HALF2_OPERATORS__",
+        "-I/usr/local/cuda-13.3/include",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/include",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/include/torch/csrc/api/include",
+        "-I/home/aster/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/include/python3.12",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/nvidia/cu13/include",
+        "-I/scratch/aster/bench/phase-g-g0-native-20261030-r1/sources/expert-static-r3",
+        "-DPATHA_EXPERT_LUT=0",
+        "-DPATHA_STAGES=3",
+        "-DPATHA_EXPERT_BPC=8",
+        "-DPATHA_EXPERT_TC=0"
+      ],
+      "returncode": 0,
+      "seconds": 78.561449284025
+    },
+    {
+      "label": "expert-static-r3-link",
+      "command": [
+        "g++",
+        "-shared",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/expert-static-r3/kernel.o",
+        "-L/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/lib",
+        "-lc10",
+        "-lc10_cuda",
+        "-ltorch_cpu",
+        "-ltorch_cuda",
+        "-ltorch_python",
+        "-ltorch",
+        "-L/usr/local/cuda-13.3/lib64",
+        "-lcudart",
+        "-Wl,-rpath,/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/lib",
+        "-o",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/expert-static-r3/patha_expert_static_sm89_e0_s3_b8_t0.so"
+      ],
+      "returncode": 0,
+      "seconds": 0.21495017199777067
+    },
+    {
+      "label": "decode-gemv-compile",
+      "command": [
+        "/usr/local/cuda-13.3/bin/nvcc",
+        "-c",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/sources/decode-gemv/patha_decode.cu",
+        "-o",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/decode-gemv/kernel.o",
+        "-O3",
+        "-std=c++20",
+        "-gencode=arch=compute_89,code=sm_89",
+        "-gencode=arch=compute_120a,code=sm_120a",
+        "-fmad=false",
+        "--expt-relaxed-constexpr",
+        "-Xptxas=-v",
+        "--compiler-options=-fPIC",
+        "-DTORCH_EXTENSION_NAME=patha_decode_g0_dual_s2",
+        "-DTORCH_API_INCLUDE_EXTENSION_H",
+        "-D_GLIBCXX_USE_CXX11_ABI=1",
+        "-D__CUDA_NO_HALF_OPERATORS__",
+        "-D__CUDA_NO_HALF_CONVERSIONS__",
+        "-D__CUDA_NO_BFLOAT16_CONVERSIONS__",
+        "-D__CUDA_NO_HALF2_OPERATORS__",
+        "-I/usr/local/cuda-13.3/include",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/include",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/include/torch/csrc/api/include",
+        "-I/home/aster/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/include/python3.12",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/nvidia/cu13/include",
+        "-I/scratch/aster/bench/phase-g-g0-native-20261030-r1/sources/decode-gemv",
+        "-DPATHA_DENSE_LUT=1",
+        "-DPATHA_LUT_REPL=8",
+        "-DPATHA_EXPERT_LUT=1",
+        "-DPATHA_STAGES=2"
+      ],
+      "returncode": 0,
+      "seconds": 84.72761471004924
+    },
+    {
+      "label": "decode-gemv-link",
+      "command": [
+        "g++",
+        "-shared",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/decode-gemv/kernel.o",
+        "-L/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/lib",
+        "-lc10",
+        "-lc10_cuda",
+        "-ltorch_cpu",
+        "-ltorch_cuda",
+        "-ltorch_python",
+        "-ltorch",
+        "-L/usr/local/cuda-13.3/lib64",
+        "-lcudart",
+        "-Wl,-rpath,/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/lib",
+        "-o",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/decode-gemv/patha_decode_g0_dual_s2.so"
+      ],
+      "returncode": 0,
+      "seconds": 0.21494037099182606
+    },
+    {
+      "label": "prefill-imma-compile",
+      "command": [
+        "/usr/local/cuda-13.3/bin/nvcc",
+        "-c",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/sources/prefill-imma/patha_prefill.cu",
+        "-o",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/prefill-imma/kernel.o",
+        "-O3",
+        "-std=c++20",
+        "-gencode=arch=compute_89,code=sm_89",
+        "-gencode=arch=compute_120a,code=sm_120a",
+        "-fmad=false",
+        "--expt-relaxed-constexpr",
+        "-Xptxas=-v",
+        "--compiler-options=-fPIC",
+        "-DTORCH_EXTENSION_NAME=patha_prefill_g0_dual",
+        "-DTORCH_API_INCLUDE_EXTENSION_H",
+        "-D_GLIBCXX_USE_CXX11_ABI=1",
+        "-D__CUDA_NO_HALF_OPERATORS__",
+        "-D__CUDA_NO_HALF_CONVERSIONS__",
+        "-D__CUDA_NO_BFLOAT16_CONVERSIONS__",
+        "-D__CUDA_NO_HALF2_OPERATORS__",
+        "-I/usr/local/cuda-13.3/include",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/include",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/include/torch/csrc/api/include",
+        "-I/home/aster/.local/share/uv/python/cpython-3.12.15-linux-x86_64-gnu/include/python3.12",
+        "-I/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/nvidia/cu13/include",
+        "-I/scratch/aster/bench/phase-g-g0-native-20261030-r1/sources/prefill-imma"
+      ],
+      "returncode": 0,
+      "seconds": 62.18168371694628
+    },
+    {
+      "label": "prefill-imma-link",
+      "command": [
+        "g++",
+        "-shared",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/prefill-imma/kernel.o",
+        "-L/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/lib",
+        "-lc10",
+        "-lc10_cuda",
+        "-ltorch_cpu",
+        "-ltorch_cuda",
+        "-ltorch_python",
+        "-ltorch",
+        "-L/usr/local/cuda-13.3/lib64",
+        "-lcudart",
+        "-Wl,-rpath,/scratch/aster/bench/phase-g-g0-environment-20261030-r3/venv/lib/python3.12/site-packages/torch/lib",
+        "-o",
+        "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/prefill-imma/patha_prefill_g0_dual.so"
+      ],
+      "returncode": 0,
+      "seconds": 0.2148161589866504
+    }
+  ],
+  "artifacts": [
+    {
+      "package": "kt-kernel",
+      "path": "/scratch/aster/bench/phase-g-g0-native-20261030-r1/kt-build/kt_kernel_ext.cpython-312-x86_64-linux-gnu.so",
+      "sha256": "7fb74a046d1c9b99124750d3b8518d10cda1b40fa68f818f2ddf5857782a6beb"
+    },
+    {
+      "package": "expert-static-r3",
+      "path": "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/expert-static-r3/patha_expert_static_sm89_e0_s3_b8_t0.so",
+      "sha256": "4d44ef332bfd9aba8cdb963225fd55ec9c0b2b5281f42adcc93fed92a3e08f61",
+      "source_sha256": "b9b321e24842af4355b1794f5a56c2b51b65992a32d1b2a4f0766f3ccd5e7f11",
+      "knobs": {
+        "PATHA_EXPERT_LUT": 0,
+        "PATHA_STAGES": 3,
+        "PATHA_EXPERT_BPC": 8,
+        "PATHA_EXPERT_TC": 0
+      },
+      "disassembly": {
+        "sass.txt": "91e90641a983bc166aaac4781ceef8472e6e42ba89e6aaab6c81f6cefcb06ff4",
+        "resources.txt": "71a96603c726c4d1c8cc282b4d28b7d26b690acb29800d08daf26d400873901e",
+        "elf.txt": "526600f24e4d2482e921ca7cbaf1e67bf3e76c8d423cab0db617188ef9cd285f"
+      },
+      "imported_no_configure": true
+    },
+    {
+      "package": "decode-gemv",
+      "path": "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/decode-gemv/patha_decode_g0_dual_s2.so",
+      "sha256": "9a79de77b588b7f3d84576240ba4d10cb9d8260c8616aae770d845697576e026",
+      "source_sha256": "fba8e9967469fab2d0b9c70a4e8db4d67bb5b234c567091b97335751d1fb423e",
+      "knobs": {
+        "PATHA_DENSE_LUT": 1,
+        "PATHA_LUT_REPL": 8,
+        "PATHA_EXPERT_LUT": 1,
+        "PATHA_STAGES": 2
+      },
+      "disassembly": {
+        "sass.txt": "74634840465c331ebfd47dd7ee677426e188b78a71bcff997291f23ff3a8d843",
+        "resources.txt": "aabb8be2b7fee4495fb6d42619ae299cc1d803c7f2bfc0abe62de04d6c594b64",
+        "elf.txt": "41bbbfacd3328bfef9a1a3c9a56d590ae71fa336874c85c879caeb214bf0b426"
+      },
+      "imported_no_configure": true
+    },
+    {
+      "package": "prefill-imma",
+      "path": "/scratch/aster/bench/phase-g-g0-native-20261030-r1/build/prefill-imma/patha_prefill_g0_dual.so",
+      "sha256": "85ea9dee9876cb62524c348149427f8524be1c95487e3b5f267b09cbafe34e6c",
+      "source_sha256": "c55f90e8e3a5c33c154952714c60bc55b535900552f3246147150f690532c8fa",
+      "knobs": {},
+      "disassembly": {
+        "sass.txt": "0282f7d1746ccc121b88b5fb10f0244ba6dc1d95c69aa73496f0f6610dc69f56",
+        "resources.txt": "d904c0704ab75495c78ede04a43f978d497d32cd5f6cf57d0165f254adb66eee",
+        "elf.txt": "6c799becc417483b8d23ed0ab7399817e2b1d3a72aa6eb24e146a41cb889c849"
+      },
+      "imported_no_configure": true
+    }
+  ],
+  "no_gpu": true,
+  "no_model": true,
+  "kt_build_port": {
+    "path": "kt-kernel/CMakeLists.txt",
+    "before_sha256": "04e32950249db9a98382f98b11f437357af0913f114470bf802e80370d7bae01",
+    "after_sha256": "646cc4aa83a0fbb061d4897302c099d61461535e868d5859b65aca379dd3d2db",
+    "default": "OFF",
+    "reason": "CUDA 13.3 C++20/no-fast-math flags; CPU compiler options stay as accepted."
+  },
+  "cuda_initialized": false,
+  "contract_static_note": "Accepted static_routes_candidate.py uses Triton JIT, not a separate CUDA extension; no replacement or architecture claim made here."
+}

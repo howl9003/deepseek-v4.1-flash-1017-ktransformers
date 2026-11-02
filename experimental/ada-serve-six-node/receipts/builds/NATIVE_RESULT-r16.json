@@ -1,0 +1,33 @@
+{
+  "status": "NATIVE_R16_BUILD_PASS",
+  "steps": [
+    {
+      "label": "test-build",
+      "exit": 0,
+      "seconds": 0.7656673360615969
+    },
+    {
+      "label": "layout-test",
+      "exit": 0,
+      "seconds": 0.007840955979190767
+    },
+    {
+      "label": "configure",
+      "exit": 0,
+      "seconds": 3.319769260007888
+    },
+    {
+      "label": "build",
+      "exit": 0,
+      "seconds": 55.762283603078686
+    }
+  ],
+  "default_off": true,
+  "base": "/scratch/aster/bench/ada-native-ref-20261031-r1",
+  "header_before": "38fe6e01261f1e0e0845f032224d451d4d39a17e0935e68b7dbd7c1fc089b538",
+  "header_after": "2b373cc5a336447d965090bbc56de060fc973042f6886f72aca0b816f58b8d53",
+  "artifact": {
+    "path": "/scratch/aster/bench/ada-native-r16-20261101-r1/kt-build/kt_kernel_ext.cpython-312-x86_64-linux-gnu.so",
+    "sha256": "fd5072c3832a15abec609cbc238cfb127754131a257c0b7fcaca2900098e6751"
+  }
+}

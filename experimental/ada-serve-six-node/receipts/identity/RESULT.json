@@ -1,0 +1,127 @@
+{
+  "status": "ADA_NUMERICAL_EXACT_VS_C1",
+  "arm": "on",
+  "performance_run": false,
+  "cases": [
+    {
+      "case": "four-k",
+      "prompt_tokens": 4096,
+      "request_sha256": "4a72dd4154f7ff79f3624506ad2f2d3b3bcbd2a5d702cd133d11cf4cac9ffc53",
+      "response_sha256": "a19f2cc08f3a8d477087932ae0643acb00ea32f2be3d58db0bef2f15ec0b2449",
+      "gate": {
+        "text_equal": true,
+        "output_ids_equal": true,
+        "selected_logprob_ids_equal": true,
+        "selected_logprobs_exact": true,
+        "numeric": {
+          "status": "EXACT",
+          "compared_scores": 8,
+          "first_difference": null
+        },
+        "top_logprobs_exact": true,
+        "top_logprob_ids_exact": true,
+        "continuation_length": true,
+        "finite_selected_logprobs": true,
+        "layer_flags": true
+      },
+      "flag_checks": 40,
+      "compared_against_off": false
+    },
+    {
+      "case": "35k-first",
+      "prompt_tokens": 35000,
+      "request_sha256": "bc756a359654476ae664628884d3d5e5842d0aa71af41eb33aabb19fec32aea3",
+      "response_sha256": "7382144dcc52146286d8a6c0d85069c663d5818d8f7389a7b9886735ea10590f",
+      "gate": {
+        "text_equal": true,
+        "output_ids_equal": true,
+        "selected_logprob_ids_equal": true,
+        "selected_logprobs_exact": true,
+        "numeric": {
+          "status": "EXACT",
+          "compared_scores": 8,
+          "first_difference": null
+        },
+        "top_logprobs_exact": true,
+        "top_logprob_ids_exact": true,
+        "continuation_length": true,
+        "finite_selected_logprobs": true,
+        "layer_flags": true
+      },
+      "flag_checks": 40,
+      "compared_against_off": false
+    },
+    {
+      "case": "35k-second",
+      "prompt_tokens": 35000,
+      "request_sha256": "dae3ee476dce7795b929279c832308839f65c88f09708765cf897ff07980c767",
+      "response_sha256": "8520ca516fd7e195e1fba6922201bdf7dc5886b7e9b0164c60ca1bacf4e5c5f4",
+      "gate": {
+        "text_equal": true,
+        "output_ids_equal": true,
+        "selected_logprob_ids_equal": true,
+        "selected_logprobs_exact": true,
+        "numeric": {
+          "status": "EXACT",
+          "compared_scores": 8,
+          "first_difference": null
+        },
+        "top_logprobs_exact": true,
+        "top_logprob_ids_exact": true,
+        "continuation_length": true,
+        "finite_selected_logprobs": true,
+        "layer_flags": true
+      },
+      "flag_checks": 40,
+      "compared_against_off": false
+    }
+  ],
+  "acceptance": "HELD",
+  "rotation": {
+    "text_equal": true,
+    "output_ids_equal": true,
+    "selected_logprob_ids_equal": true,
+    "selected_logprobs_exact": true,
+    "numeric": {
+      "status": "EXACT",
+      "compared_scores": 8,
+      "first_difference": null
+    },
+    "top_logprobs_exact": true,
+    "top_logprob_ids_exact": true,
+    "continuation_length": true,
+    "finite_selected_logprobs": true,
+    "swaps_logged": [
+      1902,
+      808
+    ],
+    "moved": true
+  },
+  "replay_0": {
+    "text_equal": true,
+    "output_ids_equal": true,
+    "selected_logprob_ids_equal": true,
+    "selected_logprobs_exact": true,
+    "numeric": {
+      "status": "EXACT",
+      "compared_scores": 1,
+      "first_difference": null
+    }
+  },
+  "replay_1": {
+    "text_equal": true,
+    "output_ids_equal": true,
+    "selected_logprob_ids_equal": true,
+    "selected_logprobs_exact": true,
+    "numeric": {
+      "status": "EXACT",
+      "compared_scores": 1,
+      "first_difference": null
+    }
+  },
+  "numerical_set_vs_arm2": {
+    "status": "EXACT",
+    "compared_scores": 11496,
+    "first_difference": null
+  }
+}

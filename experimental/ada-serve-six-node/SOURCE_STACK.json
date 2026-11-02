@@ -1,0 +1,651 @@
+{
+  "changes": [
+    {
+      "after_sha256": "8d0cfd0b275622c9d0065ad78c6ec145c62dd9cdad33782c8ff471d930fb6674",
+      "before_sha256": "7719545131a8f77de08213f347f7b6ae242dcfb4ff2b9c4b25e42f0ad1e62020",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/jit/csrc/gemm/per_token_group_quant_8bit_v2.cuh"
+    },
+    {
+      "after_sha256": "65f64a1a196dee450f0e227ac8f7f0c209d41f4e48dc84ba318fdafc031cebf2",
+      "before_sha256": "493d43e162c581986c79612562941d7c2001895fce4ddff7a4e709a57098876a",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/dsv4/dequant_k_cache.py"
+    },
+    {
+      "after_sha256": "d6d616217b735d07d59a4e63f2dd595b8f26607e025af38708047721d8c64236",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/dsv4/live_topk.py"
+    },
+    {
+      "after_sha256": "dfb2b618909a799f2e560ba3417089c05918472a459df47ed44c6fdee01c4d33",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/dsv4/single_route.py"
+    },
+    {
+      "after_sha256": "d7fb0005ab99587d8f910c2a4a7af133e1a2f1ae766b09136eb7a26c77da2cc4",
+      "before_sha256": "e579d8aba7c3746f67ca0a6039683c983075d90eb1d3935de4e3d9b5c65e6c7f",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/flash_mla_sm120.py"
+    },
+    {
+      "after_sha256": "644450d0eceae865607b01b879d8b10510eb872ade3ed7865922e2f525f98d78",
+      "before_sha256": "37e6dd6dcab87a812b20a2ea2d35ae01a32cdb2e8dd67fa0ebbf799873c1e4a7",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/flash_mla_sm120_triton.py"
+    },
+    {
+      "after_sha256": "75d14867db6194c3e46280cfb247ca752de1855ce60df6752baa3c086eb56ad6",
+      "before_sha256": "ad723c6495a06af27caf0e024e77d0d24dbc3c1f693a6aeba1bc35dc93f4fd13",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/sm89_dual_scope.py"
+    },
+    {
+      "after_sha256": "f7b9cb17970c081edbf3842c4a7d70f936746eff8fffb6dfbc5444fa80689fe1",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/sm89_gather_staged.py"
+    },
+    {
+      "after_sha256": "8a1340446c32678f270a7128d12d941c77ac43e5c4201881640242ea3a5a0dee",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/gemm/fixed_fp8_cuda_core.py"
+    },
+    {
+      "after_sha256": "11316ecc719597dc5a6e71fd6012326d3b128687ade8a1856e9780b74a1dd649",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/gemm/fixed_fp8_decode.py"
+    },
+    {
+      "after_sha256": "44e595401c93f822e4c46c5562ea5f3bf5167a00f49fff269831ac6c5673bc15",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/gemm/fixed_lm_head.py"
+    },
+    {
+      "after_sha256": "4995859493b926a774988be9a3510141abdbe7e4361015c02b46f825832a79ae",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/gemm/fixed_projection.py"
+    },
+    {
+      "after_sha256": "d8d6ac4d13941c34ca729e847a8346d9b995273dfa187c3d07bb89f2829ab778",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/gemm/fixed_wo_a_fp8.py"
+    },
+    {
+      "after_sha256": "2edcb3dd9301a35e842bfd712b3831567d72e67c3cd54c4a2a489891173c9e9c",
+      "before_sha256": "14189c5ded4673d5cd57673494fd215a1929da8fa91df56c977317003ed3e58b",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/gemm/fp8_kernel.py"
+    },
+    {
+      "after_sha256": "f614458f5e68e896fd66a618d92f99624089873344c9989494bb1ef74863af7c",
+      "before_sha256": "67d3f7a03b45411a717f4df492e2bff6974e1e73efbec968b17ee3e1529317dd",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/quantization/per_token_group_quant_8bit_v2.py"
+    },
+    {
+      "after_sha256": "51a696d711afad8f16b08942b558236e6506074fe0dfc5a06265d7ba0c798597",
+      "before_sha256": "772f937df3f8ebc413a8582d83d5030e23e1fa50bbb45436de49358a13a7d9dc",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/distributed/parallel_state.py"
+    },
+    {
+      "after_sha256": "1c6ccdd48c1a69bf8fad8e67fd482972537e47ceafbf77411dc5bbcebadd6ff6",
+      "before_sha256": "8e6008a7e07c35e92df4f66b9e211f779314379dbaf7ff81aa48d3b93dbe4706",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/attention/deepseek_v4_backend.py"
+    },
+    {
+      "after_sha256": "d38692aff911c5338591ff5d17d1a66f94c71e4fda16d22dc3b2c672b9875c20",
+      "before_sha256": "63825e3fcc860928f26d214d497f3badb5d866473644afef08e71d991f2d2a9f",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/attention/dsv4/dsv41_sparse.py"
+    },
+    {
+      "after_sha256": "c714b931cdbce34b4f6222ca28388fdd0fbc29c21935096e841d4c3f5b3c5f6f",
+      "before_sha256": "7e1dcba8c224477c86335fb0e0e2442c9d87d0b0bc416f328bc61a10633334e4",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/attention/dsv4/metadata.py"
+    },
+    {
+      "after_sha256": "d6b449f61a29b75736f9081af5c98689426a4ed19cc5e62957886c562d7800d0",
+      "before_sha256": "69c77ddaee7e6650a20fcfd1056e43beba57961bee0f4d3fa3ec2a44ad2aab9f",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/attention/dsv4/v41_indexer/dense_blocks.py"
+    },
+    {
+      "after_sha256": "d144ebceebaed46f535ef7e61a8bde434144d0cbff2b8305b1c6e8c9c692bac7",
+      "before_sha256": "0b84778c6cc913ff08f8b977e828a96575b004a04e36ade77daf01226d0fad91",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/attention/dsv4/v41_indexer/scoring.py"
+    },
+    {
+      "after_sha256": "51ce9204829bc3b3b2c97346acf342a366e21e06b6f2947bf8cf968dcb8999e7",
+      "before_sha256": "5154d547402a84649e625f3eae4e8e5671f4d3fdf0ef2d255b5a60611c1debb5",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/logits_processor.py"
+    },
+    {
+      "after_sha256": "7f49158545714cd6c0d0ba3f587aa2194f88069efebe84ab3efb224b74d37d3d",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/__init__.py"
+    },
+    {
+      "after_sha256": "01beed62fdf94920144c42b939546b4b4612c6c44ba70ec1f13f9045e23687c8",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/adapter.py"
+    },
+    {
+      "after_sha256": "30fa501199bf0375a31a5af3329d7f196655a77c608cbed904d995b1d1688bd3",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/arena_stream_candidate.py"
+    },
+    {
+      "after_sha256": "7b23189dca07f7b90588f3dc1653eed38e7094165a70f818e16999bd18427b50",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/decode_splitk_candidate.py"
+    },
+    {
+      "after_sha256": "821cc33a6778b7e93fdddb66f9e139cefdc19a5167681d5a71435522a11270b3",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/dp4a_projection_r1.py"
+    },
+    {
+      "after_sha256": "e56a8e58899fd393fa6d2d50a219711a821bbd3987a1f573a02192c834c1820c",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/dp4a_routes_candidate.py"
+    },
+    {
+      "after_sha256": "7cee04fbf506436568e353991af7b97703b453ded3889c0ebf07a0c30a4430c7",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/fast_combine.py"
+    },
+    {
+      "after_sha256": "422eccfaa21e72a6b26855bb10cdcfead6c1ce3262ecd813c99d8cbf9677f2e2",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/fp8_table.bin"
+    },
+    {
+      "after_sha256": "20f13ac58d4e0cf09a5a384981bb3f3047e645e3556fb1f9f0dcbef05b599d48",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/glue_fused.py"
+    },
+    {
+      "after_sha256": "777b01b979dd4ddddf9d27110d1a655dcc82628a7dd571660db36f15859c0b53",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/kernels.py"
+    },
+    {
+      "after_sha256": "be032b15aee1a9bbfa48082d30b914a9589243ff34e936fb9d681aae80f3b99e",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/moe.py"
+    },
+    {
+      "after_sha256": "1cf5d7c8c0a836059dd0c319c5042b1a71a841a1d175d6073984f9f5f3540dad",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/patha_prefill_runtime.py"
+    },
+    {
+      "after_sha256": "218d3d8b0d69b141c0999f5a59fd8816fd80a5c1648b95cddf75b963dcfa9df4",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/patha_static_runtime.py"
+    },
+    {
+      "after_sha256": "f4f61f49a5b610441c9f758a01954412a296f189c201aecff31a4d18fae99698",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/placement_order.py"
+    },
+    {
+      "after_sha256": "4e08cff10bed7793df85e094f8ec9d9700cce52412bd5e54070eaf221596f9ea",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/silu_table.bin"
+    },
+    {
+      "after_sha256": "806fd8b1dacaf8f4d083079ceb1e33f2a484fffe7ce62624dadfd0795e6fed35",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/static_routes_candidate.py"
+    },
+    {
+      "after_sha256": "6c757f1fea59dc1c1c241624fe33724f9dfc9c535b17a5e911f7f82bdd1d8627",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/stream_graph_candidate.py"
+    },
+    {
+      "after_sha256": "3f78f92637e0c9b72f6bab414b350bc9d5f71db2bbfb82f9c7b0427b84cd6da9",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/stream_patha.py"
+    },
+    {
+      "after_sha256": "ab478f8e8f10918baec64c78dd003a6f33a4ea6eb83a9096cee1b49fc9eb6612",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/stream_patha_kernels.py"
+    },
+    {
+      "after_sha256": "0db5af4a8b4347aae5eced229397a14762bb3ab75a949ff560337f11d48b4616",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/tables.py"
+    },
+    {
+      "after_sha256": "412b6b391e9a0f2cef310fcd19575dd4efff880a3839ec1fa2167620201fe813",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/contract_v2/tp2_routes.py"
+    },
+    {
+      "after_sha256": "62a3d3d49c90f930788e7e3f0a1890b2fc443822d2d08b1549092adce644bc2c",
+      "before_sha256": "8f1bc1e3c35f005399f3a56dcc2418d5b3ab7a0f619e8836cd507e803d89fbe0",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/fused_moe_triton/layer.py"
+    },
+    {
+      "after_sha256": "c1eb8c4c6289e42b39efe1388a253490e161c3fa81acb7a7bee0f99a2e853da8",
+      "before_sha256": "3ed7ecc3ef74db0b776d5d0566e6898b73e56e453d10c89996489f1f56b00b72",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/kt_ep_wrapper.py"
+    },
+    {
+      "after_sha256": "c129eda15d3fa616eca0d9869034d214f802da5d9c9adf317737a42b56ebe2dd",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/kt_handoff_pack.py"
+    },
+    {
+      "after_sha256": "c96c434afd1d48e6b6aafcd84ec834df9f4d8dd0afcee4e30b6a3064457ee762",
+      "before_sha256": "ce618aec455fa921784de1d5959c2b031037f27d303c7062871f937611fa9d2f",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/kt_kv_hot_lend.py"
+    },
+    {
+      "after_sha256": "281ce3141d6075aab77a2ff6d2a98520902418f32ae1bf3aacd9e634c4f33d64",
+      "before_sha256": "f054486700b09fc7cd7be9a111cc61ff5db74159423b1ffd73f6ed620bf29da8",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/kt_kv_prefill_lend.py"
+    },
+    {
+      "after_sha256": "3ae289df0db95c789a545608e7b47c6c6a7fc763bb3412fe96ef58659694f621",
+      "before_sha256": "079aba292c5a5bb0e819f5ed84895f9836e2b0661adc4c95c8aa6bbfd719273a",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/kt_lend.py"
+    },
+    {
+      "after_sha256": "7827b4961219076e8cce930e65ec673f7a215517065369f490626ab76f179f95",
+      "before_sha256": "f255f2193e5e5b0113b6a22fd0082aecd1f316326f8a5a01067f3d29a4cafe7c",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/kt_stream_prefill.py"
+    },
+    {
+      "after_sha256": "1d4a6399d529865b575e1b43ff9777142de58a75109d873ba58ccc0cd26dfc97",
+      "before_sha256": "491fc1471d0cffc782840a7fd3be56d48fea816369a04cd54523448be3597691",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/moe/utils.py"
+    },
+    {
+      "after_sha256": "fd609b661d5eb4ab53f55100aa65dc07b2fb0751ef36c8ecbe83a0b463471738",
+      "before_sha256": "72c574d03d11648d56e03fea86c92f50937c43bdf88daf8efd83e35ad038398a",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/fp8_utils.py"
+    },
+    {
+      "after_sha256": "b95cd58ebcc43252f2ca8252b5abce4ed7e0ed4430d7707dca6cca1c1b7862c6",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/__init__.py"
+    },
+    {
+      "after_sha256": "f7b12df67a67b6e8613cec34ae81de87b223d0402e6fcc3a82eff8c84b37720f",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/policy.py"
+    },
+    {
+      "after_sha256": "4c72e4fb770b32e8049aa5ae74406123a606a0f85228fc031a5f323a39a15149",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/runtime.py"
+    },
+    {
+      "after_sha256": "8c0077078443d4933fe549a81f4436299e3d430b4894712b9ff56b429df74908",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/tp2.py"
+    },
+    {
+      "after_sha256": "b95cd58ebcc43252f2ca8252b5abce4ed7e0ed4430d7707dca6cca1c1b7862c6",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/vendor/__init__.py"
+    },
+    {
+      "after_sha256": "b95cd58ebcc43252f2ca8252b5abce4ed7e0ed4430d7707dca6cca1c1b7862c6",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/vendor/decode/__init__.py"
+    },
+    {
+      "after_sha256": "fba8e9967469fab2d0b9c70a4e8db4d67bb5b234c567091b97335751d1fb423e",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/vendor/decode/patha_decode.cu"
+    },
+    {
+      "after_sha256": "7ca545c10f0322808767ad66f62bdad8017db4cc117f698cdf31453329e3e7a5",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/vendor/decode/patha_decode.py"
+    },
+    {
+      "after_sha256": "b95cd58ebcc43252f2ca8252b5abce4ed7e0ed4430d7707dca6cca1c1b7862c6",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/vendor/prefill/__init__.py"
+    },
+    {
+      "after_sha256": "c55f90e8e3a5c33c154952714c60bc55b535900552f3246147150f690532c8fa",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/vendor/prefill/patha_prefill.cu"
+    },
+    {
+      "after_sha256": "ddad7e400b68c7a62596fda66c229ca9c956aa44962a55908d992ceaf8473e1f",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/vendor/prefill/patha_prefill.py"
+    },
+    {
+      "after_sha256": "f654d81652cfdcd4437d25c396c07763ef82b9936ad55a4a5f46190cb765d7ba",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/layers/quantization/patha/vendor/prefill/patha_sequence.h"
+    },
+    {
+      "after_sha256": "1c2483041a7c2b626af6556353e0e8b4bd09bbd1af34a70e23060c7371b88a15",
+      "before_sha256": "77a199fd3228e7cb34da4242e686ab6adb67f1bcc88e7d4733b0d7ba5ff4aa70",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/managers/scheduler.py"
+    },
+    {
+      "after_sha256": "58e1006d617c6269e0ca4f184431e9723eb98229e5d788b5b2b947dff22e1d1b",
+      "before_sha256": "b0b43853ebf001a018797787f1ffcf5e27bde21cfba17e9702c45fac5b77bf79",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/managers/scheduler_components/batch_result_processor.py"
+    },
+    {
+      "after_sha256": "c4e66a1fd07cdadd8ba7cf9e69fe8ca581b6e5f823135ea9652be03836e0429d",
+      "before_sha256": "cd51668b07fcdfc59754baae315f8ac2fb60d9873f75ec442af695983e24c543",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/managers/tp_worker.py"
+    },
+    {
+      "after_sha256": "7a12a5d0827e2de29c0f7cf36064edcb4fbcbb4fa60dd1ec75244fc2f14d9e2e",
+      "before_sha256": "0d4e30621a05429516c5ed0c00dff6a42ecb98c957fda575c1cfb1390c7c9cc6",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/managers/utils.py"
+    },
+    {
+      "after_sha256": "8336eeaee7ff7f655ae24ed97e290aaf60d9eb14043e920c072c13bab801b159",
+      "before_sha256": "a9f37dd7fbc127a5b72990bacf9545ec6b49d62addc158ba8efe06caded0d39b",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py"
+    },
+    {
+      "after_sha256": "efb9fd670c913039806a178ac2b460819f95dd0a590ae0c3ad4eb171ba82a51c",
+      "before_sha256": "0de7505c3d24d219a0d674ad5903e320567a2800815d372e2e6dcee9f35d24c1",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/model_executor/model_runner.py"
+    },
+    {
+      "after_sha256": "1ad3bfb742889467dfb900bccb24f24bfb60cc5ae6f87dd0872bd2d6de37aa8c",
+      "before_sha256": "c4d25d2258347b3aaa6e04badd2e442a1d74a6c72c0dca6469f45e50b9dfd174",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/models/deepseek_common/moe_transport.py"
+    },
+    {
+      "after_sha256": "337e5da6e9dad0907b9879654e9e2a34bfa7f4670f3e7aa75e3e53f719254b0b",
+      "before_sha256": "98df9dafd4d387bb8a16c2919f2a70c22608876ca5004226043f9d0c9a5474f3",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/models/deepseek_v2.py"
+    },
+    {
+      "after_sha256": "aca4c184b1c1ea6dc61e44b9e90feb7523deca047505dff419da375509ab0906",
+      "before_sha256": "04105c5df3f495bb83529ca4fe2e59df80eab23410135baf2e81b2c25bc91eca",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/models/deepseek_v4.py"
+    },
+    {
+      "after_sha256": "541ba0e5d3f8ec45ec1ec6444561f7825673eba328b559d55918566e62047dd1",
+      "before_sha256": "73ce5de739d4931617e78cec36740c0b92c3efd585c6725a9743df36f1f33cb8",
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/models/deepseek_v4_mhc.py"
+    },
+    {
+      "after_sha256": "70d7d0777d619625ca4d548aa1d0fe06e3ad67a4a601750e4f4c5ebfb18efbbd",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/srt/utils/kt_service_affinity.py"
+    },
+    {
+      "after_sha256": "646cc4aa83a0fbb061d4897302c099d61461535e868d5859b65aca379dd3d2db",
+      "before_sha256": "7162483fb3894a61a975077bad3b2c00e424a75203c96365ba325dd0959231a0",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/CMakeLists.txt"
+    },
+    {
+      "after_sha256": "d9faa3a8e20aaefffbd6f29abdf60250721c270bf38d90e831265fc3bc46eac8",
+      "before_sha256": "565c84e1466de281e90c1bad61ce7eafb97b257dd55fc24d0f4899c7ac162719",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/cpu_backend/cpuinfer.h"
+    },
+    {
+      "after_sha256": "107dd465c3761eceebbcb7708af994020452b136a1a1a3bd2dcbf97a07bf8989",
+      "before_sha256": "aeb433b0fc65f7a769e55ca6a02ac79f2d824a99bf07447539ad610778b90345",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/cpu_backend/worker_pool.cpp"
+    },
+    {
+      "after_sha256": "ee0566fcd6f58105ae9cf1a5cbe7771d2a56f6db5439158ab4e9c10d2b3b7f18",
+      "before_sha256": "ff4283dea4f58bcdccc346c41cf4a31a89b0aba28a4f30c7371d9276de1a52eb",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/ext_bindings.cpp"
+    },
+    {
+      "after_sha256": "1fdad87ce7d0be959e895469d7198ebe0761533c2d9b3498f9c8e54aafcab965",
+      "before_sha256": null,
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/avx2/contract_v2-moe.hpp"
+    },
+    {
+      "after_sha256": "166bbc444ab3a16309251d8d7e20631427189d15ca9bf8c100f95b8f34f428bd",
+      "before_sha256": null,
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/avx2/contract_v2_kernels.inc"
+    },
+    {
+      "after_sha256": "5b7a1f70f9612dd7dccbd57291d177a81da4606f81eee18110a792aa70d16b7a",
+      "before_sha256": null,
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/avx2/contract_v2_tables.inc"
+    },
+    {
+      "after_sha256": "2b373cc5a336447d965090bbc56de060fc973042f6886f72aca0b816f58b8d53",
+      "before_sha256": null,
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/avx2/expert_arena_spill.hpp"
+    },
+    {
+      "after_sha256": "05b89f50e19de2a92ca0d95c48690173197343ed4f732a44ac1aa7d23c1818e5",
+      "before_sha256": "1f7a81ee9135a4c23c56d75e1cb1c75d6767d01cc9a8961ac343ef159c40b45c",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/avx2/moe_base.hpp"
+    },
+    {
+      "after_sha256": "e68d66fbbc235d70a57249e758ca66e52d40300ebff41bf86a900cf1ff6ba9a7",
+      "before_sha256": "f10e9ccf022e1d7f3a78b0c5aa4a7258e55b0ac1609b04419865a6b7c2b8fa62",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/avx2/mxfp4-moe.hpp"
+    },
+    {
+      "after_sha256": "ee6545d466d35b4fb6e43d40c9f19f527e623f091cfd93d8667017ed810359ba",
+      "before_sha256": null,
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/avx2/strict_activation.cpp"
+    },
+    {
+      "after_sha256": "807bfbcf9e57db00f109e1851e7c150874ec716149d8a8ddd9b05ec45522dc61",
+      "before_sha256": "e5e1065e240cc02c7377dfb72b4adcb7273ea0d04b7a2737a3719a65be814bb1",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/common.hpp"
+    },
+    {
+      "after_sha256": "7f7c1b143e4af3e6b811d46bf0559e8965b4838ca616e307a590248fb9a491f3",
+      "before_sha256": "263d40c173e60ad69afd2406723081a381d53c703af400eaef94311c7ee8ff40",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/operators/moe-tp.hpp"
+    },
+    {
+      "after_sha256": "d4c3725a3b4882b450d6104c46eb4914ece9425c25a7f5506b1c9f41a8f1bc1c",
+      "before_sha256": "8fe111688e6f858943c1e985a4e9e211cce706e0635668de5bc293dd471fe590",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/python/experts_base.py"
+    },
+    {
+      "after_sha256": "e77b9d9b1dfcbf27b36ab4f0a435fb0ad048b73ca555faf98bcf55ab36a1fa80",
+      "before_sha256": "46f99fd9e2ddcfd739c681e0f8baf76446657382a98ec929e044ab0ed327af49",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "kt-kernel/python/utils/amx.py"
+    },
+    {
+      "after_sha256": "11901b0c72a7d5a3d0f263499c1ed3ab43f0a0c453ed2b323142dbee992fee8c",
+      "before_link": "../ggml.h",
+      "before_sha256": "19e6379dde44185f97a672d4c34d3bd7c0c3cfb476fce05147b53a23f3f83efa",
+      "component": "ktransformers",
+      "modification": "Served Ada build overlay over recipe 5d53f727 on KTransformers 95009ea; upstream notices retained verbatim.",
+      "path": "third_party/llama.cpp/spm-headers/ggml.h"
+    }
+  ],
+  "host_reload_sha256": "eb31f84a7ae96126bfa1fd97e8c3c98527c58d5f515610b15a03fe39c14597b4",
+  "ktransformers": "95009ea6856c0799e517e93cb12be5e8494bc7ce",
+  "llama_cpp": "a94e6ff8774b7c9f950d9545baf0ce35e8d1ed2f",
+  "phase": "Ada serving build, 1 Nov 2026",
+  "pybind11": "bb05e0810b87e74709d9f4c4545f1f57a1b386f5",
+  "recipe_base": "5d53f72741dac6cbabd975a823f8ab3ab40dc0df",
+  "sglang": "5d8e90a0f96e6ba35603f9b27f2f1039268c810e",
+  "tier": 2,
+  "version": 3
+}

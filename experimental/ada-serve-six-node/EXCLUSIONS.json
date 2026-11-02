@@ -1,0 +1,61 @@
+{
+  "excluded_classes": [
+    "model weights and checkpoint-derived tensors/logprob payloads",
+    "panel captures, panel conversations, scored panel outputs and raw traces",
+    "evidence archives and compiled binaries",
+    "host caches, temporary hints, credentials and unrelated source trees",
+    "rotated-copy and frozen-swap candidates, measured and not served"
+  ],
+  "files": [
+    {
+      "bytes": 5697304,
+      "reason": "rebuild_native_binary_from_sources",
+      "sha256": "fd5072c3832a15abec609cbc238cfb127754131a257c0b7fcaca2900098e6751",
+      "source": "/scratch/aster/bench/ada-gate-engram-20261101-r1/packages/kt_kernel/kt_kernel_ext.cpython-312-x86_64-linux-gnu.so"
+    },
+    {
+      "bytes": 3572992,
+      "reason": "rebuild_native_binary_from_sources",
+      "sha256": "4d44ef332bfd9aba8cdb963225fd55ec9c0b2b5281f42adcc93fed92a3e08f61",
+      "source": "/scratch/aster/bench/ada-gate-engram-20261101-r1/packages/patha_expert_static_sm89_e0_s3_b8_t0.so"
+    },
+    {
+      "bytes": 432400,
+      "reason": "rebuild_native_binary_from_sources",
+      "sha256": "51c179a96c838f2b51d9a01707706534a9472fe50752bedbab7c659905dca649",
+      "source": "/scratch/aster/bench/ada-gate-engram-20261101-r1/packages/route3_phase2_l2p0_r1.so"
+    },
+    {
+      "bytes": 422984,
+      "reason": "rebuild_native_binary_from_sources",
+      "sha256": "e42dc74f1695994c3e0b698813288a15e8d5af5ffef6af0cd3b279c63ecbb5de",
+      "source": "/scratch/aster/bench/ada-gate-engram-20261101-r1/packages/wo_a_parts_b4s3.so"
+    },
+    {
+      "bytes": 4402624,
+      "reason": "rebuild_native_binary_from_sources",
+      "sha256": "9a79de77b588b7f3d84576240ba4d10cb9d8260c8616aae770d845697576e026",
+      "source": "/scratch/aster/bench/ada-gate-engram-20261101-r1/packages/patha/patha_decode_g0_dual_s2.so"
+    },
+    {
+      "bytes": 1234208,
+      "reason": "rebuild_native_binary_from_sources",
+      "sha256": "85ea9dee9876cb62524c348149427f8524be1c95487e3b5f267b09cbafe34e6c",
+      "source": "/scratch/aster/bench/ada-gate-engram-20261101-r1/packages/patha/patha_prefill_g0_dual.so"
+    },
+    {
+      "bytes": 47720,
+      "reason": "rebuild_native_binary_from_sources",
+      "sha256": "45850492306cca3830a3832927f4f7b2a7ee63e91f27d1b72fdff74d64b8f237",
+      "source": "/scratch/aster/bench/ada-gate-engram-20261101-r1/recipe/engram-adapter/librow_store.so"
+    },
+    {
+      "bytes": 35546225,
+      "reason": "size_limit_and_contains_logprob_payloads",
+      "sha256": "b87fb1dcd284168cdc92c211866b488d37116c359fbbb1ddb3a1ef1f0a724ed6",
+      "source": "/scratch/aster/bench/ada-gate-engram-20261101-r1/features-phase-g-g1v-adaygate-r1/report.json"
+    }
+  ],
+  "scope": "Only allowlisted sources, profiles and small receipts are copied; model directories and unrelated host trees are not traversed.",
+  "size_limit_bytes": 10485760
+}

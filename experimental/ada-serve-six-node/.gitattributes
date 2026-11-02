@@ -1,0 +1,2 @@
+# Preserve byte-pinned sources and receipts on every platform.
+* -text
