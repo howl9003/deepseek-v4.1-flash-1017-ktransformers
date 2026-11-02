@@ -3,7 +3,7 @@
 Adds one llama-swap entry and one guard chat model, keeps the old llama.cpp entry and the default model, backs up both files first, and restarts the swap manager and gateway only while nothing is loaded.
 Run: ssh -t aster@fea01 'sudo python3 -B /scratch/aster/bench/six-node-performance-r1/tools/install_ada_selector_r1.py'
 Undo: the same command with --remove.
---pin keeps this entry loaded by refusing every other model at the gateway; --unpin restores them.
+--pin keeps this entry loaded by refusing every other model at the gateway; --unpin restores them. Either one restarts the whole stack, so both refuse while a model is loaded.
 """
 import argparse
 import datetime
@@ -49,7 +49,9 @@ def save(path, value):
 
 def pin(on):
     """Keep this entry loaded: the gateway refuses every other model instead of swapping to it. Comfy is off too, since it shares the swap group.
-    Only the gateway restarts, so a loaded model stays loaded. --unpin puts the saved values back."""
+    The gateway restart takes the whole stack down (fea-model-stack.target Requires the gateway and the swap manager is PartOf it), so a loaded model unloads: refused while one is up. --unpin puts the saved values back."""
+    if running():
+        sys.exit('a model is loaded and this would unload it; unload it first: curl http://127.0.0.1:8082/unload')
     guard = json.loads(GUARD.read_text())
     if on:
         if PINNED.exists():
