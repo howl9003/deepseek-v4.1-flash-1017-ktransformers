@@ -74,7 +74,8 @@ def check_cache(trial):
 
 def unloaded(life):
     require(not life.gpu_pids(),'GPU occupied')
-    loaded=[x['id'] for x in life.http('/v1/models')['data'] if x.get('status',{}).get('value')=='loaded']
+    # The selector lists this entry as loaded while it starts it; any other model still refuses.
+    loaded=[x['id'] for x in life.http('/v1/models')['data'] if x.get('status',{}).get('value')=='loaded' and x['id']!='deepseek-v4.1-flash-sglang']
     require(not loaded,'Qwen/model remains loaded; this workflow never unloads it')
 
 def headroom(ab,trial,record,*,fresh):

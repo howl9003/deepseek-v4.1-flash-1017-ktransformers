@@ -14,6 +14,24 @@ Identity runs compare against C1, never against DeepSeek's kernel, which has not
 | Index scores | BF16 einsum, relu, weight, sum | Same BF16 rounding points in one Triton kernel; even and odd halves through BF16 MMA, FP32 sum across heads. Sum order differs, so near-ties can pick different positions | Speed. `live_topk` is exact against torch given equal scores |
 | Compressed KV | FP4 with E4M3 scales per 16, kept as BF16 | Same FP4 step, then requantized to the V4 584-byte E4M3 layout: a **second rounding** the reference does not have, size not measured | The SM89 attention kernels read that layout; the V41 FP4 layouts and fused kernels need sm_100+ conversions |
 
+## 2 November: serving profile and disk tier
+
+No new numeric step. Evidence: `six-node-performance-r1/ada-spill-r1/serve-disk-r1/`.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| HiCache disk tier | `--hicache-storage-backend file` | **bit-identical** to a cold run on every tested read: stored KV pages come back byte for byte | 1K to 131K next turns, and 8K and 41K after a server restart: ids, logprobs and top 8 equal to cold. Replays delta 0.0, queue fixtures pass, disk-aware KV check passes. The frozen `kv_checks.py` cannot run here: it refuses a storage tier by design and stays pinned for the no-disk profile |
+| Prefill chunk plan margin | `KT_PREFILL_PLAN_MARGIN_MB=4096` | Chunk boundaries move; no bit change seen | Same gate run. Long prompts now split into smaller chunks |
+| Radix cache, four running requests, queue 32, real lifetimes | serving arguments | **bit-identical** on the fixtures | Same gate run, queue 4 and test lifetimes; 32 and real lifetimes change waiting and eviction, not arithmetic |
+
+## 29 October: logical expert combine order (r19 B1b), the step that produced C1
+
+Backfilled 2 November: this entry lived only in `six-node-performance-r1/r19-campaign/B1b-logical-cold-identity-r2/report-r1/LEDGER_ENTRY_LOGICAL_ORDER_r1.md`.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| Physical route slots mapped to logical expert ids before the FP32 combine, ordered by (logical id, original slot) | `KT_CONTRACT_V2_COMBINE_ORDER=logical` | **not bit-identical to r18.** 1,427 of 11,496 scored positions differ, largest logprob change 2.70. Expert arithmetic, activation quantisation and native binaries unchanged | Mean NLL -0.00057, SE 0.00093, within the unchanged degradation rule. Quality corpus 12,276 positions, NLL -0.0105, limit 0.02, pass. Bits are now independent of placement: hot64 and cold-rtr1 match exactly on all 11,496 scores and both replays. Every "exact vs C1" since then is measured from after this step |
+
 ## 30 October: Phase G G1v on the 4080 (single route for the two 5070 Ti build; selectors default off, nothing promoted)
 
 Reference: accepted C1-on, which arm 0 reproduced exactly on the G0 tree (11,496 scores, `phase-g-r1/g1v-arm0-r3/`). Rule: mean
