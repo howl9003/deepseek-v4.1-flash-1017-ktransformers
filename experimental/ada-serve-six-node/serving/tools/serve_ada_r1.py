@@ -37,6 +37,9 @@ import time
 import urllib.error
 import urllib.request
 
+# The served trial and the tag its chain was staged with. The C2 cutover changes this line; rolling back changes it back.
+SERVED_TAG, SERVED_TRIAL = 'adasc3', 'ada-serve-c2-20261103-r3'    # C2 from 3 Nov; C1 was 'adasrr', 'ada-serve-20261102-r4'
+
 sys.path[:0]=['/scratch/aster/bench/fp32-subtotals-model-r1','/scratch/aster/bench/fp32-subtotals-model-r1/workflow']
 from trial_common import BASE,GIB,inventory,source_inventory,load_frozen,read,require,require_programme,save,sha,verify_pair
 import module_origins_fast_r1 as module_origins
@@ -48,7 +51,7 @@ P=Path('/scratch/aster/bench/six-node-performance-r1')
 HERE=R/'workflow'
 
 def verify_prepared(trial,*,allow_private_hint_writes=False):
-    p=read(trial/'PHASE_G_G1V_ADASRR_PREPARED_r1.json')
+    p=read(trial/f'PHASE_G_G1V_{SERVED_TAG.upper()}_PREPARED_r1.json')
     require(p['status']=='PREPARED_NO_RUNTIME' and p['trial']==str(trial),'preparation mismatch')
     require(sha(P/'source/bench.py')=='1c361c2010d7f69a8f1a93e33f26e7622bb684bd43a2de51b29b63a00b063f40','historical benchmark absent or changed')
     require(read(P/'CLIENT_PREFLIGHT_r1.json')['status']=='PASS_CLIENT_PROTOCOL_MOCKED_ONLY','client preflight missing')
@@ -177,7 +180,7 @@ def route3_native_origin_gate(trial, cg, output, scheduler):
     save(output/'ROUTE3_NATIVE_ORIGIN.json',dict(status='PASS',scheduler_pid=scheduler,
          binary_sha256=expected,mapped_path=str(binary),receipt=receipt))
 
-PREPARED_NAME='PHASE_G_G1V_ADASRR_PREPARED_r1.json'
+PREPARED_NAME=f'PHASE_G_G1V_{SERVED_TAG.upper()}_PREPARED_r1.json'
 C1_ENABLED=True
 
 def c1_native_origin_gate(trial, cg, output, scheduler):
@@ -242,8 +245,6 @@ def effective_gate(trial,cg,mods,output):
 
 from settle_before_reclaim_v2 import wait as post_ready_settle, recording_snapshot
 
-# The served trial and the tag its chain was staged with. The C2 cutover changes this line; rolling back changes it back.
-SERVED_TAG, SERVED_TRIAL = 'adasrr', 'ada-serve-20261102-r4'
 
 def hold_requests(hold):
     """llama-swap passes requests as soon as the server answers, minutes before the frozen settle ends, and one landing inside it reads page cache past the 392 GiB check and ends the load.
@@ -406,7 +407,7 @@ def main():
         cache=read(a.trial/'CACHE_RUN.json');require(cache['status']=='CACHE_PREPARED' and cache['cleanup']['empty'],'cache scope incomplete')
         check_cache(a.trial)
     record=dict(status='PREPARING',receipt_name=receipt,phase=a.phase,started_utc=ab.now(),
-        prepared_sha256=sha(a.trial/'PHASE_G_G1V_ADASRR_PREPARED_r1.json'),guard_provenance=mods.provenance,scope_cap_gib=64 if a.phase=='cache' else 416,
+        prepared_sha256=sha(a.trial/f'PHASE_G_G1V_{SERVED_TAG.upper()}_PREPARED_r1.json'),guard_provenance=mods.provenance,scope_cap_gib=64 if a.phase=='cache' else 416,
         numerical_acceptance='REVIEW_REQUIRED',host_reload_gate_unchanged=True,pr6='HELD',cpu_nodes=[0,1,2,4,5,6],shared_memory_nodes=list(range(8)),fea_reserved_gib=64,ready_target_gib=392)
     import fcntl
     with (BASE/'.bench.lock').open('a') as lock:

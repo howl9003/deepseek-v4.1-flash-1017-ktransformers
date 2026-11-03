@@ -32,7 +32,11 @@ No new numeric step. Evidence: `six-node-performance-r1/ada-spill-r1/serve-disk-
 | Prefill chunk plan margin | `KT_PREFILL_PLAN_MARGIN_MB=4096` | Chunk boundaries move; no bit change seen | Same gate run. Long prompts now split into smaller chunks |
 | Radix cache, four running requests, queue 32, real lifetimes | serving arguments | **bit-identical** on the fixtures | Same gate run, queue 4 and test lifetimes; 32 and real lifetimes change waiting and eviction, not arithmetic |
 
-## 3 November: V41 window KV and FP32 logits on SM89 (tested with FP4 compressed KV, default off, not served yet)
+## 3 November: C2 is served
+
+From 3 Nov 15:11 SGT the selector serves C2: trial `ada-serve-c2-20261103-r3` (tag adasc3), with the FP4 and V41 overlays, `SGLANG_SM89_V41_KV=1`, `SGLANG_SM89_FP4_COMPRESSED_KV=1` and `--enable-fp32-lm-head`, and disk store `ada-kv-disk-c2-20261103-r1`. Identity claims from now on say "exact vs C2"; earlier ones stay "exact vs C1". To roll back, set `SERVED_TAG, SERVED_TRIAL` in `serve_ada_r1.py` and `RUNS` in `swap_entry_ada_r1.py` back to the C1 values given in their comments, then reload. Live check after the switch: row 41,104 of the panel, generic on C1, predicts its token at logprob 0.0 on C2.
+
+## 3 November: V41 window KV and FP32 logits on SM89 (tested with FP4 compressed KV, default off, served from 3 Nov as C2)
 
 Evidence: `six-node-performance-r1/ada-spill-r1/v41-window-r1/V41_WINDOW_RESULTS_r1.md`. With the FP4 entry below, this is the planned C2 baseline.
 
