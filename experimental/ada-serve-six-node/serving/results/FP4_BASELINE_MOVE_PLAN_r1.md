@@ -1,4 +1,6 @@
-# Moving the served build to FP4 compressed KV: plan, 2 Nov 2026
+# Moving the served build to the C2 baseline: plan, 2-3 Nov 2026
+
+**Status 3 Nov:** steps 0 and 0b are done. The rows are the model's own (`reference-panel-r1/BLANK_ROWS_RESULTS_r1.md`). The combined build, V41 window KV + FP4 compressed KV + FP32 head, ran panel, timing and gate: KL 0.01019 against floor 0.00996, breadth 33.3, prefill +0.6%, gate and disk pass (`../v41-window-r1/V41_WINDOW_RESULTS_r1.md`). C2 is that build. Steps 1-5 remain, each unload with the owner's OK.
 
 Owner, 2 Nov: "Yes, plan it". This replaces the "stays default off" call in `FP4_KV_RESULTS_r1.md` once it runs. Nothing below has started. **The new baseline is called C2.** C1 stays archived and is never overwritten.
 
@@ -8,15 +10,15 @@ Owner, 2 Nov: "Yes, plan it". This replaces the "stays default off" call in `FP4
 
 ## Steps
 
-**Added 2 Nov: settle the other numeric differences before capturing C2, so the baseline only moves once.** See step 0b.
+**Changed 2 Nov: the owner chose to fix rather than measure first.** The move now covers three things together, so the baseline only moves once: FP4 compressed KV, the V41 window KV (`../v41-window-r1/`) and FP32 logits (`--enable-fp32-lm-head`, from the audit). Step 0b below is dropped: the model run on the combined build replaces it. If that run disappoints, the reference arms in 0b are how to tell which piece did it. The index score sum stays as it is: rounding only, and the audit found nothing wrong in it.
 
 | Step | What | Needs | Time on the GPU |
 |---|---|---|---:|
-| 0 | Read the context-free row report | Fable session done | None |
-| 0b | Reference arms for window KV layout and index sum order | Model unloaded | About 80 min |
+| 0 | Read the context-free row report | Done 3 Nov | None |
+| 0b | Fix the window KV and head, model run | Done 3 Nov: V41 + FP4 + FP32 head | None left |
 | 1 | Capture C2 | Model unloaded | About 1 h, one load |
 | 2 | Repeat C2 on a second load, must be bit-identical | Model unloaded | About 1 h, one load |
-| 3 | Serving profile on FP4: timing, four sessions, dsh, restart from disk | Model unloaded | About 1 h, one load |
+| 3 | Serving profile on C2: timing, four sessions, dsh, restart from disk | Model unloaded | About 1 h, one load |
 | 4 | Switch the selector to the new trial | Owner's OK, about 14 min down | One load |
 | 5 | Records, fork, PR session | Nothing | None |
 
@@ -52,7 +54,7 @@ Tags `adac2a` and `adac2b`, both free. Derive from the client that produced C1, 
 
 ### 3. Serving profile
 
-Tag `adasfp`, trial `ada-serve-fp4-20261103-r1`: `adasrr` plus the FP4 overlay after the staged gather anchor, selector on, admission 448.
+Tag `adasfp`, trial `ada-serve-c2-20261103-r1`: `adasrr` plus the FP4 and V41 overlays after the staged gather anchor, `SGLANG_SM89_V41_KV=1` and `SGLANG_SM89_FP4_COMPRESSED_KV=1`, `--enable-fp32-lm-head` classified in the profile, admission 448. The derive in `run_ada_v41c.py`'s chain is the pattern.
 
 **New disk store:** `/scratch/aster/bench/ada-kv-disk-fp4-20261103-r1`. V4 pages can't be read by this build, so it starts empty and the first long turns are cold.
 

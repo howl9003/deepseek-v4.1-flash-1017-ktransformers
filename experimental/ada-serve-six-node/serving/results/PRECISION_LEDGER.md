@@ -9,13 +9,18 @@ Identity runs compare against C1, never against DeepSeek's kernel, which has not
 | Stage | Reference | Served Ada build | Reason |
 |---|---|---|---|
 | Dense FP8 | One FP32 chain over K, one MMA per 32-wide block | Same activations, weights and scales; K cut into four fixed ranges with a running sum each, reduced in fixed order; Ada's 16-product block truncation | Four ranges give one-row decode enough parallel work (22.2 to 12.8 ms for 208 calls). Truncation belongs to the card. Decode and prefill share these bits |
-| `wo_a` | Weights dequantized to BF16, BF16 einsum | FP8 blocks, FP32 weight-times-scale GEMV | Speed, and one weight rounding fewer |
+| `wo_a` | Weights dequantized to BF16, BF16 einsum | FP8 blocks, E4M3 MMA per 32 with FP32 scales, 4 K splits, ordered merge (`SGLANG_DSV41_FIXED_WO_A=1`, CUDA parts up to 16 rows) | Speed, and one weight rounding fewer |
 | Index keys and queries | `fp4_act_quant` per 32, stored as BF16 | Same rounding, stored as packed E2M1 plus exponents, 68 B a position | Pool size |
 | Index scores | BF16 einsum, relu, weight, sum | Same BF16 rounding points in one Triton kernel; even and odd halves through BF16 MMA, FP32 sum across heads. Sum order differs, so near-ties can pick different positions | Speed. `live_topk` is exact against torch given equal scores |
 | Compressed KV | FP4 with E4M3 scales per 16, kept as BF16 | Same FP4 step, then requantized to the V4 584-byte E4M3 layout: a **second rounding** the reference does not have, size not measured | The SM89 attention kernels read that layout; the V41 FP4 layouts and fused kernels need sm_100+ conversions |
-| Window KV, every layer | `act_quant` over all 512 values after RoPE: E4M3, one UE8M0 scale per 32 | V4 layout: first 448 values E4M3, one UE8M0 scale per 64; the 64 RoPE values stay BF16. **Not the reference's grid.** Coarser on the first 448, finer on the tail, size not measured | Added 2 November. Auto layout gives V4 on SM89; only `SGLANG_SINGLE_ROUTE=1` reads V41 here |
+| Window KV, every layer | `act_quant` over all 512 values after RoPE: E4M3, one UE8M0 scale per 32 | V4 layout: first 448 values E4M3, one UE8M0 scale per 64; the 64 RoPE values stay BF16. **Not the reference's grid.** Coarser on the first 448, finer on the tail. Also quantized and rotated from FP32 registers, with no BF16 round after the norm or after RoPE, where the reference rounds both. Size not measured | Added 2 November. Auto layout gives V4 on SM89; only `SGLANG_SINGLE_ROUTE=1` reads V41 here |
+| Logits | FP32 head weight, `F.linear(x.float(), weight)`, FP32 logits | BF16 x BF16 `torch.mm` with BF16 output (`SGLANG_DSV41_FIXED_LM_HEAD=1`, `--enable-fp32-lm-head` off). Every logit sits on the BF16 grid, step 0.125 on 71.5% of positions; top two exactly tied on 2.05% | Never chosen. Measured 2 November on the panel capture: 2,683 of 8,305 top-1 disagreements are exact ties. Estimated KL 0.000145. `reference-panel-r1/audit-r1/` |
+| Activation floor | `amax` floored at 1e-4 | 1e-10 on dense projections and Engram `wkv`; 1e-4 on routed experts and `o` | Upstream default. Changes only values under 3.7e-9 in blocks under 1e-4; effect not measured |
+| hc mixes | FP32 `F.linear`, `torch.rsqrt` | K-sliced `tf32x3` dots, `1/sqrt`, TileLang Sinkhorn | Batch invariance |
 
 Corrected 2 November: the 22 October table below calls the main KV cache "same format", with "FP8 + BF16 RoPE part" as the reference. That describes V4. The 1017 reference quantizes the RoPE values too and uses a scale per 32 (`model.py` `_window_kv`, `fp8_block_size = 32`).
+
+Independent audit, 2 November: `six-node-performance-r1/reference-panel-r1/ENGINE_VS_REFERENCE_AUDIT_r1.md`. Read from code stage by stage against the served launch. It found no wrong logic. Upstream's V41 store also floors the scale after dividing by 448, where the reference floors `amax` first (2^-13 against 2^-22); found by test, fixed in the V41 overlay.
 
 ## 2 November: serving profile and disk tier
 
@@ -26,6 +31,15 @@ No new numeric step. Evidence: `six-node-performance-r1/ada-spill-r1/serve-disk-
 | HiCache disk tier | `--hicache-storage-backend file` | **bit-identical** to a cold run on every tested read: stored KV pages come back byte for byte | 1K to 131K next turns, and 8K and 41K after a server restart: ids, logprobs and top 8 equal to cold. Replays delta 0.0, queue fixtures pass, disk-aware KV check passes. The frozen `kv_checks.py` cannot run here: it refuses a storage tier by design and stays pinned for the no-disk profile |
 | Prefill chunk plan margin | `KT_PREFILL_PLAN_MARGIN_MB=4096` | Chunk boundaries move; no bit change seen | Same gate run. Long prompts now split into smaller chunks |
 | Radix cache, four running requests, queue 32, real lifetimes | serving arguments | **bit-identical** on the fixtures | Same gate run, queue 4 and test lifetimes; 32 and real lifetimes change waiting and eviction, not arithmetic |
+
+## 3 November: V41 window KV and FP32 logits on SM89 (tested with FP4 compressed KV, default off, not served yet)
+
+Evidence: `six-node-performance-r1/ada-spill-r1/v41-window-r1/V41_WINDOW_RESULTS_r1.md`. With the FP4 entry below, this is the planned C2 baseline.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| Window KV in the V41 layout: all 512 values E4M3, one UE8M0 scale per 32, BF16 rounds after the norm and after RoPE | `SGLANG_SM89_V41_KV=1` (implies FP4 compressed KV) | **Not bit-identical to C1.** On the reference's grid: the store equals DeepSeek's `act_quant` on 151,011,328 test values, sign of zero included. Scale floor matches the reference (`amax` floored at 1e-4 before dividing by 448), fixing upstream's floor on the quotient | Kernel tests: loader, attention against a BF16-row twin (3,000 calls), staged against unsplit (1,000), selector off against the served files (600), all 0 mismatches. Model, with FP4 and FP32 head: panel KL 0.01019 (floor 0.00996, served 0.01106), top-1 96.98%, paired NLL -0.00034 (SE 0.00069) against the served capture; decode against prefill within 4.0e-7 nats on 512 positions; gate, host reload and disk tier pass |
+| FP32 logits | `--enable-fp32-lm-head` with `SGLANG_DSV41_FIXED_LM_HEAD=1` | **Not bit-identical to C1.** BF16 x BF16 MMA into FP32, no BF16 cast of the logits. The reference uses an FP32 weight, so this is closer, not equal | Head-only panel arm (adahd1): KL 0.01106 to 0.01072, top-1 96.74 to 96.91%, paired NLL -0.00027 (SE 0.00007), no exact top-two ties against 5,214. Head 2.22 to 1.98 ms at one row |
 
 ## 2 November: FP4 compressed KV on SM89 (tested, default off, not served)
 
@@ -148,6 +162,18 @@ differences are where activations are quantized and where fp32 sums are rounded.
 | hc mixing, norms | tilelang | torch/Triton paths on SM89 (`TILELANG_MHC_PRE=0`, `DEEPGEMM_HC_PRENORM=0`) | reorder only |
 | Compiler | tilelang kernels | kt-kernel built -O3 -ffast-math (recipe default; FTZ/DAZ checked for the merge) | contraction/reassociation allowed in the CPU kernel |
 | Expert placement | all experts, one path | 21 fixed (pinned) or dynamic hot slots (HEAD): which experts take the GPU path depends on routing history | not bit-identical, history-dependent |
+
+Superseded, 2 November, from the audit. Kept as the 22 October record, but no longer what is served:
+
+- **Routed experts, input and internals:** contract v2, E4M3 digits per 32, floor 1e-4, exact integer sums, one RNE per route, FP32 combine in logical expert id, no per-part rounding.
+- **Dense projections:** GEMV is off under `SGLANG_FP8_FIXED_SPLIT_K=4`. Route 3 up to 16 rows, fixed split-K above.
+- **`wo_a`:** see the 1 November row.
+- **Compressed KV and indexer:** FP4 index K, `fp4_index_logits_decode`, torch on prefill.
+- **Sparse attention:** split-K off, staged gather up to 8 rows, unsplit kernel above.
+- **Router:** the reference gate is FP32 `F.linear`, not BF16 as written below. Served: `fixed_projection.linear`, BF16 MMA into FP32, 8 K splits, fused gate with log1p.
+- **Engram:** `wkv` runs through Route 3 (`SGLANG_ROUTE3_ENGRAM=1`).
+- **Compiler:** several JIT GPU kernels also build with `--use_fast_math`.
+- **Expert placement:** bits are independent of placement since the logical combine order of 29 October.
 
 Refused cuts, all off: deferred experts (`KT_DEFERRED_EXPERTS=0`), int8 activations (`KT_CPU_A4_INT8`,
 `KT_MXFP4_G32_INT8`), the old Strata Q8_0 activation path, any requantized weights. Bit-identical
