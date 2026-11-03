@@ -36,6 +36,14 @@ No new numeric step. Evidence: `six-node-performance-r1/ada-spill-r1/serve-disk-
 
 From 3 Nov 15:11 SGT the selector serves C2: trial `ada-serve-c2-20261103-r3` (tag adasc3), with the FP4 and V41 overlays, `SGLANG_SM89_V41_KV=1`, `SGLANG_SM89_FP4_COMPRESSED_KV=1` and `--enable-fp32-lm-head`, and disk store `ada-kv-disk-c2-20261103-r1`. Identity claims from now on say "exact vs C2"; earlier ones stay "exact vs C1". To roll back, set `SERVED_TAG, SERVED_TRIAL` in `serve_ada_r1.py` and `RUNS` in `swap_entry_ada_r1.py` back to the C1 values given in their comments, then reload. Live check after the switch: row 41,104 of the panel, generic on C1, predicts its token at logprob 0.0 on C2.
 
+## 3 November: CPU window batch (tested, default off, not served)
+
+Evidence: `six-node-performance-r1/ada-spill-r1/cpu-batch-r1/CPU_BATCH_RESULTS_r1.md`. Listed for completeness: no step here changes a bit.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| Shared input digits, one decode pool job for the four expert phases, merge inside the parts' own NUMA job | `KT_CONTRACT_V2_SHARED_X=1`, `KT_CONTRACT_V2_FUSED_PHASES=1`, `KT_CONTRACT_V2_MERGE_IN_PARTS=1` (all 0) | **bit-identical**: scheduling only, same calls on the same splits, same per-column merge | adacb1 exact vs C2: 11,496 scores, replays, rotation, 4K and two 35K cases with top 8 |
+
 ## 3 November: V41 window KV and FP32 logits on SM89 (tested with FP4 compressed KV, default off, served from 3 Nov as C2)
 
 Evidence: `six-node-performance-r1/ada-spill-r1/v41-window-r1/V41_WINDOW_RESULTS_r1.md`. With the FP4 entry below, this is the planned C2 baseline.
