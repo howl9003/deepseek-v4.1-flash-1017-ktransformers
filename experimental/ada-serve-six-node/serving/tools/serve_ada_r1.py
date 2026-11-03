@@ -242,6 +242,9 @@ def effective_gate(trial,cg,mods,output):
 
 from settle_before_reclaim_v2 import wait as post_ready_settle, recording_snapshot
 
+# The served trial and the tag its chain was staged with. The C2 cutover changes this line; rolling back changes it back.
+SERVED_TAG, SERVED_TRIAL = 'adasrr', 'ada-serve-20261102-r4'
+
 def hold_requests(hold):
     """llama-swap passes requests as soon as the server answers, minutes before the frozen settle ends, and one landing inside it reads page cache past the 392 GiB check and ends the load.
     So requests wait in the server until the settled baseline is taken. The memory checks are unchanged. Released without emptying torch's cache, so the lent memory stays as it was measured."""
@@ -256,7 +259,7 @@ def run_scope(args,mods,prepared,record):
     unit='claude-sm89-serve-'+args.run_dir.name+'.scope'
     record.update(unit=unit,status='STARTING',scope_output=str(out))
     cap=64 if kind=='cache' else 416
-    payload=P/'tools/launch_phase_g_g1v_adasrr_r1.py'
+    payload=P/f'tools/launch_phase_g_g1v_{SERVED_TAG}_r1.py'
     shell='set -Eeuo pipefail\nsource "$1"\nexec /usr/bin/python3 -B "$2" --trial "$3" --phase "$4"\n'
     command=['systemd-run','--user','--scope','--quiet','--unit='+unit,
         '-p',f'MemoryMax={cap}G','-p','MemorySwapMax=0','/usr/bin/python3','-B',
@@ -327,14 +330,14 @@ def run_scope(args,mods,prepared,record):
                         resident=True;print('SERVING',flush=True)
                 elif client is not None and client.poll() is not None:
                     require(client.returncode==0,'supplemental client failed')
-                    result=read(trial/'supplemental-phase-g-g1v-adasrr-r1/RESULT.json')
+                    result=read(trial/f'supplemental-phase-g-g1v-{SERVED_TAG}-r1/RESULT.json')
                     require(result['status']=='ADA_SERVE_TIMED_REVIEW_REQUIRED','client incomplete')
                     final=ab.snapshot(cg);ab.check_memory(final,phase='BENCHMARKING',ready_events=ready)
                     save(out/'memory-after-client.json',final)
                     effective_gate(trial,cg,mods,out/'after')
                     check_cache(trial)
                     record.update(status='ADA_SERVE_TIMED_REVIEW_REQUIRED',
-                                  client_receipt_sha256=sha(trial/'supplemental-phase-g-g1v-adasrr-r1/RESULT.json'))
+                                  client_receipt_sha256=sha(trial/f'supplemental-phase-g-g1v-{SERVED_TAG}-r1/RESULT.json'))
                     if not args.keep_loaded:break
                     # Finish and snapshot validation before entering idle residency.
                     # Failures still take the original finally/cleanup path.
@@ -349,8 +352,8 @@ def run_scope(args,mods,prepared,record):
                         'stop_file':str(trial/'RESIDENT_STOP'),
                         'memory_cap_gib':416,'swap_max_bytes':0,
                         'health_interval_seconds':30,'automatic_restart':False}
-                    require(not (trial/'IDENTITY_COMPLETE_phase_g_adasrr_r1.json').exists(),'validation snapshot exists')
-                    save(trial/'IDENTITY_COMPLETE_phase_g_adasrr_r1.json',record)
+                    require(not (trial/f'IDENTITY_COMPLETE_phase_g_{SERVED_TAG}_r1.json').exists(),'validation snapshot exists')
+                    save(trial/f'IDENTITY_COMPLETE_phase_g_{SERVED_TAG}_r1.json',record)
                     resident=True
                     print('DIAGNOSTIC_COMPLETE_MODEL_RESIDENT',flush=True)
                 save(RUN_DIR/record['receipt_name'],record);time.sleep(2)
@@ -384,7 +387,7 @@ def main():
     global RUN_DIR
     p=argparse.ArgumentParser();p.add_argument('--phase',choices=['model'],required=True);p.add_argument('--run-dir',type=Path,required=True)
     p.add_argument('--keep-loaded',action='store_true');a=p.parse_args()
-    RUN_DIR=a.run_dir;a.trial=BASE/'ada-serve-20261102-r4';a.harness=BASE/'eight-node-ab-tools/retry_v9'
+    RUN_DIR=a.run_dir;a.trial=BASE/SERVED_TRIAL;a.harness=BASE/'eight-node-ab-tools/retry_v9'
     pins=read(HERE/'HARNESS_PINS.json')
     mods=load_frozen(a.harness,BASE/'eight-node-ab-tools/pr-acceptance-retry-v9.manifest.json',pins['B']['manifest_sha256'],
         a_harness=BASE/'eight-node-ab-tools/retry_v7',a_manifest=BASE/'eight-node-ab-tools/pr-acceptance-retry-v7.manifest.json',a_manifest_sha256=pins['A']['manifest_sha256'])

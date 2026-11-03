@@ -13,6 +13,7 @@ import time
 
 BENCH = Path('/scratch/aster/bench')
 TOOLS = BENCH / 'six-node-performance-r1/tools'
+# The served trial's run folder. The C2 cutover changes this with SERVED_TRIAL in serve_ada_r1.py.
 RUNS = BENCH / 'ada-serve-20261102-r4/runs'
 STOP_WAIT_S = 330
 os.environ.setdefault('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}')

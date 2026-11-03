@@ -18,7 +18,26 @@ Breadth is up about 1%, which fits the head's 0.24 ms and the window reader's fe
 
 **Gate:** KV checks pass, all replay ids equal, host reload equal, frozen checker unchanged. Disk tier bit-exact (ids, logprobs, top lists) at 1K, 8K, 41K and 131K, 1.9 to 4.4 s against 17 to 233 s cold. Lowest node in the three runs 9.5 GiB (node 7), above the 4 GiB guard. A restart from disk and four dsh sessions were not run; they belong to the serving-profile step of the C2 plan.
 
-## Model panel
+## C2: the new baseline, 3 Nov 2026
+
+**C2 is this build, and it reproduces.** A first load recorded it, and a second load matched it bit for bit: all 11,496 scored positions, both replays, the 4K and two 35K cases with their top 8, and the rotation check. Chains adac2a and adac2b, trials `ada-identity-c2-20261103-r1` and `-r2`.
+
+| Check against C1 | Result |
+|---|---|
+| Replays | same tokens and text; logprobs differ, as expected |
+| 24 pieces, paired NLL | +0.0025 (SE 0.0036), within one SE: passes the rule |
+| Frozen quality screen, 12,276 positions | PASS, NLL 0.887, limit +0.02 |
+
+**Serving profile on C2** (adasfp, trial `ada-serve-c2-20261103-r1`, new disk store `ada-kv-disk-c2-20261103-r1`):
+
+| Measure | Served build (adasrv) | C2 |
+|---|---:|---:|
+| Breadth, two rounds | 33.15 (32.65, 33.65) | **33.65 (33.2, 34.1)** |
+| Sessions 1 / 2 / 4, total tok/s | 31.0 / 41.7 / 51.1 | 31.8 / 41.7 / 51.5 |
+| Cold 35K prefill, first and second prompt | 78.03, 61.06 s | 75.99, **74.47 s** |
+
+The second cold 35K prompt took 22% longer, with nothing cached in either run. The performance profile shows no such cost (+0.6%), so it is the serving profile's. My guess is the new disk store writing while the Engram tables read from the same NVMe, but that is one sample and not measured.
+
 
 Six nodes, 320 W, one load, admission 448 GiB. Trial `ada-panel-v41kv-20261103-r2`, chain adavr1. The head-only arm is the engine audit session's `adahd1`: the 32.98 build plus `--enable-fp32-lm-head`, trial `ada-panel-fp32head-20261103-r1`.
 

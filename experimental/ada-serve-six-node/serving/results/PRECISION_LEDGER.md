@@ -36,6 +36,8 @@ No new numeric step. Evidence: `six-node-performance-r1/ada-spill-r1/serve-disk-
 
 Evidence: `six-node-performance-r1/ada-spill-r1/v41-window-r1/V41_WINDOW_RESULTS_r1.md`. With the FP4 entry below, this is the planned C2 baseline.
 
+**C2 captured and repeated, 3 Nov.** On a second load, adac2b equals adac2a bit for bit: 11,496 scores, both replays, the 4K and two 35K cases with top 8, and rotation. Against C1: 24-piece paired NLL +0.0025 (SE 0.0036), within one SE; frozen quality screen PASS, NLL 0.887. Not served until the cutover.
+
 | Step | Knob | Precision | Evidence |
 |---|---|---|---|
 | Window KV in the V41 layout: all 512 values E4M3, one UE8M0 scale per 32, BF16 rounds after the norm and after RoPE | `SGLANG_SM89_V41_KV=1` (implies FP4 compressed KV) | **Not bit-identical to C1.** On the reference's grid: the store equals DeepSeek's `act_quant` on 151,011,328 test values, sign of zero included. Scale floor matches the reference (`amax` floored at 1e-4 before dividing by 448), fixing upstream's floor on the quotient | Kernel tests: loader, attention against a BF16-row twin (3,000 calls), staged against unsplit (1,000), selector off against the served files (600), all 0 mismatches. Model, with FP4 and FP32 head: panel KL 0.01019 (floor 0.00996, served 0.01106), top-1 96.98%, paired NLL -0.00034 (SE 0.00069) against the served capture; decode against prefill within 4.0e-7 nats on 512 positions; gate, host reload and disk tier pass |

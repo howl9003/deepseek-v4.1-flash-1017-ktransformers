@@ -2,6 +2,8 @@
 
 **Status 3 Nov:** steps 0 and 0b are done. The rows are the model's own (`reference-panel-r1/BLANK_ROWS_RESULTS_r1.md`). The combined build, V41 window KV + FP4 compressed KV + FP32 head, ran panel, timing and gate: KL 0.01019 against floor 0.00996, breadth 33.3, prefill +0.6%, gate and disk pass (`../v41-window-r1/V41_WINDOW_RESULTS_r1.md`). C2 is that build. Steps 1-5 remain, each unload with the owner's OK.
 
+**Status 3 Nov afternoon:** steps 1-3 done. C2 captured and repeated bit for bit. Paired NLL against C1 is +0.0025 (SE 0.0036), and the quality screen passes. Serving profile breadth 33.65, sessions as before. The second cold 35K prompt is +22% on the serving profile, cause unmeasured. Step 4 needs the owner's OK. The serve trial must be staged with the model down, since staging takes the bench lock. `adasc2` is spent on a refused stage, so the switch uses a new tag. `serve_ada_r1.py` now names its trial in one line, `SERVED_TAG, SERVED_TRIAL`, and `swap_entry_ada_r1.py` in `RUNS`.
+
 Owner, 2 Nov: "Yes, plan it". This replaces the "stays default off" call in `FP4_KV_RESULTS_r1.md` once it runs. Nothing below has started. **The new baseline is called C2.** C1 stays archived and is never overwritten.
 
 **Why:** it holds the reference's FP4 values on these layers, and the panel means lean the same way (NLL gap to the reference +0.00073 to +0.00039, inside noise). It removes a rounding we added ourselves, and SM120 already uses this layout.

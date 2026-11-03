@@ -100,10 +100,29 @@ Summary of the six rows in exact sums against the arms (bad = the generic distri
 |---|---|---|---|---|---|---|---|---|---|
 | 157,47 | bad | bad | bad | bad | bad | bad | **bad, 14.34** | | collapse at 20 |
 | 64,69 | bad | bad | bad | bad | bad | bad | **bad, 9.23** | | collapse at 20 |
-| 152,61 | bad | fine | fine | bad | fine | fine | **fine, 0.00** | fine, 0.00 | to layer 19 |
-| 76,101 | fine | bad | bad | fine | fine | bad | **fine, 0.02** | | to layer 13 |
+| 152,61 | bad | fine | fine | bad | fine | fine | **fine, 0.00** | fine, 0.00 | to layer 19; the GPU bad run takes 180 at layer 20 |
+| 76,101 | fine | bad | bad | fine | fine | bad | **fine, 0.02** | | to layer 13; the GPU bad run takes 180 at layer 20 |
 | 136,64 | fine | fine | fine | fine | fine | bad | **fine, 0.00** | | to layer 13 |
 | 41,104 | fine | fine | fine | bad | bad | bad | **fine, 0.00** | | none seen |
+
+## The GPU pair: where the reference's two settings part
+
+Run on 3 Nov, 12:24-12:56 SGT, with the owner's unload OK, under the bench lock as unit `verify-gpu-pair-r1`: `blank_gpu_r1.py` re-ran each row's conversation in exactly the group it shared an MoE batch with in the stored reference runs (152: sequences 135-181, 47 conversations, 64,186 tokens; 76: sequences 62-99, 38 conversations, 64,412 tokens), and alone, as at batch 2,048. Attention, Engram and the hc mixes are per sequence in the Streamer; only the MoE sees the batch. **Every run reproduces the stored reference bit for bit**: at 65,536 the row's top-128 ids and log-probabilities equal the stored part exactly (152,61 NLL 6.4196; 76,101 NLL 0.0112), at 2,048 the NLLs equal the stored floor parts (152,61 at 1e-6; 76,101 at 11.3307). The same cubins as the 1 Nov runs were used (`TILELANG_CACHE_DIR` to the local cache, `CUDA_HOME` 13.3; without them the venv's nvcc 13.4 refuses the venv's 13.3 CCCL headers, which is what the first attempt died on). Per-layer tables: `gpu-pair-152-61.report.txt`, `gpu-pair-76-101.report.txt`; dumps `gpu-trace-*-chunk*.{json,safetensors,log}`.
+
+| Layer | 152,61: batch 65,536 (bad) against 2,048 (fine) | 76,101: batch 65,536 (fine) against 2,048 (bad) |
+|---|---|---|
+| 0 | identical | identical |
+| 1-3 | the row's stream differs by 1-4%, same six experts | 0.8-3%, same six |
+| 4 | first routing difference: the sixth pick (10 against 329), margins 0.008 and 0.025; 15% | the sixth pick (96 against 3), margins 0.014 and 0.0004; 11% |
+| 5-12 | 11-35%; the sixth pick differs at 7, 9, 10, 11 | 8-14%; differs at 9 |
+| 13 | 70%; both pick BOS's 182 and 221, the bad run gives them 0.67 of its weight, the fine run 0.39 | 16%; both pick 182 and 221 |
+| 14-18 | 72-110%; 1-3 of six experts the same | 20-43%; 5-6 the same |
+| 19 | the bad run routes to BOS's 5 and 148 (0.47, 0.39), the fine run to BOS's 370 (1.02); 100% | both route to 5 and 148; 39% |
+| **20** | **the bad run picks expert 180 at rank 2 (0.26); 180 is outside the fine run's top eight** | **the bad run picks 180 at rank 5 (0.18); outside the fine run's top eight**; 85% |
+| 21 | the bad run's stream jumps to RMS 284 (fine 0.89) and routes to 320 (0.85) | RMS 164 (fine 0.90), routes to 320 (0.55) |
+| 22-39 | 333 → 3,633 against 0.9 → 7; readout generic from 21, NLL 6.42 | 221 → 3,143 against 1.0 → 527; NLL 11.33 against 0.01 |
+
+So the reference's two settings part at the first MoE, by about 1% of the row's stream, from the batch-dependent rounding of the MoE (the row's neighbours differ by the same 1% at layer 1 and never leave 5-30%); the difference compounds on the row because its gate decisions are near ties from layer 4; by layer 13 the row's state differs by 70% in 152 and the two runs sit at different depths on the BOS track; the flip itself is the layer-20 gate taking expert 180 or not, and the stream explodes at layer 21. The CPU exact run of 152 matches the fine GPU run's path (the same 370 at 1.02 at layer 19, 180 absent at 20), and the CPU exact run of 76 matches its fine run. Which arithmetic reaches 180 at layer 20 is set by rounding accumulated over twenty layers, not by one near tie at layer 20, so no single kernel or batch rule could be said to own it.
 
 ## The milder later class
 
@@ -116,7 +135,7 @@ Rows whose top token is `\n\n` (271), `<｜end▁of▁sentence｜>` (1) or `">` 
 
 ## What remains open
 
-- The layer where the reference's own two settings (MoE batch 65,536 and 2,048) part on rows 152,61 and 76,101. The CPU pair (FP64 against FP32) did not flip either row, so it shows the sensitivity but not that flip. The GPU pair is written and smoke-tested except for the card: `blank_gpu_r1.py` re-runs exactly the group of conversations each row shared an MoE batch with (152: sequences 135-181, 64,186 tokens; 76: 62-99, 64,412 tokens; at batch 2,048 each conversation alone), since attention, Engram and the hc mixes are per sequence in the Streamer and only the MoE sees the batch, with `tap_hook`, `block_hook` and a gate wrapper dumping the row's stream, routing, gate margins and early readout every layer, and the final top 128 checked against the stored part. `run_gpu_pair_r1.sh` runs the four cases under the bench lock, about 40 minutes of card time in all. On 3 Nov the card went from the adavr2 timing chain to adavr3 and then back to the served model (down since about 01:00), so there is no free window: the pair now needs the served model unloaded, which is the owner's call. If OK'd: after `SERVING.json` exists, `curl -s http://127.0.0.1:8082/unload`, wait for the `ada-serve-*` unit to exit and the lock to be free, run the chain, then bring the model back with a chat request for `deepseek-v4.1-flash-sglang` through the gateway.
+- The GPU pair ran on 3 Nov (section below); the question is answered.
 - Update from the session that started this one, 3 Nov: on the V41-window + FP4 KV + FP32-head capture (adavr1), row 41,104 is no longer context-free, while the head-only arm still has it; that build's context-free rows are 157,47, 64,69 and 136,64. That is another build landing on another side of the same near-ties, consistent with the reading above.
 - Where the served, NVFP4 and FP4 KV builds make 41,104 collapse. The exact trace never comes near the path on that row. The served build has no per-layer taps; a capture overlay would be needed.
 - Why the collapsing rows are early in their conversations (tokens 47-109) is not measured.
@@ -130,5 +149,5 @@ Nothing to fix. The rows are the model choosing an extra sink token; a build eit
 ## Notes
 
 - The served model was stopped at 22:52:49 local by a `RESIDENT_STOP` file and SIGTERM, not by a memory guard: every node held 8-11 GiB free plus clean at the time (floor 4 GiB). A reload (`runs/20261102T153447Z`) was admitted at 23:34:48 while four of my CPU runs were still resident (about 26 GiB in all) and was stopped at 23:37:20 by another `RESIDENT_STOP`, with no guard message in its log. My CPU runs were pinned one per node at about 6.5 GiB each under `MemoryMax=8G`, with every file read dropped from the page cache behind it; the last one ended at 23:58 and none left a `.pyc`. At 23:58 the card held 12.6 GB from a process that is not mine and llama-swap reported nothing loaded; I did not touch the card at any point.
-- Run times on one core: 35-50 min a trace at 56-112 tokens; the eight traces read 0.8 TB from the GGUF in all, dropped behind them.
+- Run times on one core: 35-50 min a trace at 56-112 tokens; the eight traces read 0.8 TB from the GGUF in all, dropped behind them. The GPU pair: 32 minutes of card time for the four runs (7-9 min each), peak 21.7 GiB, Engram pages dropped after each Engram layer; the served model was not reloaded by me, as the session that started this one asked.
 - Precision wording: the reference numbers here are DeepSeek's code on Ada; "exact" above means FP64 sums on the CPU, and nothing here is a claim against C1.
