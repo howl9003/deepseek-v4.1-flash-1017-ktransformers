@@ -32,6 +32,20 @@ No new numeric step. Evidence: `six-node-performance-r1/ada-spill-r1/serve-disk-
 | Prefill chunk plan margin | `KT_PREFILL_PLAN_MARGIN_MB=4096` | Chunk boundaries move; no bit change seen | Same gate run. Long prompts now split into smaller chunks |
 | Radix cache, four running requests, queue 32, real lifetimes | serving arguments | **bit-identical** on the fixtures | Same gate run, queue 4 and test lifetimes; 32 and real lifetimes change waiting and eviction, not arithmetic |
 
+## 4 November: card runs on C2 (tested, default off, not served)
+
+Evidence: `six-node-performance-r1/NIGHT_RESULTS_20261104_r1.md`. "Exact vs C2" means 11,496 scores, both replays, the 4K and two 35K cases with top 8 (and rotation where a swap happened). On contract v2 the CPU expert sums are integers, so the older DSpark rows below (the per-part BF16 order, compact verify not bit-identical) describe the old CPU operator, not this build.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| DSpark, CPU-pool draft (layers 40-42), static verify block 3, greedy | `--speculative-algorithm DSPARK` with `dspark-cpu-r1`, `apply_dspark_flags.py` (path A flags snapshot after the whole step) | **bit-identical** to plain C2 decode: the verify rows commit the same tokens and logprobs | adadsj (to 4K), adadsk (with the SWA match, to 35K) |
+| DSpark draft SWA pool sized to the lent target pool | `KT_DSPARK_SWA_MATCH=1` (0; `apply_dspark_swa_match.py`) | **bit-identical**: sizing only; fixes the out-of-bounds write past 7,680 SWA slots | adadsk |
+| DSpark compact verify with our cost table | `SGLANG_RAGGED_VERIFY_MODE=compact`, `SGLANG_DSPARK_COST_SCHED=1`, `sps_additive_r1.json` | **bit-identical** to C2 on this build (unlike the old-operator row below): row counts per expert no longer change the sums | adadci |
+| DSpark plain-step gate (1-token DECODE graph when the acceptance EMA is low) | `KT_DSPARK_PLAIN_GATE=1` (0; `apply_dspark_plain_gate.py`) | **bit-identical**: plain steps are C2's own decode graph; plain and verify steps interleaved on one request (115 plain, 85 speculative) | adadpi |
+| Short-prompt CPU expert share, prefill warm-up, HiCache staging cap (05yuki 46da340, 77021a7, cef35da) | `KT_STREAM_CPU_SHORT=1024:48,2048:34,4096:20,8192:12`, `SGLANG_WARMUP_PREFILL_LENGTHS`, `SGLANG_HICACHE_STAGING_MB` (all unset) | **bit-identical**: the shared experts run on the CPU contract v2 operator, whose integer sums equal the streamed path's | adaups, adacst |
+| SWA checkpoint tail (05yuki patch 23) | `apply_swa_tail.py` | **bit-identical**: cache retention only | adaswt; cache test adaswr |
+| Path A dense on SM89: dense FP8 projections as integer digit planes | `SGLANG_FP8_PATHA_DENSE=1`, `SGLANG_FP8_ROUTE3_CUDA=0`, `SGLANG_FP8_FIXED_SPLIT_K=0` (served: 0, 1, 4) | **not bit-identical** to C2: exact integer products and sums (3 x 3 digit planes, `patha::gemm_kernel<Cfg<3,3,32,1,2>>`) replace Route 3's split-K E4M3 MMA with Ada's 16-product truncation. Replay texts and ids equal; logprobs differ; paired NLL -0.0057 (SE 0.0040) against C2 over 24 pieces, not significant; quality screen PASS. Rejected for speed: 35K prefill +45%, breadth -2.8% | adapfn, adapft, adapfs |
+
 ## 3 November: C2 is served
 
 From 3 Nov 15:11 SGT the selector serves C2: trial `ada-serve-c2-20261103-r3` (tag adasc3), with the FP4 and V41 overlays, `SGLANG_SM89_V41_KV=1`, `SGLANG_SM89_FP4_COMPRESSED_KV=1` and `--enable-fp32-lm-head`, and disk store `ada-kv-disk-c2-20261103-r1`. Identity claims from now on say "exact vs C2"; earlier ones stay "exact vs C1". To roll back, set `SERVED_TAG, SERVED_TRIAL` in `serve_ada_r1.py` and `RUNS` in `swap_entry_ada_r1.py` back to the C1 values given in their comments, then reload. Live check after the switch: row 41,104 of the panel, generic on C1, predicts its token at logprob 0.0 on C2.
