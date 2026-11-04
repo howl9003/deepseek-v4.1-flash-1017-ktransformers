@@ -4,7 +4,7 @@
   "command": [
     "/usr/bin/python3",
     "-B",
-    "/scratch/aster/bench/ada-gate-engram-20261101-r1/client-tools/feature_client.py",
+    "/scratch/aster/bench/six-node-performance-r1/tools/disk-client-r1/feature_client.py",
     "--host",
     "127.0.0.1",
     "--port",
@@ -14,13 +14,13 @@
     "--context",
     "1048576",
     "--profile",
-    "/scratch/aster/bench/ada-gate-engram-20261101-r1/EFFECTIVE_PROFILE.json",
+    "/scratch/aster/bench/ada-gate-v41kv-20261103-r2/EFFECTIVE_PROFILE.json",
     "--source-root",
-    "/scratch/aster/bench/ada-gate-engram-20261101-r1/recipe/third_party/sglang",
+    "/scratch/aster/bench/ada-gate-v41kv-20261103-r2/recipe/third_party/sglang",
     "--server-pid",
-    "3501016",
+    "340945",
     "--output",
-    "/scratch/aster/bench/ada-gate-engram-20261101-r1/features-phase-g-g1v-adaygate-r1",
+    "/scratch/aster/bench/ada-gate-v41kv-20261103-r2/features-phase-g-g1v-adavr3-r1",
     "--deadline",
     "1800",
     "--exclusive-caller-owned-server",
@@ -101,5 +101,252 @@
       "max_selected_logprob_delta": 0.0
     }
   ],
-  "report_sha256": "b87fb1dcd284168cdc92c211866b488d37116c359fbbb1ddb3a1ef1f0a724ed6"
+  "report_sha256": "664a6dd6939f3e8a7f7e54ba7451ec59e49e1b57f8ca873c91e25ecf02968ffa",
+  "disk": [
+    {
+      "length": 1024,
+      "stored": {
+        "files": 183,
+        "bytes": 24422400,
+        "seconds": 5.011277844081633
+      },
+      "left_after_clear": [
+        0,
+        0
+      ],
+      "flush": "Cache flushed.\nPlease check backend logs for more details. (",
+      "first": {
+        "cached": 0,
+        "details": null,
+        "prefetch_wait": 0.0006942680338397622,
+        "first_s": 16.74904155731201,
+        "wall_s": 20.63856312201824
+      },
+      "cold": {
+        "cached": 0,
+        "details": null,
+        "prefetch_wait": 0.0006241960218176246,
+        "first_s": 17.074379920959473,
+        "wall_s": 20.642042860970832
+      },
+      "from_disk": {
+        "cached": 1024,
+        "details": {
+          "device": 0,
+          "host": 0,
+          "storage": 1024,
+          "storage_backend": "HiCacheFile"
+        },
+        "prefetch_wait": 0.023499542963691056,
+        "first_s": 4.447314500808716,
+        "wall_s": 5.606275207945146
+      },
+      "warm": {
+        "cached": 1024,
+        "details": {
+          "device": 1024,
+          "host": 0,
+          "storage": 0,
+          "storage_backend": "HiCacheFile"
+        },
+        "prefetch_wait": 0.0,
+        "first_s": 1.1509184837341309,
+        "wall_s": 2.2004755969392136
+      },
+      "disk_equal": {
+        "ids": true,
+        "logprobs": true,
+        "top": true
+      },
+      "warm_equal": {
+        "ids": true,
+        "logprobs": true,
+        "top": true
+      }
+    },
+    {
+      "length": 8192,
+      "stored": {
+        "files": 161,
+        "bytes": 12697600,
+        "seconds": 5.008730550995097
+      },
+      "left_after_clear": [
+        0,
+        0
+      ],
+      "flush": "Cache flushed.\nPlease check backend logs for more details. (",
+      "first": {
+        "cached": 0,
+        "details": null,
+        "prefetch_wait": 0.005332455039024353,
+        "first_s": 24.89034342765808,
+        "wall_s": 29.009038810967468
+      },
+      "cold": {
+        "cached": 0,
+        "details": null,
+        "prefetch_wait": 0.0031419190345332026,
+        "first_s": 23.45707082748413,
+        "wall_s": 27.034187379060313
+      },
+      "from_disk": {
+        "cached": 8192,
+        "details": {
+          "device": 0,
+          "host": 0,
+          "storage": 8192,
+          "storage_backend": "HiCacheFile"
+        },
+        "prefetch_wait": 0.0720237079076469,
+        "first_s": 3.340794801712036,
+        "wall_s": 4.459307648008689
+      },
+      "warm": {
+        "cached": 8192,
+        "details": {
+          "device": 8192,
+          "host": 0,
+          "storage": 0,
+          "storage_backend": "HiCacheFile"
+        },
+        "prefetch_wait": 0.0,
+        "first_s": 0.9608590602874756,
+        "wall_s": 1.9543561430182308
+      },
+      "disk_equal": {
+        "ids": true,
+        "logprobs": true,
+        "top": true
+      },
+      "warm_equal": {
+        "ids": true,
+        "logprobs": true,
+        "top": true
+      }
+    },
+    {
+      "length": 40960,
+      "stored": {
+        "files": 802,
+        "bytes": 47267840,
+        "seconds": 5.047858417965472
+      },
+      "left_after_clear": [
+        0,
+        0
+      ],
+      "flush": "Cache flushed.\nPlease check backend logs for more details. (",
+      "first": {
+        "cached": 0,
+        "details": null,
+        "prefetch_wait": 0.023977214936167,
+        "first_s": 74.87796378135681,
+        "wall_s": 78.75704538903665
+      },
+      "cold": {
+        "cached": 0,
+        "details": null,
+        "prefetch_wait": 0.015691836015321314,
+        "first_s": 73.7521984577179,
+        "wall_s": 77.41424834600184
+      },
+      "from_disk": {
+        "cached": 40960,
+        "details": {
+          "device": 0,
+          "host": 0,
+          "storage": 40960,
+          "storage_backend": "HiCacheFile"
+        },
+        "prefetch_wait": 0.32568567304406315,
+        "first_s": 3.517937660217285,
+        "wall_s": 4.9291792820440605
+      },
+      "warm": {
+        "cached": 40960,
+        "details": {
+          "device": 40960,
+          "host": 0,
+          "storage": 0,
+          "storage_backend": "HiCacheFile"
+        },
+        "prefetch_wait": 0.0,
+        "first_s": 0.9553482532501221,
+        "wall_s": 1.9736004590522498
+      },
+      "disk_equal": {
+        "ids": true,
+        "logprobs": true,
+        "top": true
+      },
+      "warm_equal": {
+        "ids": true,
+        "logprobs": true,
+        "top": true
+      }
+    },
+    {
+      "length": 131072,
+      "stored": {
+        "files": 2565,
+        "bytes": 143687680,
+        "seconds": 5.130509514943697
+      },
+      "left_after_clear": [
+        0,
+        0
+      ],
+      "flush": "Cache flushed.\nPlease check backend logs for more details. (",
+      "first": {
+        "cached": 0,
+        "details": null,
+        "prefetch_wait": 0.08296658506151289,
+        "first_s": 243.6999888420105,
+        "wall_s": 247.63167508493643
+      },
+      "cold": {
+        "cached": 0,
+        "details": null,
+        "prefetch_wait": 0.05834074306767434,
+        "first_s": 232.53423976898193,
+        "wall_s": 236.27916213695426
+      },
+      "from_disk": {
+        "cached": 131072,
+        "details": {
+          "device": 0,
+          "host": 0,
+          "storage": 131072,
+          "storage_backend": "HiCacheFile"
+        },
+        "prefetch_wait": 1.1140138359041885,
+        "first_s": 1.8898344039916992,
+        "wall_s": 6.849216970964335
+      },
+      "warm": {
+        "cached": 131072,
+        "details": {
+          "device": 131072,
+          "host": 0,
+          "storage": 0,
+          "storage_backend": "HiCacheFile"
+        },
+        "prefetch_wait": 0.0,
+        "first_s": 2.6171329021453857,
+        "wall_s": 6.483107306994498
+      },
+      "disk_equal": {
+        "ids": true,
+        "logprobs": true,
+        "top": true
+      },
+      "warm_equal": {
+        "ids": true,
+        "logprobs": true,
+        "top": true
+      }
+    }
+  ],
+  "disk_status": "PASS"
 }

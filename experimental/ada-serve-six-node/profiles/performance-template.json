@@ -68,7 +68,8 @@
     "deepseekv41",
     "--reasoning-parser",
     "deepseek-v41",
-    "--no-enable-decoder-swa-bounded-replay"
+    "--no-enable-decoder-swa-bounded-replay",
+    "--enable-fp32-lm-head"
   ],
   "environment": {
     "CPLUS_INCLUDE_PATH": "${VENV}/lib/python3.12/site-packages/nvidia/cu13/include",
@@ -81,7 +82,7 @@
     "DSV41_ENGRAM_MODE": "nvme",
     "DSV41_ENGRAM_TIMING": "60",
     "FEATURE_ORIGINS_CONFIG": "${TRIAL}/ORIGINS_CONFIG.json",
-    "FEATURE_ORIGINS_CONFIG_SHA256": "77f9cb5ee2a6b959feb72907a6db9b599462ba7b79e2a83f42632e6cbc3142cf",
+    "FEATURE_ORIGINS_CONFIG_SHA256": "7390f4177074a4a8d20cf391ada313dd19270716e53f37335fcba8113ac0434d",
     "FLASHINFER_CUDA_ARCH_LIST": "8.9",
     "FLASHINFER_WORKSPACE_BASE": "${TRIAL}/.cache/sglang",
     "KT_CONTRACT_V2": "1",
@@ -246,6 +247,8 @@
     "SGLANG_SERVED_NAME": "default",
     "SGLANG_SM89_ATTN_SPLITK": "0",
     "SGLANG_SM89_ATTN_STAGED": "1",
+    "SGLANG_SM89_FP4_COMPRESSED_KV": "1",
+    "SGLANG_SM89_V41_KV": "1",
     "SGLANG_UNBALANCED_LOAD_TIMEOUT_S": "1800",
     "SGLANG_WARMUP_TIMEOUT": "3600",
     "TILELANG_CACHE_DIR": "${TRIAL}/.cache/tilelang",

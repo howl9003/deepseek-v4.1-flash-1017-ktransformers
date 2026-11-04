@@ -6,7 +6,7 @@ import triton
 import triton.language as tl
 
 from sglang.kernels.jit.utils import get_jit_cuda_arch, is_hip_runtime
-from sglang.kernels.ops.attention.dsv4.kv_layout import KVLayout
+from sglang.kernels.ops.attention.dsv4.kv_layout import KVLayout, sm89_fp4_compressed_kv, sm89_v41_kv
 from sglang.kernels.ops.quantization.fp8_kernel import is_fp8_fnuz
 from sglang.srt.utils import is_gfx95_supported
 
@@ -117,7 +117,7 @@ def dequantize_k_cache_paged_v41(
         supported = is_gfx95_supported()
     else:
         supported = get_jit_cuda_arch().major >= 10 or (
-            SINGLE_ROUTE and layout is KVLayout.V41
+            ((SINGLE_ROUTE or sm89_v41_kv()) and layout is KVLayout.V41 or sm89_fp4_compressed_kv() and layout is KVLayout.V41_FP4)
             and torch.cuda.get_device_capability(quant_k_cache.device) == (8, 9)
         )
     if not supported:

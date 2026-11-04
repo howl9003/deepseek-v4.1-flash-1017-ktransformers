@@ -360,4 +360,4 @@ are under DeepSeek's license (see the model card).
 
 ## Fork branch: Ada serving build
 
-This branch adds `experimental/ada-serve-six-node`, the build the owner chose for serving on 2 November 2026: breadth median 32.98 tok/s on one RTX 4080 SUPER at 320 W, six NUMA nodes, 42 workers, exact vs C1, serving gate passed. It adds the source overlays, profiles, selector list, tools and write-ups. Everything above this section is the upstream recipe, unchanged. Its pins differ from that snapshot's base, so read the snapshot's `README.md` and `BUILD.md` first.
+This branch adds `experimental/ada-serve-six-node`, the build served now: C2 with vision, from 4 November 2026. Breadth median 33.3 tok/s on one RTX 4080 SUPER at 320 W, six NUMA nodes, 42 workers (35.05 on all eight), C2 reproduced bit for bit, serving gate passed. It was first recorded for C1, the 2 November build at 32.98. It adds the source overlays, profiles, selector list, tools and write-ups. Everything above this section is the upstream recipe, unchanged. Its pins differ from that snapshot's base, so read the snapshot's `README.md` and `BUILD.md` first.

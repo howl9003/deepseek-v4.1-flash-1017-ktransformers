@@ -1,6 +1,30 @@
 # Served selectors
 
-The owner chose these settings for serving on 2 November 2026 ("we can use the 32.98 settings"). They stay default-off in the source files; the profiles here turn them on. `profiles/performance-as-run.json` and `profiles/serving-gate-as-run.json` hold the full environment, 181 and 189 variables.
+**Served now, from 4 November 2026: C2 with vision**, trial `ada-serve-c2-vision-20261104-r1` (tag adasv). C2 is the 2 November settings in the last table plus the three numeric corrections below, served from 3 November 15:11 SGT. Vision changes only the launch. Identity claims for this build say "exact vs C2"; results from before 3 November stay "exact vs C1". `profiles/` holds C2's launches, `profiles/c1-20261101/` C1's.
+
+## C2 corrections, served from 3 November 2026
+
+| Selector | Value | What it does | Write-up |
+|---|---|---|---|
+| `SGLANG_SM89_FP4_COMPRESSED_KV` | 1 | Ratio-1/2 compressed KV keeps the reference's FP4 values on SM89, without the second rounding into the V4 584-byte layout | `serving/results/FP4_KV_RESULTS_r1.md` |
+| `SGLANG_SM89_V41_KV` | 1 | Window KV on all 40 layers in the V41 layout, on the reference's grid: all 512 values E4M3 with one UE8M0 scale per 32, with the reference's two BF16 rounds. Implies the FP4 compressed caches | `serving/results/V41_WINDOW_RESULTS_r1.md` |
+| `--enable-fp32-lm-head` | on | FP32 logits from the fixed head, no BF16 cast | `serving/results/V41_WINDOW_RESULTS_r1.md`, `serving/results/ENGINE_VS_REFERENCE_AUDIT_r1.md` |
+
+With all three: panel KL 0.01019 against the reference's noise floor of 0.00996 (C1 0.01106), top-1 96.98%; breadth 33.3 on the performance profile and 33.65 on the serving profile; 35K prefill +0.6%. C2 reproduced bit for bit on a second load (adac2b). Disk KV written by C1 cannot be read by C2, so C2 has its own store, `ada-kv-disk-c2-20261103-r1`.
+
+## Vision, served from 4 November 2026
+
+| Setting | Value | What it does |
+|---|---|---|
+| `--model-path` | checkpoint view `DeepSeek-V4.1-Flash-1017-c2-vision-view-r1` | The served checkpoint plus 266 tensors from the release at `1bae0e10`: the 263 BF16 vision and aligner tensors of shard 1 and the image start, end and newline embeddings. The served checkpoint is untouched. `profiles/VISION_VIEW.json` |
+| `--language-model-only` | dropped | Loads the vision tower |
+| `SGLANG_DSV4_VISION_ON_DEMAND` | 1 | 05yuki's vision on demand, set since C1: the tower, 925.7 MiB, stays in pinned host memory and is on the GPU only while images encode |
+
+Text is exact vs C2 (adac2w), except prompts holding the bare image token 129264, which vision reads as an image. Serving breadth 33.7 and 34.15 in two rounds; one, two and four sessions give 32.1, 42.3 and 52.0 tok/s in total. `serving/results/VISION_SERVING_RESULTS_r1.md`.
+
+## The 2 November settings
+
+The owner chose these settings for serving on 2 November 2026 ("we can use the 32.98 settings"). They stay default-off in the source files; the profiles here turn them on. `profiles/c1-20261101/performance-as-run.json` and `profiles/c1-20261101/serving-gate-as-run.json` hold C1's full environment, 181 and 189 variables.
 
 Breadth is the six-workload median on six nodes at 320 W after that step. Each step was exact vs C1 with the gate passed.
 

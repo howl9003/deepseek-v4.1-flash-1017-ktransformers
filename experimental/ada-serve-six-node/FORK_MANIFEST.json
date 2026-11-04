@@ -1,60 +1,60 @@
 {
   "base_commit": "0fc19067a13ab8ac92d252908722c7c2b04594c7",
   "branch": "ada-serve-six-node-20261102",
-  "bytes_excluding_self": 9133803,
+  "bytes_excluding_self": 13822168,
   "destination": "howl9003/deepseek-v4.1-flash-1017-ktransformers",
   "files": {
     "README.md": {
-      "bytes": 20400,
-      "sha256": "c330d61f12c1d53bcab5b8600a390144b464451facd7a0b084eac9b7239c7506"
+      "bytes": 20860,
+      "sha256": "6b48dd8001e8b8489880272dce276b9cfc63852a1b9999b7185e758f740feb21"
     },
     "experimental/ada-serve-six-node/.gitattributes": {
       "bytes": 71,
       "sha256": "1cf34579f57bb8c9e1938fec2107a990acef7d55d6e868f70158eec3f2a4a55d"
     },
     "experimental/ada-serve-six-node/BUILD.md": {
-      "bytes": 4132,
-      "sha256": "12e8a0137ffb0a026493f11d327ce36c8a155566be207aabd2350b60238b4998"
+      "bytes": 4408,
+      "sha256": "decee0ecbf42095cf8b311ddfe33f6649b75d689136a6f0e5dbdd823ebecc282"
     },
     "experimental/ada-serve-six-node/EXCLUSIONS.json": {
       "bytes": 2846,
       "sha256": "89b83310ad503d7c444cd02c64947ba8fbea54910be000b4342041e3b5b40104"
     },
     "experimental/ada-serve-six-node/PACKAGING_CHECKS.json": {
-      "bytes": 657,
-      "sha256": "33982f468b479c7fd63659d0bac109c4db819e4bb752b4a955f552c37fe6ceb9"
+      "bytes": 1476,
+      "sha256": "ed6ff27744b7e6c5929ee94c698255a32f64e30d46f076bc0d5f66fb73f21690"
     },
     "experimental/ada-serve-six-node/PRECISION_LEDGER.md": {
-      "bytes": 52718,
-      "sha256": "7b55f55b256f81cec1b80791d3b849ee5698dce6efd0c4f923318e5230c007ed"
+      "bytes": 66760,
+      "sha256": "4e70a6d5048a7eb8718ac19d3161d337888bfd23e0e34415e5e6668453d98974"
     },
     "experimental/ada-serve-six-node/PROVENANCE.json": {
-      "bytes": 1008,
-      "sha256": "949e2cdb877578712eb3c2e87fe16c02bc1ea5f7074bb06ef036c6100d863ac4"
+      "bytes": 2546,
+      "sha256": "f36645291bce66ec296fe0132140a90ba38a66057b7fb493451389d1001aef65"
     },
     "experimental/ada-serve-six-node/README.md": {
-      "bytes": 5734,
-      "sha256": "086ac66859ed505ac5f5bd3b27452f5276ed34ab2eb8af7c31bce298103e191b"
+      "bytes": 7663,
+      "sha256": "f960274bab167354ae2eff4320ff2ca8417641b463aa7be376fa5d1e63851fa6"
     },
     "experimental/ada-serve-six-node/SERVED_NATIVE_INVENTORY.json": {
       "bytes": 10420,
       "sha256": "7270a70624a2cf4920e73a1a8843c6df329b43db3642d0bd03d8c1cf016120e7"
     },
     "experimental/ada-serve-six-node/SERVED_SELECTORS.md": {
-      "bytes": 3277,
-      "sha256": "f10cc6b8a1e315f393bc80274fff65c36c86579eef093ee48a48f45e2270e863"
+      "bytes": 5851,
+      "sha256": "3173f460d4789f48a3806232598dcfe97813c44f9902a1c0969837daca85b9c6"
     },
     "experimental/ada-serve-six-node/SERVED_SGLANG_INVENTORY.json": {
-      "bytes": 863693,
-      "sha256": "e682858cf7b92d5ea79d83c6d72369a270e6d489286dbf8dd9c2831bd25ddeed"
+      "bytes": 870123,
+      "sha256": "e37af4ac2e2477567b855ca5fc39283a9f1caa9829c6bd0611d9954e6014ee7a"
     },
     "experimental/ada-serve-six-node/SM120_COMPARISON_ITEMS_r1.md": {
       "bytes": 4398,
       "sha256": "44f13360047bac94dece4b2f71641ee80f7e06ddb10df96216a6cfafed7337c8"
     },
     "experimental/ada-serve-six-node/SOURCE_STACK.json": {
-      "bytes": 35881,
-      "sha256": "0e08eda80d4c6de3c9916eda6f45f9bcd8a1cbe8d34ded138594336611394a56"
+      "bytes": 39840,
+      "sha256": "89cc69fc16322253e07680a1298c78aee7a8b547246ba16c555867dd46ba0bf3"
     },
     "experimental/ada-serve-six-node/apply_overlay.py": {
       "bytes": 2406,
@@ -188,9 +188,21 @@
       "bytes": 21617,
       "sha256": "8d0cfd0b275622c9d0065ad78c6ec145c62dd9cdad33782c8ff471d930fb6674"
     },
+    "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/fp4_utils.cuh": {
+      "bytes": 4803,
+      "sha256": "cb2d5a2f3192de7e4e8430211f462495e0249310d30f4ad7931ea611542a58ac"
+    },
+    "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/kv_layout.cuh": {
+      "bytes": 11516,
+      "sha256": "0676ff51984ae295886f18578bfb324fab71aff4d28a28d02295b22b5ed03da2"
+    },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/dsv4/dequant_k_cache.py": {
-      "bytes": 17313,
-      "sha256": "65f64a1a196dee450f0e227ac8f7f0c209d41f4e48dc84ba318fdafc031cebf2"
+      "bytes": 17430,
+      "sha256": "3fe29f77882b5062429522d1fac6291025c927b202eb01ee9a5ed3003bd297ac"
+    },
+    "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/dsv4/kv_layout.py": {
+      "bytes": 5681,
+      "sha256": "5be4cf85902c5ad6befd742c7015aa1a664cdc73644c00266fd6843f6bee5809"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/dsv4/live_topk.py": {
       "bytes": 16235,
@@ -199,6 +211,10 @@
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/dsv4/single_route.py": {
       "bytes": 1334,
       "sha256": "dfb2b618909a799f2e560ba3417089c05918472a459df47ed44c6fdee01c4d33"
+    },
+    "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/dsv4/triton_sparse_decode/triton_mla_kernels_decode_fused.py": {
+      "bytes": 114583,
+      "sha256": "c962247f626246cbe5ef9d6153c0951c061ccec8a952eb8d819515526463db16"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/flash_mla_sm120.py": {
       "bytes": 29461,
@@ -209,12 +225,20 @@
       "sha256": "644450d0eceae865607b01b879d8b10510eb872ade3ed7865922e2f525f98d78"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/sm89_dual_scope.py": {
-      "bytes": 12368,
-      "sha256": "75d14867db6194c3e46280cfb247ca752de1855ce60df6752baa3c086eb56ad6"
+      "bytes": 13329,
+      "sha256": "0cf6350688c58b25b2d761870893f47fbbe972fd1cb231a0dd85fb8868fb1c5f"
+    },
+    "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/sm89_fp4_tile.py": {
+      "bytes": 1700,
+      "sha256": "6780cd1d1e8ded93e4c38fa8f6df884ddf94cdafbceb20065705d4a0722bd2a1"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/sm89_gather_staged.py": {
-      "bytes": 18148,
-      "sha256": "f7b9cb17970c081edbf3842c4a7d70f936746eff8fffb6dfbc5444fa80689fe1"
+      "bytes": 21233,
+      "sha256": "327b8bc3f1e83a9fd48abb563dd8f9019e7c48177053a863c0c8b566341ba43e"
+    },
+    "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/attention/sm89_v41_tile.py": {
+      "bytes": 1336,
+      "sha256": "68eee529ef711d145d516a9d2ffa2253c07c1d396cbe6b9c2bed4380ec3793dc"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/kernels/ops/gemm/fixed_fp8_cuda_core.py": {
       "bytes": 4910,
@@ -247,6 +271,10 @@
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/srt/distributed/parallel_state.py": {
       "bytes": 144905,
       "sha256": "51a696d711afad8f16b08942b558236e6506074fe0dfc5a06265d7ba0c798597"
+    },
+    "experimental/ada-serve-six-node/overlays/sglang/python/sglang/srt/entrypoints/http_server.py": {
+      "bytes": 119975,
+      "sha256": "7537f80b7c94cb2f279be110d9198360fdbb9d6e6d5ecc1e1d798dee986027fb"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/srt/layers/attention/deepseek_v4_backend.py": {
       "bytes": 220399,
@@ -441,8 +469,8 @@
       "sha256": "f654d81652cfdcd4437d25c396c07763ef82b9936ad55a4a5f46190cb765d7ba"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/srt/managers/scheduler.py": {
-      "bytes": 292873,
-      "sha256": "1c2483041a7c2b626af6556353e0e8b4bd09bbd1af34a70e23060c7371b88a15"
+      "bytes": 293179,
+      "sha256": "d393f2967462ac9f36d4ad26e2a6a76610211e30cab5ed7c9825e6af19cb1cd1"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/srt/managers/scheduler_components/batch_result_processor.py": {
       "bytes": 71933,
@@ -457,8 +485,8 @@
       "sha256": "7a12a5d0827e2de29c0f7cf36064edcb4fbcbb4fa60dd1ec75244fc2f14d9e2e"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py": {
-      "bytes": 96671,
-      "sha256": "8336eeaee7ff7f655ae24ed97e290aaf60d9eb14043e920c072c13bab801b159"
+      "bytes": 97109,
+      "sha256": "6ec6608ffe9ee562424d8c25ed200032654d480b51701382736cd0271ae4e216"
     },
     "experimental/ada-serve-six-node/overlays/sglang/python/sglang/srt/model_executor/model_runner.py": {
       "bytes": 111034,
@@ -488,45 +516,121 @@
       "bytes": 160,
       "sha256": "c419c1afd518e5debe1bda0b100d5d362cf792217eb72265da382dec15bfceb5"
     },
+    "experimental/ada-serve-six-node/profiles/VISION_VIEW.json": {
+      "bytes": 492,
+      "sha256": "e6fef43865f56f762221f87727b20e6f2321837068406083cfa82a7fb89fc194"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/identity-as-run.json": {
+      "bytes": 10984,
+      "sha256": "229f02ce57e529193cfb41e513017c63f24d06188cc1fda5f0fcdc40333dfd2d"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/identity-substitutions.json": {
+      "bytes": 850,
+      "sha256": "da2ce0ca4fdca332a7f39c17c12c01b04b1ac0d25d9677dfbb6f2ec5ae932ba4"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/identity-template.json": {
+      "bytes": 9294,
+      "sha256": "6119ec9986d67ff520111c1dd6a2d81cd426de936daa24c7aa46a7cf8c041fd4"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/performance-as-run.json": {
+      "bytes": 10918,
+      "sha256": "f4c3b94395bbe487f1fd670462a549938ab8df9c2b6f4cff82f7cb6f243783f6"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/performance-substitutions.json": {
+      "bytes": 846,
+      "sha256": "34acfc1cb9ee1e6b93fd4e344de0e42d65b2f831d8c0e43bc25aef2d914547b5"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/performance-template.json": {
+      "bytes": 9320,
+      "sha256": "5de4a2dc16d7103e4161cfb0a6f4cbdbdeaefc0489a1d1f252fd6fac02acc4db"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/serving-gate-as-run.json": {
+      "bytes": 11536,
+      "sha256": "267ceeff9c13336d8e041868ff7469044600dfae7a13b119eba3d4bd27f5f3a4"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/serving-gate-substitutions.json": {
+      "bytes": 846,
+      "sha256": "6f5e380ac7de4c22c03fa33457052072b0675f8f0f72fefa7dd0eafc0ab4ca60"
+    },
+    "experimental/ada-serve-six-node/profiles/c1-20261101/serving-gate-template.json": {
+      "bytes": 9938,
+      "sha256": "f53be3365452418b9c63a59eeb1bb6989b1ebd87b8d70344288010007d069abc"
+    },
     "experimental/ada-serve-six-node/profiles/expert-placement.json": {
       "bytes": 57150,
       "sha256": "da56036d60b072132aca08133683bb1c4668b595cdd6137e2f8b2927ff6857b0"
     },
     "experimental/ada-serve-six-node/profiles/identity-as-run.json": {
-      "bytes": 10984,
-      "sha256": "229f02ce57e529193cfb41e513017c63f24d06188cc1fda5f0fcdc40333dfd2d"
+      "bytes": 11253,
+      "sha256": "cdcc83e5d12b86a89cb9c1b915bc2c593d2ee669a3a3b993b86b3fa6c6c7af74"
+    },
+    "experimental/ada-serve-six-node/profiles/identity-repeat-as-run.json": {
+      "bytes": 11253,
+      "sha256": "4bff46161d3b1a889bd763c1c828e6fd70f4d9e3c61a106b91bf124b7e8b10a2"
+    },
+    "experimental/ada-serve-six-node/profiles/identity-repeat-substitutions.json": {
+      "bytes": 1019,
+      "sha256": "5eddfe8785ac4bc016b2e56969566a77252ff9084d8a6c651ee26429cf25da42"
+    },
+    "experimental/ada-serve-six-node/profiles/identity-repeat-template.json": {
+      "bytes": 9655,
+      "sha256": "e787663f49fd9cd50e44b5229f43e846f14f503bd1b87a61e96c4ffed074de17"
     },
     "experimental/ada-serve-six-node/profiles/identity-substitutions.json": {
-      "bytes": 850,
-      "sha256": "da2ce0ca4fdca332a7f39c17c12c01b04b1ac0d25d9677dfbb6f2ec5ae932ba4"
+      "bytes": 1019,
+      "sha256": "4ddba6286b5b0b0454d15f46171eefd35637a78da150178a13043633bf268bd9"
     },
     "experimental/ada-serve-six-node/profiles/identity-template.json": {
-      "bytes": 9294,
-      "sha256": "6119ec9986d67ff520111c1dd6a2d81cd426de936daa24c7aa46a7cf8c041fd4"
+      "bytes": 9655,
+      "sha256": "d18b5fb99fa654d8cbb98807e14accf9e8a421dda0cb6883b9b3e6b62b6676ce"
+    },
+    "experimental/ada-serve-six-node/profiles/identity-vision-as-run.json": {
+      "bytes": 11396,
+      "sha256": "fd1ff2afc75edbf483e304b0a84486d3abd782dcb543d810023fedb95d5f7eb1"
+    },
+    "experimental/ada-serve-six-node/profiles/identity-vision-substitutions.json": {
+      "bytes": 1026,
+      "sha256": "5bed3f806bb5355cd8f0bce410e07522c2984a9061a579334777e5f8e3f51fd5"
+    },
+    "experimental/ada-serve-six-node/profiles/identity-vision-template.json": {
+      "bytes": 9630,
+      "sha256": "5b238de41ba624dca99be9f4b609972bc89e773aaa8ac4fd9b8774160df903ee"
     },
     "experimental/ada-serve-six-node/profiles/performance-as-run.json": {
-      "bytes": 10918,
-      "sha256": "f4c3b94395bbe487f1fd670462a549938ab8df9c2b6f4cff82f7cb6f243783f6"
+      "bytes": 11257,
+      "sha256": "3a935ef001f8c067fd112ca341749d434a23d9e4c35af0ab88d762c5afef47ae"
     },
     "experimental/ada-serve-six-node/profiles/performance-substitutions.json": {
-      "bytes": 846,
-      "sha256": "34acfc1cb9ee1e6b93fd4e344de0e42d65b2f831d8c0e43bc25aef2d914547b5"
+      "bytes": 1018,
+      "sha256": "e4cd149f8ad6ff393eee2c8dabe03ff101fb0df9803ea56e894124ed73167c9f"
     },
     "experimental/ada-serve-six-node/profiles/performance-template.json": {
-      "bytes": 9320,
-      "sha256": "5de4a2dc16d7103e4161cfb0a6f4cbdbdeaefc0489a1d1f252fd6fac02acc4db"
+      "bytes": 9682,
+      "sha256": "8e5f2ca5f6c0d90ccf1e02d416cbf108b8d801d8d8eb98932683128f4e7e5a56"
+    },
+    "experimental/ada-serve-six-node/profiles/serving-as-run.json": {
+      "bytes": 12254,
+      "sha256": "8a3353f4bfea0cd8c2b20b7bbb001426b3a175315ec06d4e044342c78a5758a5"
     },
     "experimental/ada-serve-six-node/profiles/serving-gate-as-run.json": {
-      "bytes": 11536,
-      "sha256": "267ceeff9c13336d8e041868ff7469044600dfae7a13b119eba3d4bd27f5f3a4"
+      "bytes": 12199,
+      "sha256": "38b10bd3447673f1703edd1bb70185daa4388d5f287116fa63fc51d31ebd6018"
     },
     "experimental/ada-serve-six-node/profiles/serving-gate-substitutions.json": {
-      "bytes": 846,
-      "sha256": "6f5e380ac7de4c22c03fa33457052072b0675f8f0f72fefa7dd0eafc0ab4ca60"
+      "bytes": 1018,
+      "sha256": "b4db6a891ba1bb689e3926d733effb9b2577de7480dd8dc7335465bb7bdb708b"
     },
     "experimental/ada-serve-six-node/profiles/serving-gate-template.json": {
-      "bytes": 9938,
-      "sha256": "f53be3365452418b9c63a59eeb1bb6989b1ebd87b8d70344288010007d069abc"
+      "bytes": 10624,
+      "sha256": "c3ce74629497e98657bbe3abac3ec1715f49b308a290635a87e60ec098f26c76"
+    },
+    "experimental/ada-serve-six-node/profiles/serving-substitutions.json": {
+      "bytes": 1023,
+      "sha256": "eb26e7f40952f356f1a2e2b0c801b2a56eaa3aa2ae2ce39bc22f5e81fb8063e0"
+    },
+    "experimental/ada-serve-six-node/profiles/serving-template.json": {
+      "bytes": 10520,
+      "sha256": "039e95994a67263f3d9cabfe93136e062b8226231fef8c93351e75fad9d51c6e"
     },
     "experimental/ada-serve-six-node/receipts/builds/NATIVE_RESULT-g0.json": {
       "bytes": 12346,
@@ -536,69 +640,197 @@
       "bytes": 910,
       "sha256": "29ac7246c58fc68fe0e98455bea6f5310e819bfcfa3b04da9e556d5ec7b2a613"
     },
-    "experimental/ada-serve-six-node/receipts/gate/PROFILE_DIFF_VS_C1.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/gate/PROFILE_DIFF_VS_C1.json": {
       "bytes": 6755,
       "sha256": "2ff0b624098fbc26794004c5dc338a0625bb0b4e6c1819e16ee684fe30142cf1"
     },
-    "experimental/ada-serve-six-node/receipts/gate/PROFILE_RESOLVED.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/gate/PROFILE_RESOLVED.json": {
       "bytes": 22029,
       "sha256": "66d015256e310df3e5031b8f04a526cf6bc19fa69b265a5cef15f46e126edab4"
     },
-    "experimental/ada-serve-six-node/receipts/gate/RESULT.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/gate/RESULT.json": {
       "bytes": 3127,
       "sha256": "750a68ce063a5a165a0bb5f6302434ab3fcbb6232b7d125f2d1f4f062fd27c10"
     },
-    "experimental/ada-serve-six-node/receipts/gate/RUN-phase-g-g1v-adaygate-r1.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/gate/RUN-phase-g-g1v-adaygate-r1.json": {
       "bytes": 388843,
       "sha256": "ef7de56dec7fbd65f0cbc87ed7c4321a1af9fb8cf5aad56f7e6f753c448cac95"
     },
-    "experimental/ada-serve-six-node/receipts/identity/PROFILE_DIFF_VS_C1.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/identity/PROFILE_DIFF_VS_C1.json": {
       "bytes": 516,
       "sha256": "fe89927b9517fbdb9ad5a6df12d08260c2393463c9f3e2b3e0a7833aa007dc96"
     },
-    "experimental/ada-serve-six-node/receipts/identity/PROFILE_RESOLVED.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/identity/PROFILE_RESOLVED.json": {
       "bytes": 22018,
       "sha256": "bf265b2481b93ae825d43ac29e3076a6147be20b67c612d1fd58050f49e7b58e"
     },
-    "experimental/ada-serve-six-node/receipts/identity/RESULT.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/identity/RESULT.json": {
       "bytes": 3620,
       "sha256": "4fb7b2a188dd68e44e2636823c77a0f30053d9bde971acedfd5bfec1bb6ffb16"
     },
-    "experimental/ada-serve-six-node/receipts/identity/RUN-phase-g-g1v-adayid-r1.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/identity/RUN-phase-g-g1v-adayid-r1.json": {
       "bytes": 402670,
       "sha256": "9e1ce87c363c453d66748189292d74dac0444fd0f0000dd353eaa50ca056c18d"
     },
-    "experimental/ada-serve-six-node/receipts/performance/PROFILE_DIFF_VS_C1.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/performance/PROFILE_DIFF_VS_C1.json": {
       "bytes": 516,
       "sha256": "fe89927b9517fbdb9ad5a6df12d08260c2393463c9f3e2b3e0a7833aa007dc96"
     },
-    "experimental/ada-serve-six-node/receipts/performance/PROFILE_RESOLVED.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/performance/PROFILE_RESOLVED.json": {
       "bytes": 22014,
       "sha256": "d020b6c950c58c45f2188e85220715817ef3ae337bda3f8326e5f92ace7b9c42"
     },
-    "experimental/ada-serve-six-node/receipts/performance/RESULT.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/performance/RESULT.json": {
       "bytes": 4109,
       "sha256": "f06ce35b88123a1bce7e2b234765a131be566fa2c4bbfc94bcb1fb39e5297271"
     },
-    "experimental/ada-serve-six-node/receipts/performance/RUN-phase-g-g1v-adayperf-r1.json": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/performance/RUN-phase-g-g1v-adayperf-r1.json": {
       "bytes": 382886,
       "sha256": "2d531919f76b9d9307e32f753d68c5e669a396773f1584bea1ae02ad407b6d0e"
     },
-    "experimental/ada-serve-six-node/receipts/performance/round0-breadth.log": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/performance/round0-breadth.log": {
       "bytes": 338,
       "sha256": "3d35113e332e9c9e28852dd6be7c1fe6752e032a0d47084a8b446fc7fa808ba5"
     },
-    "experimental/ada-serve-six-node/receipts/performance/round0-historical.log": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/performance/round0-historical.log": {
       "bytes": 321,
       "sha256": "d8ac5922d74621ceb166e3293c27a930882534ad49ba44063033aac80912f832"
     },
-    "experimental/ada-serve-six-node/receipts/performance/round1-breadth.log": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/performance/round1-breadth.log": {
       "bytes": 338,
       "sha256": "02e5382f7c4a8a219aa741ff93ec87bca11f6ff190a77127355620c6e2243134"
     },
-    "experimental/ada-serve-six-node/receipts/performance/round1-historical.log": {
+    "experimental/ada-serve-six-node/receipts/c1-20261101/performance/round1-historical.log": {
       "bytes": 321,
       "sha256": "fd02382f46ed3b7750f94e3aab0c16aabc9509e68fad631cdc901886f896fe42"
+    },
+    "experimental/ada-serve-six-node/receipts/gate/PROFILE_DIFF_VS_C1.json": {
+      "bytes": 6926,
+      "sha256": "f4ec49a77b5e69cf9acbcd9b08f4de2a6803ea526231215e1e63f0ebf60c8b9d"
+    },
+    "experimental/ada-serve-six-node/receipts/gate/PROFILE_RESOLVED.json": {
+      "bytes": 22029,
+      "sha256": "4d6a8c58a1817f2292681fae18bb22924af7c60bfd162b861004dcdca69e1162"
+    },
+    "experimental/ada-serve-six-node/receipts/gate/RESULT.json": {
+      "bytes": 9135,
+      "sha256": "958fad1c86837f7ad3348eddbc8e00535d594f7eba97169be92aa75c904c8c11"
+    },
+    "experimental/ada-serve-six-node/receipts/gate/RUN-phase-g-g1v-adavr3-r1.json": {
+      "bytes": 389119,
+      "sha256": "2f1d0dacaaf7ee2b1fc0a058715470aa33146ae4380fbed4352999798b03bc88"
+    },
+    "experimental/ada-serve-six-node/receipts/identity-repeat/PROFILE_DIFF_VS_C1.json": {
+      "bytes": 601,
+      "sha256": "2b9903ce316716b486b56466cd248a00644d1a2a70843a791ea51ea787903a02"
+    },
+    "experimental/ada-serve-six-node/receipts/identity-repeat/PROFILE_RESOLVED.json": {
+      "bytes": 22013,
+      "sha256": "7a14f28ad3a0f0a5f05b073df31b98527cea834b4279f1bc379e514ef311fc68"
+    },
+    "experimental/ada-serve-six-node/receipts/identity-repeat/RESULT.json": {
+      "bytes": 3612,
+      "sha256": "4d1ea4dbc4c61d3c6c4f1963a70bf3f3cda425457ca46a6d2d1312182f0dae69"
+    },
+    "experimental/ada-serve-six-node/receipts/identity-repeat/RUN-phase-g-g1v-adac2b-r1.json": {
+      "bytes": 382071,
+      "sha256": "f90cbc200a18f05b351d7b5759607556166a9b5f935b8dd71e866c756df91a8f"
+    },
+    "experimental/ada-serve-six-node/receipts/identity-vision/PROFILE_DIFF_VS_C1.json": {
+      "bytes": 1058,
+      "sha256": "0c9a696526bdc3d59800d429fc7cdbd6591b0699c7edc17796b2cbd227c4e459"
+    },
+    "experimental/ada-serve-six-node/receipts/identity-vision/PROFILE_RESOLVED.json": {
+      "bytes": 22045,
+      "sha256": "a2b89a04f56246754f59615d23905a1ffcf684511789937b935695cc49f38e93"
+    },
+    "experimental/ada-serve-six-node/receipts/identity-vision/RESULT.json": {
+      "bytes": 3374,
+      "sha256": "4cdb144ca13ac8b4aa81e58e2f8667a8ee8e3780bb9d8140b16bae2911fed76e"
+    },
+    "experimental/ada-serve-six-node/receipts/identity-vision/RUN-phase-g-g1v-adac2w-r1.json": {
+      "bytes": 325485,
+      "sha256": "2c64680b1650e8cc65342cb9dc0e0246b93d8fbfd654b65e7e58ea95371712de"
+    },
+    "experimental/ada-serve-six-node/receipts/identity/PROFILE_DIFF_VS_C1.json": {
+      "bytes": 601,
+      "sha256": "2b9903ce316716b486b56466cd248a00644d1a2a70843a791ea51ea787903a02"
+    },
+    "experimental/ada-serve-six-node/receipts/identity/PROFILE_RESOLVED.json": {
+      "bytes": 22013,
+      "sha256": "aa41584ed0f0a7e35b8a037e7a19dff9bdffb63a4a6e037e8ff623fd60365283"
+    },
+    "experimental/ada-serve-six-node/receipts/identity/RESULT.json": {
+      "bytes": 5215,
+      "sha256": "187a5db519dcdacfd10fa7553cc1b290f56e99e8ed94a26a110e8badce53b433"
+    },
+    "experimental/ada-serve-six-node/receipts/identity/RUN-phase-g-g1v-adac2a-r1.json": {
+      "bytes": 382046,
+      "sha256": "9ad5d971ad22dcaeae36f27e5bd266e77fdb9f6b0e7629351fd7cdfe373f31ef"
+    },
+    "experimental/ada-serve-six-node/receipts/performance/PROFILE_DIFF_VS_C1.json": {
+      "bytes": 601,
+      "sha256": "2b9903ce316716b486b56466cd248a00644d1a2a70843a791ea51ea787903a02"
+    },
+    "experimental/ada-serve-six-node/receipts/performance/PROFILE_RESOLVED.json": {
+      "bytes": 22012,
+      "sha256": "e9893e519e62238fc04cb24f13cf046e1629bc84225403de33eac4b0a3a1f1fd"
+    },
+    "experimental/ada-serve-six-node/receipts/performance/RESULT.json": {
+      "bytes": 4101,
+      "sha256": "ccbb3d4b37401ec37dbb77a658fe26708b3e46839c346265df4c5aeaf9754208"
+    },
+    "experimental/ada-serve-six-node/receipts/performance/RUN-phase-g-g1v-adavr2-r1.json": {
+      "bytes": 514685,
+      "sha256": "50df445ec01a6952fda1252a6ce8005a9bc35e170f597ddd6d920311cb54e512"
+    },
+    "experimental/ada-serve-six-node/receipts/performance/round0-breadth.log": {
+      "bytes": 338,
+      "sha256": "7eb347b3782a5b93256615992ad8ffa295c07a026c3a66424f4edd8fb7468158"
+    },
+    "experimental/ada-serve-six-node/receipts/performance/round0-historical.log": {
+      "bytes": 321,
+      "sha256": "a858e2c80b003a87aab323bc965c55121a22dd5a78cef94a4190cc8695cc71c3"
+    },
+    "experimental/ada-serve-six-node/receipts/performance/round1-breadth.log": {
+      "bytes": 338,
+      "sha256": "5959271f415d2c3e7f2cd133b269c33b8c931093ecb0cd47e0fd4307ef347f59"
+    },
+    "experimental/ada-serve-six-node/receipts/performance/round1-historical.log": {
+      "bytes": 321,
+      "sha256": "e1b0dd6630053ee3fedff1b07a218b8e4047e4378e9cc05a53d7ae8c83d355f8"
+    },
+    "experimental/ada-serve-six-node/receipts/serving/PROFILE_DIFF_VS_C1.json": {
+      "bytes": 7384,
+      "sha256": "f8b9a8bab564b709162bbcb47c694fb558930ec1ccdbf4d676136275ac51c873"
+    },
+    "experimental/ada-serve-six-node/receipts/serving/PROFILE_RESOLVED.json": {
+      "bytes": 22060,
+      "sha256": "e73d0efa00eb25e1d44e0fde1cf3eae9f5dea3a3706b6617045320d2c2b41e2f"
+    },
+    "experimental/ada-serve-six-node/receipts/serving/RESULT.json": {
+      "bytes": 4890,
+      "sha256": "fd9b22162b1056ac6d277bfbd87df7f669ba932267fc66bdd472eb724750a0df"
+    },
+    "experimental/ada-serve-six-node/receipts/serving/RUN-phase-g-g1v-adasv-r1.json": {
+      "bytes": 332211,
+      "sha256": "8ed7eb9c882299c64236f7db13f48ce415dde8161d3c7978a48df877a9d04235"
+    },
+    "experimental/ada-serve-six-node/receipts/serving/round0-breadth.log": {
+      "bytes": 337,
+      "sha256": "eacc4a2fc43018c2a5fcc5af6256a79b55db9c33b31cd5c199f7d76abdd592c8"
+    },
+    "experimental/ada-serve-six-node/receipts/serving/round0-historical.log": {
+      "bytes": 321,
+      "sha256": "f833305bb7c9e5c2320ffb745eaf301078f53a1aa28b3fd377836311049fad93"
+    },
+    "experimental/ada-serve-six-node/receipts/serving/round1-breadth.log": {
+      "bytes": 338,
+      "sha256": "2d82b3f3e9fcb90fd12b465d8dd0ebcff1f8d735e516e9ff8eb653857d00568d"
+    },
+    "experimental/ada-serve-six-node/receipts/serving/round1-historical.log": {
+      "bytes": 323,
+      "sha256": "6eac4b23a8c57fcddb97e31807469e15def66d847797a191048464fee4cf0fc3"
     },
     "experimental/ada-serve-six-node/results/ada-spill-r1/ADA_CPU_WINDOW_RESULTS_r1.md": {
       "bytes": 9141,
@@ -1120,6 +1352,458 @@
       "bytes": 1218,
       "sha256": "d223c5b0eaf247becb5be77b854f91da5faf9c1b497537d1ae57846037b959f2"
     },
+    "experimental/ada-serve-six-node/serving/README.md": {
+      "bytes": 2021,
+      "sha256": "ee717c1a2a10d24d414ba3067e499d767ee03cfec3410485bd01c825ecc82ae2"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/cpu-batch/apply_cpu_batch.py": {
+      "bytes": 7993,
+      "sha256": "f8b2f9bfef5d7fbe52e5a5788e9ba148268cfd271c759cd34ebf47c203b72051"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/cpu-batch/build_ada_cpu_batch_r1.py": {
+      "bytes": 2602,
+      "sha256": "761e5eac955c717a54d4b1c8fd79f3cdb21acc5e5a4d473168ecb1418a8cffa5"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/DSPARK_CPU_BUILD_r1.md": {
+      "bytes": 32439,
+      "sha256": "43e79f3486d87090a529b4480f912fd8d203972bfee48ce025dd3c4cf30853aa"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/PLAIN_GATE_r1.md": {
+      "bytes": 25579,
+      "sha256": "89a1b4daf7dd2d40cd9aac64b8d1e567209ed18ad8a51e0ae79ca9dcc9ed11db"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/analyze_truncation.py": {
+      "bytes": 6141,
+      "sha256": "d8e17e3c7d23f7bbca751defd3c774b156e6b4c5be98fee8e8a5acc720d25cee"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/apply_dspark_cpu.py": {
+      "bytes": 9411,
+      "sha256": "1ff206a880319e2cd6d1fe1db1e2a1d6614c0cab66e680b819b25f32dd6d65a7"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/apply_dspark_flags.py": {
+      "bytes": 2188,
+      "sha256": "100e09407cdb08dcc7283d75ae7c1b60521f4cc472b32dbee607a3c11f1c1241"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/apply_dspark_plain_gate.py": {
+      "bytes": 8288,
+      "sha256": "63dc3ea735c10f933a8c01eb545278899945213b983d0a88de9a977c36f5fa92"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/apply_dspark_swa_match.py": {
+      "bytes": 3654,
+      "sha256": "a33cd38f1aa59e9bc4f7042ef90cb1c18646abc6a43aa35b0b904f8731dbbac5"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/apply_tolerant.py": {
+      "bytes": 4221,
+      "sha256": "ca7ca4f8373ed6578c19b389700c107ab2ef7ccc0292f354175e50fb7572f8df"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/build_dspark_tolerant_r1.py": {
+      "bytes": 2495,
+      "sha256": "4afbcb8d3d861ec7a333a0e4d8665bdc28f20b53764fcd8254f5503504bfa8ae"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/check_gguf_lossless.py": {
+      "bytes": 6613,
+      "sha256": "e6184d186caea764efbf8873426477f72192a1f6fa0af1195ee06749aff00192"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/compare_registration.py": {
+      "bytes": 4607,
+      "sha256": "d09dc2adf8712a31697f0eed911effe6b105594e459bd1b61661d76ab4135f0f"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/cpu_pin_shim.c": {
+      "bytes": 899,
+      "sha256": "cd2261b3075c8358b5f00554ada0fea98f7249272a011cdf61c8a90c97da152d"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/dspark_plain_gate.py": {
+      "bytes": 28495,
+      "sha256": "6d0636b33eaf4dc18067d46bde923e9d9516f04f262a4366087e3733906d9e4d"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/kt_dspark_draft.py": {
+      "bytes": 13303,
+      "sha256": "ba8e32090f4a8f7fe0676b9864826f39ea8a2f0dd58cad394ba33aae068f1f74"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/plain-gate-r3/PLAIN_GATE_r3.md": {
+      "bytes": 15293,
+      "sha256": "84c515ba9d8a0d95e20d09cafb79e7b19076be2ad861de18f7eb793b7981ad1d"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/plain-gate-r3/apply_dspark_plain_gate.py": {
+      "bytes": 9623,
+      "sha256": "fa9393cc3b42a2c410bcb0a77385627d427f8b5ea3a018e5ad146c95a381dbb1"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/plain-gate-r3/dspark_plain_gate.py": {
+      "bytes": 41180,
+      "sha256": "f3b160eb90f595ddb05e5953fd282c88269c83690e4f0a13b01f8e454c16a805"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/plain-gate-r3/test_dspark_plain_gate.py": {
+      "bytes": 49698,
+      "sha256": "e0cb744f8399c59154febb758bc15e10338800863468924505ab077003616bb1"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/plain-gate-r4/PLAIN_GATE_r4.md": {
+      "bytes": 8249,
+      "sha256": "5110e0f6657822508fba9d1517cdabdc0108f704beda5f7922a05006880af739"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/plain-gate-r4/apply_dspark_plain_gate.py": {
+      "bytes": 10232,
+      "sha256": "4cc6bf3b6c6d4ecacf7150edb824fe394e6b017734bf281a37be52d3095b5af0"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/plain-gate-r4/dspark_plain_gate.py": {
+      "bytes": 57931,
+      "sha256": "df7d0ee67d3c64013de04930ef9ad212ce9e3957b0e6b031158817e5013028ce"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/plain-gate-r4/test_dspark_plain_gate.py": {
+      "bytes": 71969,
+      "sha256": "3aa87bbfbaa9deb56fb030dcfd51945afc5ee69b6a8a54146802153d939ab5f6"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/run_draft_forward.sh": {
+      "bytes": 2629,
+      "sha256": "5105451cb21751c65cac92a2e798863bbb5910c327cc6b194e285e5e3473cf52"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/run_registration.sh": {
+      "bytes": 2317,
+      "sha256": "b33985b1f8f6cbfacfa38cefff1f75bfb0f7a241d1c5ea903c6cfa9fb6aee3f8"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/sps_additive_r1.json": {
+      "bytes": 178,
+      "sha256": "70e3365584fd30f3772ceb2ae82d10413fc225fc02e8a1c83106043235f6fe6c"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/sps_additive_r2.json": {
+      "bytes": 178,
+      "sha256": "8902425c9344ec717e482882a5b21f88e20bae4dafa84113d29f8ae8f1516b89"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/test_draft_forward.py": {
+      "bytes": 17144,
+      "sha256": "ca6428489b5725b3832ff9786fb767be21464ca3e07e4f31862520899156af3c"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/test_dspark_plain_gate.py": {
+      "bytes": 35050,
+      "sha256": "c33ebaea5caa67e40ea7901e3c8cdb25a3ffb6799ccaa55a02d13a4ae6a09363"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/dspark-cpu/test_registration.py": {
+      "bytes": 11524,
+      "sha256": "5cc44fe613760a1d19daaf7221231abc9972f2a9bb79a1fe8a6018f4a080279b"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/fp4-kv/apply_fp4_kv.py": {
+      "bytes": 15094,
+      "sha256": "53f3d8709057f4dcbba43f9ee954b53c93d15941e31824a354e76aeded1807bd"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/fp4-kv/sm89_fp4_tile.py": {
+      "bytes": 1700,
+      "sha256": "6780cd1d1e8ded93e4c38fa8f6df884ddf94cdafbceb20065705d4a0722bd2a1"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/fp4-kv/test_fp4_kv_gpu.py": {
+      "bytes": 17184,
+      "sha256": "87b69f2be7d75811a100a0b8f8d8bb22d7e5b801c5db1bc1bf69e8d25b22dcad"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/http_server.py": {
+      "bytes": 119975,
+      "sha256": "7537f80b7c94cb2f279be110d9198360fdbb9d6e6d5ecc1e1d798dee986027fb"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/scheduler.py": {
+      "bytes": 293179,
+      "sha256": "d393f2967462ac9f36d4ad26e2a6a76610211e30cab5ed7c9825e6af19cb1cd1"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/shadow-lane/SHADOW_LANE_DESIGN_r1.md": {
+      "bytes": 6219,
+      "sha256": "c0131d67467f558a9a1f4adf58ccfd74ff92e43c46beabb265044f18c5d3310f"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/shadow-lane/apply_shadow_lane.py": {
+      "bytes": 26399,
+      "sha256": "76daa6302562b27507aa1dcf32cce9ac0f53e963dce77cbd92ac65a145c4583a"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/shadow-lane/build_shadow_lane_r1.py": {
+      "bytes": 3575,
+      "sha256": "c9e8a2de8ecbd23871d5fee90d20f299e1e267c5c1466853ac5582b23f1bbec2"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/shadow-lane/test_lane.cpp": {
+      "bytes": 9280,
+      "sha256": "d7d16cc485c1448d829b7f71ad08eb65eefdd11f7a26601b2ab767bbf59249ca"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/shared-x/apply_shared_x.py": {
+      "bytes": 2530,
+      "sha256": "8ff6548c5fdd6eb78305aea5347d49faf737d068cfe13265e2fe93e8a0a75b8c"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/swa-tail/23-swa-checkpoint-tail.patch": {
+      "bytes": 4138,
+      "sha256": "aba88c09c60acae7d1a1df9e6110bb4eee60ec8a34640c32b03cc092d99aa2d3"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/swa-tail/apply_swa_tail.py": {
+      "bytes": 1971,
+      "sha256": "0d67253b2f2c8ec917f7094945b0dab741b4ce993d08b3d1888c1892593234df"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/swa-tail/qualify-cache.py": {
+      "bytes": 21147,
+      "sha256": "f6d69d3a0ca89db0a0976c323b944478468286423c6ec260d120d7b6db58cfdd"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/swa-tail/test_qualify_cache.py": {
+      "bytes": 6144,
+      "sha256": "33b27fe466258aa7dde9037ecdbfbf4becae56674379ed14e50d44c02699d20c"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/PORTS_r1.md": {
+      "bytes": 18116,
+      "sha256": "cfbb4528d9ec772d0e658867dfbd5d531101a6a052171a491ec9c9554c0ac355"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/PORTS_r2.md": {
+      "bytes": 12979,
+      "sha256": "b98bfbcacf9341fc5c49a174e771b6c65afb3dcd041081b812fcd32d2a9d14db"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/apply_hicache_staging_cap.py": {
+      "bytes": 4072,
+      "sha256": "5ea4118f67bcbae91d9e9b463e38facd8c1d145d568b91164431430e9de9d907"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/apply_prefill_warmup.py": {
+      "bytes": 8018,
+      "sha256": "99e1b5d3e3a9ebf693adbaca32767eaa7d1db4560b49ec9d097142e0e67890e3"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/apply_stream_cpu_short.py": {
+      "bytes": 13243,
+      "sha256": "e70b1b7bca89d76678ac57b3ebbcb9e0c4b46a59d589f04c61b49934342fde49"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/apply_swa_hicache_lend.py": {
+      "bytes": 6564,
+      "sha256": "ae4c9b0e71cb05cf166ef44916210de120912b0d38feb49253477f8da4b8e1d9"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/tests/faketorch.py": {
+      "bytes": 10912,
+      "sha256": "880f62c81272565f7f34cd65a185c120aeb2916aa1cdacde620602834a1b9320"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/tests/test_hicache_staging_cap.py": {
+      "bytes": 9615,
+      "sha256": "0587803074d816cb1740262dac35770ccff6953b7ffff52cd503cd271214ec3a"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/tests/test_prefill_warmup.py": {
+      "bytes": 10901,
+      "sha256": "889030d9a0d1617e33b94ec2672d1a77a17fd3ce6a16021d0106fc5d75834c62"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/tests/test_stream_cpu_short.py": {
+      "bytes": 19978,
+      "sha256": "e7ed296b336f5c58bdea1329593b36621a714b002884acca4d69968fcff52ed8"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/upstream-picks/tests/test_swa_hicache_lend.py": {
+      "bytes": 10575,
+      "sha256": "62ede3f4e20ce61eab50545f060ef222f5001579e08e9d27e71a931fcd5a45f1"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/v41-window/apply_v41_window.py": {
+      "bytes": 11722,
+      "sha256": "b8704194ebb97f3e622bbc2fa3965ce5c5e83de114639d2041e576cba781bf0c"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/v41-window/run_gpu.sh": {
+      "bytes": 949,
+      "sha256": "56315bb02b512bc85a982e5a2ea005e29b2de46f9882041a3a5b13ac3c2e128e"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/v41-window/sm89_v41_tile.py": {
+      "bytes": 1336,
+      "sha256": "68eee529ef711d145d516a9d2ffa2253c07c1d396cbe6b9c2bed4380ec3793dc"
+    },
+    "experimental/ada-serve-six-node/serving/overlays/v41-window/test_v41_kv_gpu.py": {
+      "bytes": 21691,
+      "sha256": "2d5e3b49198493da4c5d6f44c58fb9d46e3e31618d81e32f5c8306fe65103d99"
+    },
+    "experimental/ada-serve-six-node/serving/profile/DISK_GATE_LAUNCH.json": {
+      "bytes": 11784,
+      "sha256": "ca85373848b35da41fe77d688f5977877701fb3b80f204e077f4a4c4ec138404"
+    },
+    "experimental/ada-serve-six-node/serving/profile/SERVING_LAUNCH.json": {
+      "bytes": 11972,
+      "sha256": "46361296e2cfef5c448de83a3ccd57994f0dba272efb3c93ac66ec832585712f"
+    },
+    "experimental/ada-serve-six-node/serving/results/BLANK_ROWS_RESULTS_r1.md": {
+      "bytes": 21206,
+      "sha256": "f31c2cb1d16a944d878a4673585a39bf0fba5e49c74652202dc061b41799bd6a"
+    },
+    "experimental/ada-serve-six-node/serving/results/CPU_BATCH_RESULTS_r1.md": {
+      "bytes": 2712,
+      "sha256": "825d1541623c256179ff64664d3a820b7cbb39e9336bef1fa3bd73531b9124c0"
+    },
+    "experimental/ada-serve-six-node/serving/results/DISK_TIER_RESULTS_r1.md": {
+      "bytes": 3777,
+      "sha256": "9b14585aed1e39b64c1bc005558c44909f18a58dfddfa32e52d1604954f20baf"
+    },
+    "experimental/ada-serve-six-node/serving/results/ENGINE_VS_REFERENCE_AUDIT_r1.md": {
+      "bytes": 21214,
+      "sha256": "35e0d0ed744ad9ce8cb6911c85e0e95e14fbf3c6d73f1a50f0fef4bd1c0f1576"
+    },
+    "experimental/ada-serve-six-node/serving/results/FP4_BASELINE_MOVE_PLAN_r1.md": {
+      "bytes": 7932,
+      "sha256": "a64cf9742eca0b7abb3f3b0e30b8ff62a5424a800bc29c235f5f8a114b3484d1"
+    },
+    "experimental/ada-serve-six-node/serving/results/FP4_KV_RESULTS_r1.md": {
+      "bytes": 9182,
+      "sha256": "4879dcd443553ab103d5da2e97894f5c819f31c94769fa56c84e3d987d204c0d"
+    },
+    "experimental/ada-serve-six-node/serving/results/NIGHT_RESULTS_20261104_r1.md": {
+      "bytes": 16538,
+      "sha256": "94d25ed04e8e339f432e352169b5f96a8e39372f8cd90812952bc387e427019d"
+    },
+    "experimental/ada-serve-six-node/serving/results/PRECISION_LEDGER.md": {
+      "bytes": 66760,
+      "sha256": "4e70a6d5048a7eb8718ac19d3161d337888bfd23e0e34415e5e6668453d98974"
+    },
+    "experimental/ada-serve-six-node/serving/results/REBASE_ASSESSMENT_r2.md": {
+      "bytes": 27103,
+      "sha256": "1cce31c3a73fbbd2bffbb2c5e978f8e196d6b844db8ff3c760bd2a16a45c2639"
+    },
+    "experimental/ada-serve-six-node/serving/results/ROTATE_FREEZE_RESULTS_r1.md": {
+      "bytes": 2423,
+      "sha256": "2b9c817e16741cb7d1c089d6c62d9cb0e95fd23b071307a9a1de924dc09876cd"
+    },
+    "experimental/ada-serve-six-node/serving/results/SERVED_PANEL_RESULTS_r1.md": {
+      "bytes": 4655,
+      "sha256": "4d4af0cdfffd950618f30be9f125c7f609d0c3c85681c9218923b9d5ffd735e7"
+    },
+    "experimental/ada-serve-six-node/serving/results/SERVING_RESULTS_r1.md": {
+      "bytes": 4032,
+      "sha256": "02e434326420dea463763035dbc8aa5f411b0303139589f781dd730fdbe22b72"
+    },
+    "experimental/ada-serve-six-node/serving/results/SHARED_X_RESULTS_r1.md": {
+      "bytes": 1064,
+      "sha256": "bbfad808b6e6d248c6acdd19b3e3d887cea638e4b8038bbfaa856a1443453769"
+    },
+    "experimental/ada-serve-six-node/serving/results/TIMELINE_ENGRAM_RESULTS_r1.md": {
+      "bytes": 3145,
+      "sha256": "0af56f05aef4fe910458c47e0ec0b582c493f1cdd5f0fd9c4f47427caa79ecb4"
+    },
+    "experimental/ada-serve-six-node/serving/results/V41_WINDOW_RESULTS_r1.md": {
+      "bytes": 9361,
+      "sha256": "3ef9d6cef066c7e5b5a610436cfdd09f22d5ca222c49985cc82f8c137251b671"
+    },
+    "experimental/ada-serve-six-node/serving/results/VISION_SERVING_RESULTS_r1.md": {
+      "bytes": 2089,
+      "sha256": "ff2ce0ac6347e0419244f8e83a57717193e709712f0d9ccef3633af6fccc6f6e"
+    },
+    "experimental/ada-serve-six-node/serving/tools/client_ada_adadk4_r1.py": {
+      "bytes": 8356,
+      "sha256": "1c8235c9444ac334181cec106397d78cf6ae7211adb1934076555e6b4f4ba374"
+    },
+    "experimental/ada-serve-six-node/serving/tools/client_ada_adadpb_perf_r1.py": {
+      "bytes": 9416,
+      "sha256": "fbc93d8ffc39821308751510b8aa2d48386d1227a375f92d2b110f8cd3d5603c"
+    },
+    "experimental/ada-serve-six-node/serving/tools/client_ada_adasrr_r1.py": {
+      "bytes": 8514,
+      "sha256": "5ca26933d2ef0ab285960a5a8a3ad7ed8405613d37ff01583bd90d22f3c09e1c"
+    },
+    "experimental/ada-serve-six-node/serving/tools/client_ada_identity_c2a_r1.py": {
+      "bytes": 11419,
+      "sha256": "3938bbcb6e2b0451351ac516d56ab0e8981f4df90822d9f0fb3969dc31901a88"
+    },
+    "experimental/ada-serve-six-node/serving/tools/client_ada_identity_c2b_r1.py": {
+      "bytes": 9984,
+      "sha256": "05207f3d0323c06498709cf5eb8b828a6d579b784192e8532573e3d88c8112ea"
+    },
+    "experimental/ada-serve-six-node/serving/tools/controller_phase_g_g1v_adadk4_r1.py": {
+      "bytes": 28493,
+      "sha256": "f2a3946602f8fe04c0d2e556e5da99c6c4037879a30d27a22a07e5d00f689c50"
+    },
+    "experimental/ada-serve-six-node/serving/tools/controller_phase_g_g1v_adasrr_r1.py": {
+      "bytes": 28469,
+      "sha256": "04410ee5076c215130c8562c4519b05c5f6b5146787865d4aa90559a55f1a34b"
+    },
+    "experimental/ada-serve-six-node/serving/tools/derive_ada_c2w.py": {
+      "bytes": 3108,
+      "sha256": "2407877ca1966b89508cc4f9c253f3c6f45650505066662f5cc9d56c38455551"
+    },
+    "experimental/ada-serve-six-node/serving/tools/derive_ada_sv.py": {
+      "bytes": 2585,
+      "sha256": "de772e902f17f9cb4f744a73e903bf59b36d6d82500badf83014a7ccbf184166"
+    },
+    "experimental/ada-serve-six-node/serving/tools/disk-client-r1/feature_client.py": {
+      "bytes": 21514,
+      "sha256": "b17c62505d2ca7d00d932fe097794673b38663f4afa9419967842a760bc3f2f8"
+    },
+    "experimental/ada-serve-six-node/serving/tools/disk-client-r1/feature_transport.py": {
+      "bytes": 15542,
+      "sha256": "a211292df91b571db185b54b9b8e49b3d07c75a6217f2aa79f4217fe42490cca"
+    },
+    "experimental/ada-serve-six-node/serving/tools/disk-client-r1/kv_checks_disk.py": {
+      "bytes": 13167,
+      "sha256": "caac6a3f44ca7e9d8ae94355290ce2e599c892a42a934a4ccbaee9876f00f7cc"
+    },
+    "experimental/ada-serve-six-node/serving/tools/disk-client-r1/queue_checks.py": {
+      "bytes": 10785,
+      "sha256": "880e36fcf05e0c5e43d0b19cba20952f2c80924e7083d92cb83bd5f1aabe506d"
+    },
+    "experimental/ada-serve-six-node/serving/tools/disk_restart_r1.py": {
+      "bytes": 3574,
+      "sha256": "9ddfb8854f3c0b3fb3b94e7e25e27c55e8314fa2ab6e6fc854fd88a4696fabbc"
+    },
+    "experimental/ada-serve-six-node/serving/tools/dispatch_phase_g_g1v_adadk4_r1.py": {
+      "bytes": 4272,
+      "sha256": "f8be5297b07bdc1ebc7bb8e73b8fbbd6df2226985ca0368676121c73bebc691d"
+    },
+    "experimental/ada-serve-six-node/serving/tools/dispatch_phase_g_g1v_adasrr_r1.py": {
+      "bytes": 4268,
+      "sha256": "c49590b1479452f69414e14e654df2477090e025964a5cb5b9bbd9a7dd387d4d"
+    },
+    "experimental/ada-serve-six-node/serving/tools/install_ada_selector_r1.py": {
+      "bytes": 4736,
+      "sha256": "75edb66e34bd9867e09109298aec838bea87355678d951fd024777cc03af1c7d"
+    },
+    "experimental/ada-serve-six-node/serving/tools/launch_phase_g_g1v_adadk4_r1.py": {
+      "bytes": 1227,
+      "sha256": "43ae4fcb042ecbe53fcf65aec3461d6f2e953ae0de9f46f9ed051f91e574c04a"
+    },
+    "experimental/ada-serve-six-node/serving/tools/launch_phase_g_g1v_adasrr_r1.py": {
+      "bytes": 1227,
+      "sha256": "92cb2242ab2de03ca3eaa26a47beb73a47017626fa1b982079ec04be72d87956"
+    },
+    "experimental/ada-serve-six-node/serving/tools/panel/blank_by_length.py": {
+      "bytes": 2056,
+      "sha256": "28a27780e0b88aad9adc96147190a089601315f6fcd7c2cb3e239fedb9df3e36"
+    },
+    "experimental/ada-serve-six-node/serving/tools/panel/blank_rows.py": {
+      "bytes": 2347,
+      "sha256": "4c8ff0154ef267061cb1721d520369daeabfedc952f967def952755fc1d8cfe8"
+    },
+    "experimental/ada-serve-six-node/serving/tools/panel/decode_prefill_check.py": {
+      "bytes": 4476,
+      "sha256": "db5c07983a7095b50f2e84fe7e2e59fedbfd3fb4aaa5b317c70257f35b04bbfb"
+    },
+    "experimental/ada-serve-six-node/serving/tools/panel/kl_outliers.py": {
+      "bytes": 2917,
+      "sha256": "439aee0844e11092e2564bfb289f938859b8ac0cee364dac35d14c515cd1480e"
+    },
+    "experimental/ada-serve-six-node/serving/tools/panel/outlier_panel.py": {
+      "bytes": 1696,
+      "sha256": "6abce7efe01b83b9a280915a49eca8d485fb14fa619a6220a728eb71f19d2c78"
+    },
+    "experimental/ada-serve-six-node/serving/tools/panel/paired_panel.py": {
+      "bytes": 1694,
+      "sha256": "13245f414d1b6e13f447519139bba4629c90bfcdffbea7c71de9ade18fb8153c"
+    },
+    "experimental/ada-serve-six-node/serving/tools/profile_phase_g_g1v_adadk4_r1.py": {
+      "bytes": 11862,
+      "sha256": "ca1c37399641beb548e65c122d409b7ef3356ed7e4659f8bd7f2f99b9762fd96"
+    },
+    "experimental/ada-serve-six-node/serving/tools/profile_phase_g_g1v_adasrr_r1.py": {
+      "bytes": 11962,
+      "sha256": "271a0321535d678b48aa2b8a9c202f172622670d8bcb54f01b3ee0c5afc80214"
+    },
+    "experimental/ada-serve-six-node/serving/tools/run_pgtok_c2_r1.py": {
+      "bytes": 2101,
+      "sha256": "1dcb37ac6e00aef1519d01f25e59490eafd52e368d939932b8f501c002931a41"
+    },
+    "experimental/ada-serve-six-node/serving/tools/serve_ada_r1.py": {
+      "bytes": 30637,
+      "sha256": "3269a97e4cadf1c2f053dd5628c671241548668e507a024df5bf5884cc2a0531"
+    },
+    "experimental/ada-serve-six-node/serving/tools/served_reload_watchdog_r1.sh": {
+      "bytes": 1577,
+      "sha256": "d605ad488eb073d57917bd9053e2deb89a059093060a552a8203b0d82fadedc3"
+    },
+    "experimental/ada-serve-six-node/serving/tools/server_info_profile_g0_r3.py": {
+      "bytes": 8866,
+      "sha256": "4bca991b9c67cff6c44a67bc1c443b8cb0c384153badd597c00bc11ee94852fe"
+    },
+    "experimental/ada-serve-six-node/serving/tools/stage_phase_g_g1v_adadk4_r1.py": {
+      "bytes": 30621,
+      "sha256": "accdfee568ab8d4e8df0b42e923df4ca885c6db01f5822ffd3dcbbf001bc142c"
+    },
+    "experimental/ada-serve-six-node/serving/tools/stage_phase_g_g1v_adasrr_r1.py": {
+      "bytes": 30896,
+      "sha256": "ee7a7b09b1d3b6dd7885eb521ab178e05b15e23e504a2c8db77cb5d00be5afc6"
+    },
+    "experimental/ada-serve-six-node/serving/tools/swap_entry_ada_r1.py": {
+      "bytes": 3257,
+      "sha256": "ed75eb79d9458f1c5ef17a36919e871cd04f37f7c494fec9b6b4ab46bd25afbc"
+    },
     "experimental/ada-serve-six-node/tools/build_ada_ref_r1.py": {
       "bytes": 4498,
       "sha256": "59936faec71f17e0b5a92f76e9ce2009cfe58850bc0c239c03867fc3dc63e6af"
@@ -1265,7 +1949,7 @@
       "sha256": "880e36fcf05e0c5e43d0b19cba20952f2c80924e7083d92cb83bd5f1aabe506d"
     }
   },
-  "files_excluding_self": 315,
+  "files_excluding_self": 486,
   "schema": 1,
   "scope": "All files added on this branch plus the changed root README, excluding this manifest itself; the earlier snapshot and inherited recipe stay unchanged."
 }

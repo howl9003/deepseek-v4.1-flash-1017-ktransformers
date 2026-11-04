@@ -1,4 +1,17 @@
 {
+  "c1_20261101": {
+    "launch_sha256": {
+      "identity": "90ec7878b86d4c57d4afa885b8abe0e902ddc15b5ff7848af72c72eb18f7bf2d",
+      "performance": "1c3a860aa4dd5bf204ea33814ce938279c36001b62edc075e8565da6916dee1d",
+      "serving_gate": "9c36003c5755baed4d00dc02e699a41e54809790e0bbce57687e45fac33a934f"
+    },
+    "prepared_manifest_sha256": "3befcb82626dc9c8ba846b1b683ce095fac8f2876e474b418e641b5dca60d916",
+    "trials": {
+      "identity": "/scratch/aster/bench/ada-identity-engram-20261101-r1",
+      "performance": "/scratch/aster/bench/ada-perf-engram-20261101-r1",
+      "serving_gate": "/scratch/aster/bench/ada-gate-engram-20261101-r1"
+    }
+  },
   "integrated_tree": {
     "inventory_sha256": "b71f046342cecba077034ddbd2dea2f6ff6ef2d191c78a6cc1a12c42052a32b7",
     "path": "/scratch/aster/bench/phase-g-g1-integrated-20261030-r6/src/sglang"
@@ -8,14 +21,29 @@
     "tree": "/scratch/aster/bench/ada-native-r16-20261101-r1/ktransformers"
   },
   "launch_sha256": {
-    "identity": "90ec7878b86d4c57d4afa885b8abe0e902ddc15b5ff7848af72c72eb18f7bf2d",
-    "performance": "1c3a860aa4dd5bf204ea33814ce938279c36001b62edc075e8565da6916dee1d",
-    "serving_gate": "9c36003c5755baed4d00dc02e699a41e54809790e0bbce57687e45fac33a934f"
+    "gate": "6ba10fd86f599df11f61b556c9fa103b1905285d3c093ddc2e749747d01b6499",
+    "identity": "4c14fd1f669aa401d0561180da91308a2c390264b62ce51b7d9755682f9ee0da",
+    "identity_repeat": "81e7d8e90ddf2e717f77d5665012ad2dd4939fba97fcdb7229712797c8be3848",
+    "identity_vision": "d70762fa7906402506b9f4fd1a8028aa7bc6d59d0e8b1f545285c6376576f4c6",
+    "performance": "09ec625703d99126cd4e3cfebd675bfa4bf01497819f1323c3667f731a99810d",
+    "serving": "46361296e2cfef5c448de83a3ccd57994f0dba272efb3c93ac66ec832585712f"
   },
-  "prepared_manifest_sha256": "3befcb82626dc9c8ba846b1b683ce095fac8f2876e474b418e641b5dca60d916",
+  "prepared_manifest_sha256": "2bc546f34dbb14e41e7729526b07515233c7d3e4a49b2cfb97927c3224018271",
+  "served": {
+    "baseline": "C2",
+    "c2_since": "2026-11-03T07:11Z",
+    "kv_disk_store": "/scratch/aster/bench/ada-kv-disk-c2-20261103-r1",
+    "model_view": "/scratch/aster/models/DeepSeek-V4.1-Flash-1017-c2-vision-view-r1",
+    "since": "2026-11-04T12:38Z",
+    "tag": "adasv",
+    "trial": "/scratch/aster/bench/ada-serve-c2-vision-20261104-r1"
+  },
   "trials": {
-    "identity": "/scratch/aster/bench/ada-identity-engram-20261101-r1",
-    "performance": "/scratch/aster/bench/ada-perf-engram-20261101-r1",
-    "serving_gate": "/scratch/aster/bench/ada-gate-engram-20261101-r1"
+    "gate": "/scratch/aster/bench/ada-gate-v41kv-20261103-r2",
+    "identity": "/scratch/aster/bench/ada-identity-c2-20261103-r1",
+    "identity_repeat": "/scratch/aster/bench/ada-identity-c2-20261103-r2",
+    "identity_vision": "/scratch/aster/bench/ada-identity-c2-vision-20261104-r2",
+    "performance": "/scratch/aster/bench/ada-perf-v41kv-20261103-r2",
+    "serving": "/scratch/aster/bench/ada-serve-c2-vision-20261104-r1"
   }
 }

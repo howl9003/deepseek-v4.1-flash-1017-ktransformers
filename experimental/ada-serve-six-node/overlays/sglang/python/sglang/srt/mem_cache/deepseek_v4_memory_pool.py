@@ -22,6 +22,8 @@ from sglang.kernels.ops.attention.dsv4 import (
     fused_store_cache,
 )
 from sglang.kernels.ops.attention.dsv4.kv_layout import (
+    sm89_fp4_compressed_kv,
+    sm89_v41_kv,
     KVLayout,
     is_valid_kv_layout_pair,
 )
@@ -189,6 +191,10 @@ def resolve_compressed_kv_layout(
         if option == "auto":
             option = None
     if kv_layout is KVLayout.V4:
+        if compress_ratio in (1, 2) and sm89_fp4_compressed_kv():
+            assert option in (None, "fp4"), "the SM89 fp4 selector picks the layout"
+            assert torch.cuda.get_device_capability() == (8, 9), "SM89 only"
+            return KVLayout.V41_FP4
         assert option in (None, "fp8"), "the V4 main cache only pairs with V4 caches"
         return KVLayout.V4
     assert kv_layout.encoding is KVLayout.V41, f"{kv_layout} is not a main-cache layout"
@@ -208,6 +214,9 @@ def select_dsv4_kv_layout() -> Tuple[KVLayout, Optional[str]]:
         validate_single_route_pool(mode, option, get_exec().kernel.dsv4_attn_backend,
                                    torch.cuda.get_device_capability())
         return KVLayout.V41, "fp8"
+    if sm89_v41_kv():
+        assert torch.cuda.get_device_capability() == (8, 9), "SM89 only"
+        return KVLayout.V41, None
     if get_exec().kernel.dsv4_attn_backend == "flashmla_mega" and mode != "v41_new":
         mode = "v41"
     if get_exec().kernel.dsv4_attn_backend == "trtllm":

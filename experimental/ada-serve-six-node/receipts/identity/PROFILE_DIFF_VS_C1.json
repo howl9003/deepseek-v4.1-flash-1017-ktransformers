@@ -1,5 +1,10 @@
 {
-  "changed": {},
+  "changed": {
+    "enable_fp32_lm_head": {
+      "accepted": false,
+      "current": true
+    }
+  },
   "added": {
     "aux_hidden_state_capture": null,
     "enable_return_aux_hidden_states": false,

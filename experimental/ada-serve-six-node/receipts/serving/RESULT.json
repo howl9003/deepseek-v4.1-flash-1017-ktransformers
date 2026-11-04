@@ -1,0 +1,223 @@
+{
+  "status": "ADA_SERVE_TIMED_REVIEW_REQUIRED",
+  "rounds": [
+    {
+      "index": 0,
+      "breadth": [
+        {
+          "workload": "Chinese prose",
+          "tok_s": 36.0
+        },
+        {
+          "workload": "English prose",
+          "tok_s": 34.2
+        },
+        {
+          "workload": "English technical prose",
+          "tok_s": 32.0
+        },
+        {
+          "workload": "math",
+          "tok_s": 34.3
+        },
+        {
+          "workload": "JSON",
+          "tok_s": 33.2
+        },
+        {
+          "workload": "Python code",
+          "tok_s": 32.3
+        }
+      ],
+      "breadth_median_tok_s": 33.7,
+      "japanese_median_tok_s": 35.7,
+      "prefill35000_seconds": [
+        4.75,
+        6.04
+      ],
+      "post_timing_repeat": {
+        "text_equal": true,
+        "selected_logprobs_exact": true,
+        "full_acceptance": false
+      }
+    },
+    {
+      "index": 1,
+      "breadth": [
+        {
+          "workload": "Chinese prose",
+          "tok_s": 35.4
+        },
+        {
+          "workload": "English prose",
+          "tok_s": 34.4
+        },
+        {
+          "workload": "English technical prose",
+          "tok_s": 32.3
+        },
+        {
+          "workload": "math",
+          "tok_s": 34.5
+        },
+        {
+          "workload": "JSON",
+          "tok_s": 33.9
+        },
+        {
+          "workload": "Python code",
+          "tok_s": 32.7
+        }
+      ],
+      "breadth_median_tok_s": 34.15,
+      "japanese_median_tok_s": 35.9,
+      "prefill35000_seconds": [
+        2.58,
+        2.57
+      ],
+      "post_timing_repeat": {
+        "text_equal": true,
+        "selected_logprobs_exact": true,
+        "full_acceptance": false
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "sessions": 1,
+      "tokens": 512,
+      "wall_s": 15.951283280039206,
+      "total_tok_s": 32.09773101081442,
+      "per_session_tok_s": [
+        32.802622968010134
+      ],
+      "first_s": [
+        0.3732607390265912
+      ]
+    },
+    {
+      "sessions": 2,
+      "tokens": 512,
+      "wall_s": 24.219022438977845,
+      "total_tok_s": 42.28081470175216,
+      "per_session_tok_s": [
+        22.573159972261234,
+        22.702624783148103
+      ],
+      "first_s": [
+        1.5799353419570252,
+        1.7100450089201331
+      ]
+    },
+    {
+      "sessions": 4,
+      "tokens": 512,
+      "wall_s": 39.3632096509682,
+      "total_tok_s": 52.02827762673632,
+      "per_session_tok_s": [
+        13.75560524954602,
+        13.733962209224392,
+        13.75569044053568,
+        13.755394161401254
+      ],
+      "first_s": [
+        2.214379890006967,
+        2.154545817989856,
+        2.21407431201078,
+        2.212495201965794
+      ]
+    }
+  ],
+  "limitation": "Serving profile on one load; matched method for the frozen rounds, the session rows are new.",
+  "follow_ups": [
+    {
+      "first_turn": {
+        "seconds": 138.11408482096158,
+        "cached": 0,
+        "prompt": 16384,
+        "first_s": 70.54000234603882
+      },
+      "second_turn": {
+        "seconds": 34.31544675398618,
+        "cached": 16384,
+        "prompt": 16576,
+        "first_s": 21.7944974899292
+      }
+    },
+    {
+      "first_turn": {
+        "seconds": 138.11330667103175,
+        "cached": 0,
+        "prompt": 16384,
+        "first_s": 55.182453632354736
+      },
+      "second_turn": {
+        "seconds": 34.31388919404708,
+        "cached": 16384,
+        "prompt": 16576,
+        "first_s": 18.431559562683105
+      }
+    },
+    {
+      "first_turn": {
+        "seconds": 138.11256179201882,
+        "cached": 0,
+        "prompt": 16384,
+        "first_s": 54.720481395721436
+      },
+      "second_turn": {
+        "seconds": 34.313824282959104,
+        "cached": 16384,
+        "prompt": 16576,
+        "first_s": 18.43212103843689
+      }
+    },
+    {
+      "first_turn": {
+        "seconds": 138.11198488704395,
+        "cached": 0,
+        "prompt": 16384,
+        "first_s": 27.406150579452515
+      },
+      "second_turn": {
+        "seconds": 34.31328994897194,
+        "cached": 16384,
+        "prompt": 16576,
+        "first_s": 18.432527542114258
+      }
+    }
+  ],
+  "tool_call": {
+    "finish": "tool_calls",
+    "tool_calls": [
+      {
+        "id": "call_30022dd3e342468e970cbcba",
+        "index": 0,
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "arguments": "{\"city\": \"Singapore\"}"
+        }
+      }
+    ],
+    "content": "",
+    "reasoning": "",
+    "usage": {
+      "prompt_tokens": 277,
+      "total_tokens": 316,
+      "completion_tokens": 39,
+      "prompt_tokens_details": {
+        "cached_tokens": 256
+      },
+      "reasoning_tokens": 0,
+      "completion_tokens_details": null
+    }
+  },
+  "vision": {
+    "answer": "red and blue",
+    "names_red": true,
+    "names_blue": true,
+    "prompt_tokens": 298,
+    "offloaded_at_load": true
+  }
+}

@@ -8,11 +8,32 @@
       "path": "python/sglang/kernels/jit/csrc/gemm/per_token_group_quant_8bit_v2.cuh"
     },
     {
-      "after_sha256": "65f64a1a196dee450f0e227ac8f7f0c209d41f4e48dc84ba318fdafc031cebf2",
+      "after_sha256": "cb2d5a2f3192de7e4e8430211f462495e0249310d30f4ad7931ea611542a58ac",
+      "before_sha256": "dfe6a3b56809e9a3a1e6f36985aca51d25b5455cbe491031429e34b0b64137e9",
+      "component": "sglang",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/fp4_utils.cuh"
+    },
+    {
+      "after_sha256": "0676ff51984ae295886f18578bfb324fab71aff4d28a28d02295b22b5ed03da2",
+      "before_sha256": "4c6a1f9636a0d23e751910dacabb80a88d1d59dea129b20a92fea8863d9f0bea",
+      "component": "sglang",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/kv_layout.cuh"
+    },
+    {
+      "after_sha256": "3fe29f77882b5062429522d1fac6291025c927b202eb01ee9a5ed3003bd297ac",
       "before_sha256": "493d43e162c581986c79612562941d7c2001895fce4ddff7a4e709a57098876a",
       "component": "sglang",
-      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
       "path": "python/sglang/kernels/ops/attention/dsv4/dequant_k_cache.py"
+    },
+    {
+      "after_sha256": "5be4cf85902c5ad6befd742c7015aa1a664cdc73644c00266fd6843f6bee5809",
+      "before_sha256": "85f012a8a5c3cd1a534e5250030b4085ebd9f2dfac83c1fca4b5d9cbc771a8a4",
+      "component": "sglang",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/dsv4/kv_layout.py"
     },
     {
       "after_sha256": "d6d616217b735d07d59a4e63f2dd595b8f26607e025af38708047721d8c64236",
@@ -29,6 +50,13 @@
       "path": "python/sglang/kernels/ops/attention/dsv4/single_route.py"
     },
     {
+      "after_sha256": "c962247f626246cbe5ef9d6153c0951c061ccec8a952eb8d819515526463db16",
+      "before_sha256": "9664d16537fee95b0e50fd24d14b8f12b8aac495691aef2e9895654952f707f5",
+      "component": "sglang",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/dsv4/triton_sparse_decode/triton_mla_kernels_decode_fused.py"
+    },
+    {
       "after_sha256": "d7fb0005ab99587d8f910c2a4a7af133e1a2f1ae766b09136eb7a26c77da2cc4",
       "before_sha256": "e579d8aba7c3746f67ca0a6039683c983075d90eb1d3935de4e3d9b5c65e6c7f",
       "component": "sglang",
@@ -43,18 +71,32 @@
       "path": "python/sglang/kernels/ops/attention/flash_mla_sm120_triton.py"
     },
     {
-      "after_sha256": "75d14867db6194c3e46280cfb247ca752de1855ce60df6752baa3c086eb56ad6",
+      "after_sha256": "0cf6350688c58b25b2d761870893f47fbbe972fd1cb231a0dd85fb8868fb1c5f",
       "before_sha256": "ad723c6495a06af27caf0e024e77d0d24dbc3c1f693a6aeba1bc35dc93f4fd13",
       "component": "sglang",
-      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
       "path": "python/sglang/kernels/ops/attention/sm89_dual_scope.py"
     },
     {
-      "after_sha256": "f7b9cb17970c081edbf3842c4a7d70f936746eff8fffb6dfbc5444fa80689fe1",
+      "after_sha256": "6780cd1d1e8ded93e4c38fa8f6df884ddf94cdafbceb20065705d4a0722bd2a1",
       "before_sha256": null,
       "component": "sglang",
-      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/sm89_fp4_tile.py"
+    },
+    {
+      "after_sha256": "327b8bc3f1e83a9fd48abb563dd8f9019e7c48177053a863c0c8b566341ba43e",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
       "path": "python/sglang/kernels/ops/attention/sm89_gather_staged.py"
+    },
+    {
+      "after_sha256": "68eee529ef711d145d516a9d2ffa2253c07c1d396cbe6b9c2bed4380ec3793dc",
+      "before_sha256": null,
+      "component": "sglang",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "path": "python/sglang/kernels/ops/attention/sm89_v41_tile.py"
     },
     {
       "after_sha256": "8a1340446c32678f270a7128d12d941c77ac43e5c4201881640242ea3a5a0dee",
@@ -111,6 +153,13 @@
       "component": "sglang",
       "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
       "path": "python/sglang/srt/distributed/parallel_state.py"
+    },
+    {
+      "after_sha256": "7537f80b7c94cb2f279be110d9198360fdbb9d6e6d5ecc1e1d798dee986027fb",
+      "before_sha256": "d5d7ae6c5e8f403f9a46617377ab96977d9d4f1f263c0b90fc9fd2769eef061e",
+      "component": "sglang",
+      "modification": "Serving overlay over recipe 5d53f727 on SGLang 5d8e90a0 (see serving/README.md); upstream notices retained verbatim.",
+      "path": "python/sglang/srt/entrypoints/http_server.py"
     },
     {
       "after_sha256": "1c6ccdd48c1a69bf8fad8e67fd482972537e47ceafbf77411dc5bbcebadd6ff6",
@@ -449,10 +498,10 @@
       "path": "python/sglang/srt/layers/quantization/patha/vendor/prefill/patha_sequence.h"
     },
     {
-      "after_sha256": "1c2483041a7c2b626af6556353e0e8b4bd09bbd1af34a70e23060c7371b88a15",
+      "after_sha256": "d393f2967462ac9f36d4ad26e2a6a76610211e30cab5ed7c9825e6af19cb1cd1",
       "before_sha256": "77a199fd3228e7cb34da4242e686ab6adb67f1bcc88e7d4733b0d7ba5ff4aa70",
       "component": "sglang",
-      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "modification": "Serving overlay over recipe 5d53f727 on SGLang 5d8e90a0 (see serving/README.md); upstream notices retained verbatim.",
       "path": "python/sglang/srt/managers/scheduler.py"
     },
     {
@@ -477,10 +526,10 @@
       "path": "python/sglang/srt/managers/utils.py"
     },
     {
-      "after_sha256": "8336eeaee7ff7f655ae24ed97e290aaf60d9eb14043e920c072c13bab801b159",
+      "after_sha256": "6ec6608ffe9ee562424d8c25ed200032654d480b51701382736cd0271ae4e216",
       "before_sha256": "a9f37dd7fbc127a5b72990bacf9545ec6b49d62addc158ba8efe06caded0d39b",
       "component": "sglang",
-      "modification": "Served Ada build overlay over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
+      "modification": "C2 overlay (FP4 compressed KV and V41 window KV on SM89) over recipe 5d53f727 on SGLang 5d8e90a0; upstream notices retained verbatim.",
       "path": "python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py"
     },
     {
@@ -642,10 +691,10 @@
   "host_reload_sha256": "eb31f84a7ae96126bfa1fd97e8c3c98527c58d5f515610b15a03fe39c14597b4",
   "ktransformers": "95009ea6856c0799e517e93cb12be5e8494bc7ce",
   "llama_cpp": "a94e6ff8774b7c9f950d9545baf0ce35e8d1ed2f",
-  "phase": "Ada serving build, 1 Nov 2026",
+  "phase": "Ada serving build C2 with vision, served from 4 Nov 2026",
   "pybind11": "bb05e0810b87e74709d9f4c4545f1f57a1b386f5",
   "recipe_base": "5d53f72741dac6cbabd975a823f8ab3ab40dc0df",
   "sglang": "5d8e90a0f96e6ba35603f9b27f2f1039268c810e",
   "tier": 2,
-  "version": 3
+  "version": 4
 }

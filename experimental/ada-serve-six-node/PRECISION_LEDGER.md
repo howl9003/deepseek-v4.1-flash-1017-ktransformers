@@ -9,10 +9,18 @@ Identity runs compare against C1, never against DeepSeek's kernel, which has not
 | Stage | Reference | Served Ada build | Reason |
 |---|---|---|---|
 | Dense FP8 | One FP32 chain over K, one MMA per 32-wide block | Same activations, weights and scales; K cut into four fixed ranges with a running sum each, reduced in fixed order; Ada's 16-product block truncation | Four ranges give one-row decode enough parallel work (22.2 to 12.8 ms for 208 calls). Truncation belongs to the card. Decode and prefill share these bits |
-| `wo_a` | Weights dequantized to BF16, BF16 einsum | FP8 blocks, FP32 weight-times-scale GEMV | Speed, and one weight rounding fewer |
+| `wo_a` | Weights dequantized to BF16, BF16 einsum | FP8 blocks, E4M3 MMA per 32 with FP32 scales, 4 K splits, ordered merge (`SGLANG_DSV41_FIXED_WO_A=1`, CUDA parts up to 16 rows) | Speed, and one weight rounding fewer |
 | Index keys and queries | `fp4_act_quant` per 32, stored as BF16 | Same rounding, stored as packed E2M1 plus exponents, 68 B a position | Pool size |
 | Index scores | BF16 einsum, relu, weight, sum | Same BF16 rounding points in one Triton kernel; even and odd halves through BF16 MMA, FP32 sum across heads. Sum order differs, so near-ties can pick different positions | Speed. `live_topk` is exact against torch given equal scores |
-| Compressed KV | FP4 with E4M3 scales per 16, kept as BF16 | Same FP4 step, then requantized to the V4 584-byte E4M3 layout: a **second rounding** the reference does not have, size not measured | The SM89 attention kernels read that layout; the V41 FP4 layouts and fused kernels need sm_100+ conversions |
+| Compressed KV | FP4 with E4M3 scales per 16, kept as BF16 | Same FP4 step, then requantized to the V4 584-byte E4M3 layout: a **second rounding** the reference does not have. Measured 2 Nov: removing it moves panel KL 0.01106 to 0.01098, inside noise (2 November FP4 entry) | The SM89 attention kernels read that layout; the V41 FP4 layouts and fused kernels need sm_100+ conversions |
+| Window KV, every layer | `act_quant` over all 512 values after RoPE: E4M3, one UE8M0 scale per 32 | V4 layout: first 448 values E4M3, one UE8M0 scale per 64; the 64 RoPE values stay BF16. **Not the reference's grid.** Coarser on the first 448, finer on the tail. Also quantized and rotated from FP32 registers, with no BF16 round after the norm or after RoPE, where the reference rounds both. Measured 3 Nov with FP4 and the FP32 head: panel KL 0.01072 (head only) to 0.01019 (3 November entry) | Added 2 November. Auto layout gives V4 on SM89; only `SGLANG_SINGLE_ROUTE=1` reads V41 here |
+| Logits | FP32 head weight, `F.linear(x.float(), weight)`, FP32 logits | BF16 x BF16 `torch.mm` with BF16 output (`SGLANG_DSV41_FIXED_LM_HEAD=1`, `--enable-fp32-lm-head` off). Every logit sits on the BF16 grid, step 0.125 on 71.5% of positions; top two exactly tied on 2.05% | Never chosen. Measured 2 November on the panel capture: 2,683 of 8,305 top-1 disagreements are exact ties. Estimated KL 0.000145; measured 3 Nov with the FP32 head alone: KL 0.01106 to 0.01072, top-1 96.74 to 96.91% (3 November entry). `reference-panel-r1/audit-r1/` |
+| Activation floor | `amax` floored at 1e-4 | 1e-10 on dense projections and Engram `wkv`; 1e-4 on routed experts and `o` | Upstream default. Changes only values under 3.7e-9 in blocks under 1e-4; effect not measured |
+| hc mixes | FP32 `F.linear`, `torch.rsqrt` | K-sliced `tf32x3` dots, `1/sqrt`, TileLang Sinkhorn | Batch invariance |
+
+Corrected 2 November: the 22 October table below calls the main KV cache "same format", with "FP8 + BF16 RoPE part" as the reference. That describes V4. The 1017 reference quantizes the RoPE values too and uses a scale per 32 (`model.py` `_window_kv`, `fp8_block_size = 32`).
+
+Independent audit, 2 November: `six-node-performance-r1/reference-panel-r1/ENGINE_VS_REFERENCE_AUDIT_r1.md`. Read from code stage by stage against the served launch. It found no wrong logic. Upstream's V41 store also floors the scale after dividing by 448, where the reference floors `amax` first (2^-13 against 2^-22); found by test, fixed in the V41 overlay.
 
 ## 2 November: serving profile and disk tier
 
@@ -23,6 +31,59 @@ No new numeric step. Evidence: `six-node-performance-r1/ada-spill-r1/serve-disk-
 | HiCache disk tier | `--hicache-storage-backend file` | **bit-identical** to a cold run on every tested read: stored KV pages come back byte for byte | 1K to 131K next turns, and 8K and 41K after a server restart: ids, logprobs and top 8 equal to cold. Replays delta 0.0, queue fixtures pass, disk-aware KV check passes. The frozen `kv_checks.py` cannot run here: it refuses a storage tier by design and stays pinned for the no-disk profile |
 | Prefill chunk plan margin | `KT_PREFILL_PLAN_MARGIN_MB=4096` | Chunk boundaries move; no bit change seen | Same gate run. Long prompts now split into smaller chunks |
 | Radix cache, four running requests, queue 32, real lifetimes | serving arguments | **bit-identical** on the fixtures | Same gate run, queue 4 and test lifetimes; 32 and real lifetimes change waiting and eviction, not arithmetic |
+
+## 4 November: C2 served with vision
+
+From 4 Nov 12:38 UTC the selector serves trial `ada-serve-c2-vision-20261104-r1` (tag adasv): C2 with the model path on the checkpoint view `DeepSeek-V4.1-Flash-1017-c2-vision-view-r1`, `--language-model-only` dropped, `SGLANG_DSV4_VISION_ON_DEMAND=1` as before. Evidence: `VISION_SERVING_RESULTS_r1.md`.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| Vision tower loaded on demand, release vision tensors through a checkpoint view | `--model-path` view, no `--language-model-only` | **bit-identical to C2 for text**, except prompts holding the bare image token 129264, which vision reads as an image | adac2w: 11,496 scores, both replays, the 4K and second 35K cases, rotation and a replay after an image, all exact vs C2; the first 35K case skipped, its random prompt holds 129264 at position 8519 (adac2v failed on it). adasv serving breadth 33.7 and 34.15, image test names both colours |
+
+## 4 November: card runs on C2 (tested, default off, not served)
+
+Evidence: `six-node-performance-r1/NIGHT_RESULTS_20261104_r1.md`. "Exact vs C2" means 11,496 scores, both replays, the 4K and two 35K cases with top 8 (and rotation where a swap happened). On contract v2 the CPU expert sums are integers, so the older DSpark rows below (the per-part BF16 order, compact verify not bit-identical) describe the old CPU operator, not this build.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| DSpark, CPU-pool draft (layers 40-42), static verify block 3, greedy | `--speculative-algorithm DSPARK` with `dspark-cpu-r1`, `apply_dspark_flags.py` (path A flags snapshot after the whole step) | **bit-identical** to plain C2 decode: the verify rows commit the same tokens and logprobs | adadsj (to 4K), adadsk (with the SWA match, to 35K) |
+| DSpark draft SWA pool sized to the lent target pool | `KT_DSPARK_SWA_MATCH=1` (0; `apply_dspark_swa_match.py`) | **bit-identical**: sizing only; fixes the out-of-bounds write past 7,680 SWA slots | adadsk |
+| DSpark compact verify with our cost table | `SGLANG_RAGGED_VERIFY_MODE=compact`, `SGLANG_DSPARK_COST_SCHED=1`, `sps_additive_r1.json` | **bit-identical** to C2 on this build (unlike the old-operator row below): row counts per expert no longer change the sums | adadci |
+| DSpark plain-step gate (1-token DECODE graph when the acceptance EMA is low) | `KT_DSPARK_PLAIN_GATE=1` (0; `apply_dspark_plain_gate.py`) | **bit-identical**: plain steps run C2's own 1-token DECODE forward. adadpi: 115 plain and 85 speculative steps, every logprob check exact vs C2 (logprob requests always speculate). Plain-step tokens: greedy no-logprob captures of four prompts, 320 tokens each, alone, staggered and together (batches up to four, gate r2 and gate r4 with the draft-only probe) equal served C2's 12 of 12 each; served C2 is itself batch-invariant on them | adadpi, adadpb, adadrb against `pgtok-c2-20261104-r2` |
+| Short-prompt CPU expert share, prefill warm-up, HiCache staging cap (05yuki 46da340, 77021a7, cef35da) | `KT_STREAM_CPU_SHORT=1024:48,2048:34,4096:20,8192:12`, `SGLANG_WARMUP_PREFILL_LENGTHS`, `SGLANG_HICACHE_STAGING_MB` (all unset) | **bit-identical**: the shared experts run on the CPU contract v2 operator, whose integer sums equal the streamed path's | adaups, adacst |
+| SWA checkpoint tail (05yuki patch 23) | `apply_swa_tail.py` | **bit-identical**: cache retention only | adaswt; cache test adaswr |
+| Path A dense on SM89: dense FP8 projections as integer digit planes | `SGLANG_FP8_PATHA_DENSE=1`, `SGLANG_FP8_ROUTE3_CUDA=0`, `SGLANG_FP8_FIXED_SPLIT_K=0` (served: 0, 1, 4) | **not bit-identical** to C2: exact integer products and sums (3 x 3 digit planes, `patha::gemm_kernel<Cfg<3,3,32,1,2>>`) replace Route 3's split-K E4M3 MMA with Ada's 16-product truncation. Replay texts and ids equal; logprobs differ; paired NLL -0.0057 (SE 0.0040) against C2 over 24 pieces, not significant; quality screen PASS. Rejected for speed: 35K prefill +45%, breadth -2.8% | adapfn, adapft, adapfs |
+
+## 3 November: C2 is served
+
+From 3 Nov 15:11 SGT the selector serves C2: trial `ada-serve-c2-20261103-r3` (tag adasc3), with the FP4 and V41 overlays, `SGLANG_SM89_V41_KV=1`, `SGLANG_SM89_FP4_COMPRESSED_KV=1` and `--enable-fp32-lm-head`, and disk store `ada-kv-disk-c2-20261103-r1`. Identity claims from now on say "exact vs C2"; earlier ones stay "exact vs C1". To roll back, set `SERVED_TAG, SERVED_TRIAL` in `serve_ada_r1.py` and `RUNS` in `swap_entry_ada_r1.py` back to the C1 values given in their comments, then reload. Live check after the switch: row 41,104 of the panel, generic on C1, predicts its token at logprob 0.0 on C2.
+
+## 3 November: CPU window batch (tested, default off, not served)
+
+Evidence: `six-node-performance-r1/ada-spill-r1/cpu-batch-r1/CPU_BATCH_RESULTS_r1.md`. Listed for completeness: no step here changes a bit.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| Shared input digits, one decode pool job for the four expert phases, merge inside the parts' own NUMA job | `KT_CONTRACT_V2_SHARED_X=1`, `KT_CONTRACT_V2_FUSED_PHASES=1`, `KT_CONTRACT_V2_MERGE_IN_PARTS=1` (all 0) | **bit-identical**: scheduling only, same calls on the same splits, same per-column merge | adacb1 exact vs C2: 11,496 scores, replays, rotation, 4K and two 35K cases with top 8 |
+
+## 3 November: V41 window KV and FP32 logits on SM89 (tested with FP4 compressed KV, default off, served from 3 Nov as C2)
+
+Evidence: `six-node-performance-r1/ada-spill-r1/v41-window-r1/V41_WINDOW_RESULTS_r1.md`. With the FP4 entry below, this is the planned C2 baseline.
+
+**C2 captured and repeated, 3 Nov.** On a second load, adac2b equals adac2a bit for bit: 11,496 scores, both replays, the 4K and two 35K cases with top 8, and rotation. Against C1: 24-piece paired NLL +0.0025 (SE 0.0036), within one SE; frozen quality screen PASS, NLL 0.887. Not served until the cutover.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| Window KV in the V41 layout: all 512 values E4M3, one UE8M0 scale per 32, BF16 rounds after the norm and after RoPE | `SGLANG_SM89_V41_KV=1` (implies FP4 compressed KV) | **Not bit-identical to C1.** On the reference's grid: the store equals DeepSeek's `act_quant` on 151,011,328 test values, sign of zero included. Scale floor matches the reference (`amax` floored at 1e-4 before dividing by 448), fixing upstream's floor on the quotient | Kernel tests: loader, attention against a BF16-row twin (3,000 calls), staged against unsplit (1,000), selector off against the served files (600), all 0 mismatches. Model, with FP4 and FP32 head: panel KL 0.01019 (floor 0.00996, served 0.01106), top-1 96.98%, paired NLL -0.00034 (SE 0.00069) against the served capture; decode against prefill within 4.0e-7 nats on 512 positions; gate, host reload and disk tier pass |
+| FP32 logits | `--enable-fp32-lm-head` with `SGLANG_DSV41_FIXED_LM_HEAD=1` | **Not bit-identical to C1.** BF16 x BF16 MMA into FP32, no BF16 cast of the logits. The reference uses an FP32 weight, so this is closer, not equal | Head-only panel arm (adahd1): KL 0.01106 to 0.01072, top-1 96.74 to 96.91%, paired NLL -0.00027 (SE 0.00007), no exact top-two ties against 5,214. Head 2.22 to 1.98 ms at one row |
+
+## 2 November: FP4 compressed KV on SM89 (tested, default off, not served)
+
+Evidence: `six-node-performance-r1/ada-spill-r1/fp4-kv-r1/FP4_KV_RESULTS_r1.md`. This measures the second rounding in the 1 November table for the first time.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| Ratio-1/2 compressed KV kept as FP4 on SM89 | `SGLANG_SM89_FP4_COMPRESSED_KV=1` | **Not bit-identical to C1.** Removes the requantization to the V4 584-byte layout, so these layers hold the reference's FP4 values. RoPE-tail division is IEEE, as the pure-torch step | Public panel paired against the served capture: mean NLL -0.00056, SE 0.00084, within one SE; 214,827 of 254,846 positions differ, KL 0.01098 against 0.01106. Decode against prefill within 4.3e-7 nats on 512 positions. Seven conversations repeat bit-exact. Gate, host reload and disk tier pass, each exact within the arm |
 
 ## 29 October: logical expert combine order (r19 B1b), the step that produced C1
 
@@ -137,6 +198,18 @@ differences are where activations are quantized and where fp32 sums are rounded.
 | hc mixing, norms | tilelang | torch/Triton paths on SM89 (`TILELANG_MHC_PRE=0`, `DEEPGEMM_HC_PRENORM=0`) | reorder only |
 | Compiler | tilelang kernels | kt-kernel built -O3 -ffast-math (recipe default; FTZ/DAZ checked for the merge) | contraction/reassociation allowed in the CPU kernel |
 | Expert placement | all experts, one path | 21 fixed (pinned) or dynamic hot slots (HEAD): which experts take the GPU path depends on routing history | not bit-identical, history-dependent |
+
+Superseded, 2 November, from the audit. Kept as the 22 October record, but no longer what is served:
+
+- **Routed experts, input and internals:** contract v2, E4M3 digits per 32, floor 1e-4, exact integer sums, one RNE per route, FP32 combine in logical expert id, no per-part rounding.
+- **Dense projections:** GEMV is off under `SGLANG_FP8_FIXED_SPLIT_K=4`. Route 3 up to 16 rows, fixed split-K above.
+- **`wo_a`:** see the 1 November row.
+- **Compressed KV and indexer:** FP4 index K, `fp4_index_logits_decode`, torch on prefill.
+- **Sparse attention:** split-K off, staged gather up to 8 rows, unsplit kernel above.
+- **Router:** the reference gate is FP32 `F.linear`, not BF16 as written below. Served: `fixed_projection.linear`, BF16 MMA into FP32, 8 K splits, fused gate with log1p.
+- **Engram:** `wkv` runs through Route 3 (`SGLANG_ROUTE3_ENGRAM=1`).
+- **Compiler:** several JIT GPU kernels also build with `--use_fast_math`.
+- **Expert placement:** bits are independent of placement since the logical combine order of 29 October.
 
 Refused cuts, all off: deferred experts (`KT_DEFERRED_EXPERTS=0`), int8 activations (`KT_CPU_A4_INT8`,
 `KT_MXFP4_G32_INT8`), the old Strata Q8_0 activation path, any requantized weights. Bit-identical

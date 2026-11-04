@@ -332,6 +332,7 @@ from sglang.srt.rust_server.server import RustServer
 from sglang.srt.sampling.sampling_batch_info import SamplingBatchInfo
 from sglang.srt.server_args import PortArgs, ServerArgs
 from sglang.srt.session.session_controller import SessionController
+from sglang.srt.session.streaming_session import is_virtual_node
 from sglang.srt.speculative.base_spec_worker import BaseSpecWorker
 from sglang.srt.speculative.dflash_utils import validate_dflash_request
 from sglang.srt.speculative.eagle_utils import (
@@ -3434,6 +3435,10 @@ class Scheduler(
             tree_cache = self.tree_cache
             buffer_mode = get_memory().hicache_host_memory_mode == "buffer_only"
             last_host_node = req.last_host_node
+            # A later streaming-session turn runs on session-owned KV: its anchor
+            # is a virtual node the tree does not hold, and L3 has nothing to add.
+            if is_virtual_node(last_host_node):
+                return None
             # Buffer mode host-backups nothing, so match_prefix anchors at
             # root; re-anchor on the deepest device node. The anchor is only
             # read for hash/extra-key context here (never locked), so a device

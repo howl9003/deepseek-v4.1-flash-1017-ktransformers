@@ -12,13 +12,16 @@ import torch
 import triton
 import triton.language as tl
 
+from sglang.kernels.ops.attention.sm89_fp4_tile import FP4_BYTES_PER_TOKEN, FP4_DATA_BYTES, FP4_SCALE_BYTES, fp4_tile
+from sglang.kernels.ops.attention.sm89_v41_tile import V41_BYTES_PER_TOKEN, V41_DATA_BYTES, V41_SCALE_BYTES, v41_tile
+
 _KV_FP8_TY = tl.float8e4nv
 BLOCK_H, BLOCK_N, NUM_WARPS = 16, 64, 8
 _D = 512
 
 
 @triton.jit
-def _block_valid(kv, idx_base, offs_n, n_limit, topk_len, block_size, stride_kv, HAS_LEN: tl.constexpr):
+def _block_valid(kv, idx_base, offs_n, n_limit, topk_len, block_size, stride_kv, HAS_LEN: tl.constexpr, KV_FP4: tl.constexpr, KV_V41: tl.constexpr):
     """One token block's addressing, as the unsplit kernel's loop head."""
     mask_n = offs_n < n_limit
     indices = tl.load(idx_base + offs_n, mask=mask_n, other=-1)
@@ -31,7 +34,13 @@ def _block_valid(kv, idx_base, offs_n, n_limit, topk_len, block_size, stride_kv,
     offset_in_block = indices_clamped % block_size
     kv_block_base = kv + block_idx.to(tl.int64) * tl.cast(stride_kv, tl.int64)
     offset_64 = offset_in_block.to(tl.int64)
-    return kv_block_base, offset_64 * 576, block_size * 576 + offset_64 * 8, valid
+    if KV_V41:
+        data_off, scale_off = offset_64 * V41_DATA_BYTES, block_size * V41_DATA_BYTES + offset_64 * V41_SCALE_BYTES
+    elif KV_FP4:
+        data_off, scale_off = offset_64 * FP4_DATA_BYTES, block_size * FP4_DATA_BYTES + offset_64 * FP4_SCALE_BYTES
+    else:
+        data_off, scale_off = offset_64 * 576, block_size * 576 + offset_64 * 8
+    return kv_block_base, data_off, scale_off, valid
 
 
 @triton.jit
@@ -58,9 +67,9 @@ def _tile_rope(kv_block_base, data_off, valid_2d, offs_tile, D_NOPE: tl.constexp
 
 @triton.jit
 def _score_block(q_base, kv, idx_base, n_start, n_limit, topk_len, block_size, stride_kv, mask_h, offs_tile, mx_ptrs, qk_base, sm_scale, stride_q_d, HAS_LEN: tl.constexpr,
-                 BLOCK_H: tl.constexpr, BLOCK_N: tl.constexpr, TILE_SIZE: tl.constexpr, D_NOPE: tl.constexpr):
+                 BLOCK_H: tl.constexpr, BLOCK_N: tl.constexpr, TILE_SIZE: tl.constexpr, D_NOPE: tl.constexpr, KV_FP4: tl.constexpr, KV_V41: tl.constexpr):
     NEG_INF = float("-inf")
-    kv_block_base, data_off, scale_off, valid = _block_valid(kv, idx_base, n_start + tl.arange(0, BLOCK_N), n_limit, topk_len, block_size, stride_kv, HAS_LEN)
+    kv_block_base, data_off, scale_off, valid = _block_valid(kv, idx_base, n_start + tl.arange(0, BLOCK_N), n_limit, topk_len, block_size, stride_kv, HAS_LEN, KV_FP4, KV_V41)
     valid_2d = valid[:, None]
     qk = tl.zeros([BLOCK_H, BLOCK_N], dtype=tl.float32)
     q_0 = tl.load(q_base + offs_tile[None, :] * stride_q_d, mask=mask_h[:, None], other=0.0).to(tl.bfloat16)
@@ -71,14 +80,33 @@ def _score_block(q_base, kv, idx_base, n_start, n_limit, topk_len, block_size, s
     q_5 = tl.load(q_base + (5 * TILE_SIZE + offs_tile[None, :]) * stride_q_d, mask=mask_h[:, None], other=0.0).to(tl.bfloat16)
     q_6 = tl.load(q_base + (6 * TILE_SIZE + offs_tile[None, :]) * stride_q_d, mask=mask_h[:, None], other=0.0).to(tl.bfloat16)
     q_7 = tl.load(q_base + (7 * TILE_SIZE + offs_tile[None, :]) * stride_q_d, mask=mask_h[:, None], other=0.0).to(tl.bfloat16)
-    qk += tl.dot(q_0, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 0, TILE_SIZE))).to(tl.float32)
-    qk += tl.dot(q_1, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 1, TILE_SIZE))).to(tl.float32)
-    qk += tl.dot(q_2, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 2, TILE_SIZE))).to(tl.float32)
-    qk += tl.dot(q_3, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 3, TILE_SIZE))).to(tl.float32)
-    qk += tl.dot(q_4, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 4, TILE_SIZE))).to(tl.float32)
-    qk += tl.dot(q_5, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 5, TILE_SIZE))).to(tl.float32)
-    qk += tl.dot(q_6, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 6, TILE_SIZE))).to(tl.float32)
-    qk += tl.dot(q_7, tl.trans(_tile_rope(kv_block_base, data_off, valid_2d, offs_tile, D_NOPE))).to(tl.float32)
+    if KV_V41:
+        qk += tl.dot(q_0, tl.trans(v41_tile(kv_block_base, data_off, scale_off, valid_2d, 0))).to(tl.float32)
+        qk += tl.dot(q_1, tl.trans(v41_tile(kv_block_base, data_off, scale_off, valid_2d, 1))).to(tl.float32)
+        qk += tl.dot(q_2, tl.trans(v41_tile(kv_block_base, data_off, scale_off, valid_2d, 2))).to(tl.float32)
+        qk += tl.dot(q_3, tl.trans(v41_tile(kv_block_base, data_off, scale_off, valid_2d, 3))).to(tl.float32)
+        qk += tl.dot(q_4, tl.trans(v41_tile(kv_block_base, data_off, scale_off, valid_2d, 4))).to(tl.float32)
+        qk += tl.dot(q_5, tl.trans(v41_tile(kv_block_base, data_off, scale_off, valid_2d, 5))).to(tl.float32)
+        qk += tl.dot(q_6, tl.trans(v41_tile(kv_block_base, data_off, scale_off, valid_2d, 6))).to(tl.float32)
+        qk += tl.dot(q_7, tl.trans(v41_tile(kv_block_base, data_off, scale_off, valid_2d, 7))).to(tl.float32)
+    elif KV_FP4:
+        qk += tl.dot(q_0, tl.trans(fp4_tile(kv_block_base, data_off, scale_off, valid_2d, 0))).to(tl.float32)
+        qk += tl.dot(q_1, tl.trans(fp4_tile(kv_block_base, data_off, scale_off, valid_2d, 1))).to(tl.float32)
+        qk += tl.dot(q_2, tl.trans(fp4_tile(kv_block_base, data_off, scale_off, valid_2d, 2))).to(tl.float32)
+        qk += tl.dot(q_3, tl.trans(fp4_tile(kv_block_base, data_off, scale_off, valid_2d, 3))).to(tl.float32)
+        qk += tl.dot(q_4, tl.trans(fp4_tile(kv_block_base, data_off, scale_off, valid_2d, 4))).to(tl.float32)
+        qk += tl.dot(q_5, tl.trans(fp4_tile(kv_block_base, data_off, scale_off, valid_2d, 5))).to(tl.float32)
+        qk += tl.dot(q_6, tl.trans(fp4_tile(kv_block_base, data_off, scale_off, valid_2d, 6))).to(tl.float32)
+        qk += tl.dot(q_7, tl.trans(fp4_tile(kv_block_base, data_off, scale_off, valid_2d, 7))).to(tl.float32)
+    else:
+        qk += tl.dot(q_0, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 0, TILE_SIZE))).to(tl.float32)
+        qk += tl.dot(q_1, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 1, TILE_SIZE))).to(tl.float32)
+        qk += tl.dot(q_2, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 2, TILE_SIZE))).to(tl.float32)
+        qk += tl.dot(q_3, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 3, TILE_SIZE))).to(tl.float32)
+        qk += tl.dot(q_4, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 4, TILE_SIZE))).to(tl.float32)
+        qk += tl.dot(q_5, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 5, TILE_SIZE))).to(tl.float32)
+        qk += tl.dot(q_6, tl.trans(_tile_nope(kv_block_base, data_off, scale_off, valid, valid_2d, offs_tile, 6, TILE_SIZE))).to(tl.float32)
+        qk += tl.dot(q_7, tl.trans(_tile_rope(kv_block_base, data_off, valid_2d, offs_tile, D_NOPE))).to(tl.float32)
     qk = qk * sm_scale
     qk = tl.where(valid[None, :], qk, NEG_INF)
     m_ij = tl.max(qk, axis=1)
@@ -89,7 +117,7 @@ def _score_block(q_base, kv, idx_base, n_start, n_limit, topk_len, block_size, s
 @triton.jit
 def _scores_kernel(Q, KV_Main, Idx_Main, Len_Main, KV_Extra, Idx_Extra, Len_Extra, QK, MaxV, sm_scale, topk_main, block_size_main, topk_extra, block_size_extra, blocks_main, h_q,
                    stride_q_t, stride_q_h, stride_q_d, stride_kv_main, stride_kv_extra, stride_idx_main_t, stride_idx_extra_t, stride_qk_t, stride_qk_b, stride_mx_t, stride_mx_b,
-                   HAS_LEN_MAIN: tl.constexpr, HAS_LEN_EXTRA: tl.constexpr, BLOCK_H: tl.constexpr, BLOCK_N: tl.constexpr):
+                   HAS_LEN_MAIN: tl.constexpr, HAS_LEN_EXTRA: tl.constexpr, BLOCK_H: tl.constexpr, BLOCK_N: tl.constexpr, EXTRA_FP4: tl.constexpr, MAIN_V41: tl.constexpr):
     TILE_SIZE: tl.constexpr = 64
     D_NOPE: tl.constexpr = 448
     NEG_INF = float("-inf")
@@ -113,12 +141,12 @@ def _scores_kernel(Q, KV_Main, Idx_Main, Len_Main, KV_Extra, Idx_Extra, Len_Extr
         n_start = pid_b * BLOCK_N
         if not HAS_LEN_MAIN or n_start < topk_len_main:
             _score_block(q_base, KV_Main, Idx_Main + pid_t * stride_idx_main_t, n_start, topk_main, topk_len_main, block_size_main, stride_kv_main, mask_h, offs_tile, mx_ptrs, qk_base,
-                         sm_scale, stride_q_d, HAS_LEN_MAIN, BLOCK_H, BLOCK_N, TILE_SIZE, D_NOPE)
+                         sm_scale, stride_q_d, HAS_LEN_MAIN, BLOCK_H, BLOCK_N, TILE_SIZE, D_NOPE, False, MAIN_V41)
     else:
         n_start = (pid_b - blocks_main) * BLOCK_N
         if not HAS_LEN_EXTRA or n_start < topk_len_extra:
             _score_block(q_base, KV_Extra, Idx_Extra + pid_t * stride_idx_extra_t, n_start, topk_extra, topk_len_extra, block_size_extra, stride_kv_extra, mask_h, offs_tile, mx_ptrs, qk_base,
-                         sm_scale, stride_q_d, HAS_LEN_EXTRA, BLOCK_H, BLOCK_N, TILE_SIZE, D_NOPE)
+                         sm_scale, stride_q_d, HAS_LEN_EXTRA, BLOCK_H, BLOCK_N, TILE_SIZE, D_NOPE, EXTRA_FP4, False)
 
 
 @triton.jit
@@ -155,7 +183,7 @@ def _probabilities_kernel(QK, MaxV, PB, Alpha, SumP, h_q, stride_qk_t, stride_qk
 @triton.jit
 def _output_kernel(KV_Main, Idx_Main, Len_Main, KV_Extra, Idx_Extra, Len_Extra, PB, Alpha, SumP, MaxV, AttnSink, Output, topk_main, block_size_main, topk_extra, block_size_extra,
                    blocks_main, blocks_extra, h_q, stride_kv_main, stride_kv_extra, stride_idx_main_t, stride_idx_extra_t, stride_qk_t, stride_qk_b, stride_mx_t, stride_mx_b,
-                   stride_o_t, stride_o_h, stride_o_d, HAS_LEN_MAIN: tl.constexpr, HAS_LEN_EXTRA: tl.constexpr, HAS_ATTN_SINK: tl.constexpr, BLOCK_H: tl.constexpr, BLOCK_N: tl.constexpr):
+                   stride_o_t, stride_o_h, stride_o_d, HAS_LEN_MAIN: tl.constexpr, HAS_LEN_EXTRA: tl.constexpr, HAS_ATTN_SINK: tl.constexpr, BLOCK_H: tl.constexpr, BLOCK_N: tl.constexpr, EXTRA_FP4: tl.constexpr, MAIN_V41: tl.constexpr):
     TILE_SIZE: tl.constexpr = 64
     D_NOPE: tl.constexpr = 448
     LOG2E: tl.constexpr = 1.4426950408889634
@@ -182,11 +210,14 @@ def _output_kernel(KV_Main, Idx_Main, Len_Main, KV_Extra, Idx_Extra, Len_Extra, 
         should_compute = not HAS_LEN_MAIN or n_start < topk_len_main
         if should_compute:
             kv_block_base, data_off, scale_off, valid = _block_valid(KV_Main, Idx_Main + pid_t * stride_idx_main_t, n_start + offs_n, topk_main, topk_len_main,
-                                                                     block_size_main, stride_kv_main, HAS_LEN_MAIN)
+                                                                     block_size_main, stride_kv_main, HAS_LEN_MAIN, False, MAIN_V41)
             valid_2d = valid[:, None]
             # No branch here: Triton picks the dot's kWidth from the narrowest type it can trace back, and a branch hides the uint8 loads. kWidth 2 splits K differently across the MMAs.
-            kv = tl.where(pid_d < 7, _tile_nope(kv_block_base, data_off, scale_off, valid & (pid_d < 7), valid_2d & (pid_d < 7), offs_tile, tl.minimum(pid_d, 6), TILE_SIZE),
-                          _tile_rope(kv_block_base, data_off, valid_2d & (pid_d == 7), offs_tile, D_NOPE))
+            if MAIN_V41:
+                kv = v41_tile(kv_block_base, data_off, scale_off, valid_2d, pid_d)
+            else:
+                kv = tl.where(pid_d < 7, _tile_nope(kv_block_base, data_off, scale_off, valid & (pid_d < 7), valid_2d & (pid_d < 7), offs_tile, tl.minimum(pid_d, 6), TILE_SIZE),
+                              _tile_rope(kv_block_base, data_off, valid_2d & (pid_d == 7), offs_tile, D_NOPE))
             alpha = tl.load(Alpha + pid_t * stride_mx_t + b * stride_mx_b + offs_h, mask=mask_h, other=0.0)
             sum_p = tl.load(SumP + pid_t * stride_mx_t + b * stride_mx_b + offs_h, mask=mask_h, other=0.0)
             p_bf16 = tl.load(PB + pid_t * stride_qk_t + b * stride_qk_b + row, mask=mask_h[:, None], other=0.0)
@@ -199,11 +230,14 @@ def _output_kernel(KV_Main, Idx_Main, Len_Main, KV_Extra, Idx_Extra, Len_Extra, 
         should_compute = not HAS_LEN_EXTRA or n_start < topk_len_extra
         if should_compute:
             kv_block_base, data_off, scale_off, valid = _block_valid(KV_Extra, Idx_Extra + pid_t * stride_idx_extra_t, n_start + offs_n, topk_extra, topk_len_extra,
-                                                                     block_size_extra, stride_kv_extra, HAS_LEN_EXTRA)
+                                                                     block_size_extra, stride_kv_extra, HAS_LEN_EXTRA, EXTRA_FP4, False)
             valid_2d = valid[:, None]
             # No branch here: Triton picks the dot's kWidth from the narrowest type it can trace back, and a branch hides the uint8 loads. kWidth 2 splits K differently across the MMAs.
-            kv = tl.where(pid_d < 7, _tile_nope(kv_block_base, data_off, scale_off, valid & (pid_d < 7), valid_2d & (pid_d < 7), offs_tile, tl.minimum(pid_d, 6), TILE_SIZE),
-                          _tile_rope(kv_block_base, data_off, valid_2d & (pid_d == 7), offs_tile, D_NOPE))
+            if EXTRA_FP4:
+                kv = fp4_tile(kv_block_base, data_off, scale_off, valid_2d, pid_d)
+            else:
+                kv = tl.where(pid_d < 7, _tile_nope(kv_block_base, data_off, scale_off, valid & (pid_d < 7), valid_2d & (pid_d < 7), offs_tile, tl.minimum(pid_d, 6), TILE_SIZE),
+                              _tile_rope(kv_block_base, data_off, valid_2d & (pid_d == 7), offs_tile, D_NOPE))
             alpha = tl.load(Alpha + pid_t * stride_mx_t + b * stride_mx_b + offs_h, mask=mask_h, other=0.0)
             sum_p = tl.load(SumP + pid_t * stride_mx_t + b * stride_mx_b + offs_h, mask=mask_h, other=0.0)
             p_bf16 = tl.load(PB + pid_t * stride_qk_t + b * stride_qk_b + row, mask=mask_h[:, None], other=0.0)
@@ -248,7 +282,8 @@ def decode(q3, k_cache, idx_main, topk_length, attn_sink, softmax_scale, extra_k
     tl_main = topk_length.reshape(-1).contiguous() if topk_length is not None else mx[0, 0, :1]
     tl_extra = extra_topk_length.reshape(-1).contiguous() if extra_topk_length is not None else mx[0, 0, :1]
     sink = attn_sink.contiguous() if attn_sink is not None else mx[0, 0, :]
-    flags = dict(HAS_LEN_MAIN=topk_length is not None, HAS_LEN_EXTRA=extra_topk_length is not None)
+    extra_fp4 = has_extra and extra_k_cache.shape[-1] == FP4_BYTES_PER_TOKEN
+    flags = dict(HAS_LEN_MAIN=topk_length is not None, HAS_LEN_EXTRA=extra_topk_length is not None, EXTRA_FP4=extra_fp4, MAIN_V41=k_cache.shape[-1] == V41_BYTES_PER_TOKEN)
     cfg = dict(BLOCK_H=BLOCK_H, BLOCK_N=BLOCK_N, num_warps=NUM_WARPS, num_stages=1)
     head = (kv_main, idx_main, tl_main, kv_extra, idx_extra, tl_extra)
     st_qk = (qk.stride(0), qk.stride(1))

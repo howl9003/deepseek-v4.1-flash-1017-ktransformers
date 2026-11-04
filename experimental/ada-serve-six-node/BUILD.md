@@ -12,7 +12,7 @@ python apply_overlay.py --sglang /path/to/sglang --ktransformers /path/to/ktrans
 python apply_overlay.py --sglang /path/to/sglang --ktransformers /path/to/ktransformers --apply
 ```
 
-Every changed input and overlay file is checked against `SOURCE_STACK.json` before any write. After `--apply` the script compares all 6,174 files of the SGLang tree with `SERVED_SGLANG_INVENTORY.json`. That result was established at packaging time: the recipe-patched base has 6,131 files, 6,099 equal the served tree, and the 75 overlay rows cover the other 32 and the 43 new files.
+Every changed input and overlay file is checked against `SOURCE_STACK.json` before any write. After `--apply` the script compares all 6,176 files of the SGLang tree with `SERVED_SGLANG_INVENTORY.json`, the served C2-with-vision tree. The recipe-patched base has 6,131 files, 6,094 equal the served tree, and the 82 overlay rows cover the other 37 and the 45 new files. For C1 that was established by applying the overlay at packaging time; the C2 rows were taken from the served trial's own inventory, every overlay file hash-checked against it, and have not been re-applied to a fresh checkout.
 
 3. Preserve the installed KT Python layer from `runtime/kt_kernel`, the Engram adapter from `runtime/engram-adapter`, and the wrappers in `runtime/`.
 

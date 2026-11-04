@@ -290,6 +290,10 @@
       "accepted": false,
       "current": true
     },
+    "enable_fp32_lm_head": {
+      "accepted": false,
+      "current": true
+    },
     "enable_hierarchical_cache": {
       "accepted": false,
       "current": true
@@ -305,6 +309,10 @@
     "hicache_ratio": {
       "accepted": 2.0,
       "current": 4.0
+    },
+    "hicache_storage_backend": {
+      "accepted": null,
+      "current": "file"
     },
     "max_queued_requests": {
       "accepted": null,

@@ -1,5 +1,5 @@
 {
-  "status": "ADA_NUMERICAL_EXACT_VS_C1",
+  "status": "ADA_C2_CAPTURED",
   "arm": "on",
   "performance_run": false,
   "cases": [
@@ -7,7 +7,7 @@
       "case": "four-k",
       "prompt_tokens": 4096,
       "request_sha256": "4a72dd4154f7ff79f3624506ad2f2d3b3bcbd2a5d702cd133d11cf4cac9ffc53",
-      "response_sha256": "a19f2cc08f3a8d477087932ae0643acb00ea32f2be3d58db0bef2f15ec0b2449",
+      "response_sha256": "4b3da45cdf4215c9c39253b88057e1c185b8ffe8b686069ca0a0a15a69a1a70a",
       "gate": {
         "text_equal": true,
         "output_ids_equal": true,
@@ -31,7 +31,7 @@
       "case": "35k-first",
       "prompt_tokens": 35000,
       "request_sha256": "bc756a359654476ae664628884d3d5e5842d0aa71af41eb33aabb19fec32aea3",
-      "response_sha256": "7382144dcc52146286d8a6c0d85069c663d5818d8f7389a7b9886735ea10590f",
+      "response_sha256": "b4a18cf542d401b3ba5504b52667a2aa97c903582681acd13f72b1d4d886ab09",
       "gate": {
         "text_equal": true,
         "output_ids_equal": true,
@@ -55,7 +55,7 @@
       "case": "35k-second",
       "prompt_tokens": 35000,
       "request_sha256": "dae3ee476dce7795b929279c832308839f65c88f09708765cf897ff07980c767",
-      "response_sha256": "8520ca516fd7e195e1fba6922201bdf7dc5886b7e9b0164c60ca1bacf4e5c5f4",
+      "response_sha256": "a315e56aaec8d20014e3e0674a2754e8f3775d50d2c730d2f17f654a36b889a8",
       "gate": {
         "text_equal": true,
         "output_ids_equal": true,
@@ -92,36 +92,87 @@
     "continuation_length": true,
     "finite_selected_logprobs": true,
     "swaps_logged": [
-      1902,
-      808
+      1685,
+      413
     ],
     "moved": true
   },
-  "replay_0": {
+  "replay_0_vs_c1": {
     "text_equal": true,
     "output_ids_equal": true,
     "selected_logprob_ids_equal": true,
-    "selected_logprobs_exact": true,
+    "selected_logprobs_exact": false,
     "numeric": {
-      "status": "EXACT",
+      "status": "FAIL_EXACT_SCORES",
       "compared_scores": 1,
-      "first_difference": null
+      "first_difference": {
+        "index": [
+          0
+        ],
+        "reason": "score_bits",
+        "reference": -0.38431811332702637,
+        "candidate": -1.5532009601593018,
+        "reference_bits": "bfd898ab00000000",
+        "candidate_bits": "bff8d9e940000000"
+      }
     }
   },
-  "replay_1": {
+  "replay_1_vs_c1": {
     "text_equal": true,
     "output_ids_equal": true,
     "selected_logprob_ids_equal": true,
-    "selected_logprobs_exact": true,
+    "selected_logprobs_exact": false,
     "numeric": {
-      "status": "EXACT",
+      "status": "FAIL_EXACT_SCORES",
       "compared_scores": 1,
-      "first_difference": null
+      "first_difference": {
+        "index": [
+          0
+        ],
+        "reason": "score_bits",
+        "reference": -0.38431811332702637,
+        "candidate": -1.5532009601593018,
+        "reference_bits": "bfd898ab00000000",
+        "candidate_bits": "bff8d9e940000000"
+      }
     }
   },
-  "numerical_set_vs_arm2": {
-    "status": "EXACT",
-    "compared_scores": 11496,
-    "first_difference": null
+  "numerical_set_vs_c1": {
+    "status": "FAIL_EXACT_SCORES",
+    "compared_scores": 1,
+    "first_difference": {
+      "index": [
+        0,
+        0
+      ],
+      "reason": "score_bits",
+      "reference": -8.420083045959473,
+      "candidate": -8.386700630187988,
+      "reference_bits": "c020d71520000000",
+      "candidate_bits": "c020c5fda0000000"
+    }
+  },
+  "paired_nll_vs_c1": {
+    "pieces": 24,
+    "mean_nll_increase": 0.002532974302398666,
+    "paired_standard_error": 0.003555833036352425,
+    "within_one_se": true
+  },
+  "quality": {
+    "command": [
+      "/scratch/aster/bench/05yuki-main-00fd12a-candidate/.venv/bin/python",
+      "/scratch/aster/bench/eight-node-ab-tools/retry_v9/pr_acceptance/quality_tools/quality_probe.py",
+      "--checkpoint",
+      "/scratch/aster/bench/05yuki-baseline-3991/checkpoint",
+      "--arm",
+      "B",
+      "--base-url",
+      "http://127.0.0.1:18209",
+      "--output",
+      "/scratch/aster/bench/ada-identity-c2-20261103-r1/supplemental-phase-g-g1v-adac2a-r1/quality"
+    ],
+    "exit_code": 0,
+    "status": "PASS",
+    "report_sha256": "7feaa7ec266a7ea35232ff74e39e0153bd4c8d24d5c122ae905f9ab43f8cdb67"
   }
 }

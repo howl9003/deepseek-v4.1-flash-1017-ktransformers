@@ -38,7 +38,7 @@ import urllib.error
 import urllib.request
 
 # The served trial and the tag its chain was staged with. The C2 cutover changes this line; rolling back changes it back.
-SERVED_TAG, SERVED_TRIAL = 'adasc3', 'ada-serve-c2-20261103-r3'    # C2 from 3 Nov; C1 was 'adasrr', 'ada-serve-20261102-r4'
+SERVED_TAG, SERVED_TRIAL = 'adasv', 'ada-serve-c2-vision-20261104-r1'    # C2 with vision from 4 Nov (adac2w exact vs C2, adasv); C2 was 'adasc3', 'ada-serve-c2-20261103-r3'; C1 was 'adasrr', 'ada-serve-20261102-r4'
 
 sys.path[:0]=['/scratch/aster/bench/fp32-subtotals-model-r1','/scratch/aster/bench/fp32-subtotals-model-r1/workflow']
 from trial_common import BASE,GIB,inventory,source_inventory,load_frozen,read,require,require_programme,save,sha,verify_pair

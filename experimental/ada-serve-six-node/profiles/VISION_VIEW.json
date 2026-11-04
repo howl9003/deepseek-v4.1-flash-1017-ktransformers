@@ -1,0 +1,9 @@
+{
+ "base": "/scratch/aster/bench/05yuki-baseline-3991/checkpoint",
+ "base_index_sha256": "c2c531060f03fa16d340d9d4592e4200ec703c745fce13b735f7072fe72ce93f",
+ "index_sha256": "825d3ab37d2559919946eb5728d8b2af4755ff0735236b11ff73d493b2cdd067",
+ "added": 266,
+ "vision_sha256": "13bd121075f0b68cb7e8e8021a1011d42a81a83f557a2602fd9c07d52fddb0ec",
+ "image_tokens_sha256": "ce0d1955a5028eac01eb79f517c65b3588d94ab8b9373037eb424dcb23136095",
+ "revision": "1bae0e1088993b9b82de08f59de5be5a34e42170"
+}

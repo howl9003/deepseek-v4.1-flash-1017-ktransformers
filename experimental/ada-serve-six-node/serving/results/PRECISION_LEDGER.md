@@ -32,6 +32,14 @@ No new numeric step. Evidence: `six-node-performance-r1/ada-spill-r1/serve-disk-
 | Prefill chunk plan margin | `KT_PREFILL_PLAN_MARGIN_MB=4096` | Chunk boundaries move; no bit change seen | Same gate run. Long prompts now split into smaller chunks |
 | Radix cache, four running requests, queue 32, real lifetimes | serving arguments | **bit-identical** on the fixtures | Same gate run, queue 4 and test lifetimes; 32 and real lifetimes change waiting and eviction, not arithmetic |
 
+## 4 November: C2 served with vision
+
+From 4 Nov 12:38 UTC the selector serves trial `ada-serve-c2-vision-20261104-r1` (tag adasv): C2 with the model path on the checkpoint view `DeepSeek-V4.1-Flash-1017-c2-vision-view-r1`, `--language-model-only` dropped, `SGLANG_DSV4_VISION_ON_DEMAND=1` as before. Evidence: `VISION_SERVING_RESULTS_r1.md`.
+
+| Step | Knob | Precision | Evidence |
+|---|---|---|---|
+| Vision tower loaded on demand, release vision tensors through a checkpoint view | `--model-path` view, no `--language-model-only` | **bit-identical to C2 for text**, except prompts holding the bare image token 129264, which vision reads as an image | adac2w: 11,496 scores, both replays, the 4K and second 35K cases, rotation and a replay after an image, all exact vs C2; the first 35K case skipped, its random prompt holds 129264 at position 8519 (adac2v failed on it). adasv serving breadth 33.7 and 34.15, image test names both colours |
+
 ## 4 November: card runs on C2 (tested, default off, not served)
 
 Evidence: `six-node-performance-r1/NIGHT_RESULTS_20261104_r1.md`. "Exact vs C2" means 11,496 scores, both replays, the 4K and two 35K cases with top 8 (and rotation where a swap happened). On contract v2 the CPU expert sums are integers, so the older DSpark rows below (the per-part BF16 order, compact verify not bit-identical) describe the old CPU operator, not this build.

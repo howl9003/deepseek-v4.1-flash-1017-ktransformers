@@ -1,0 +1,126 @@
+{
+  "status": "ADA_NUMERICAL_EXACT_VS_C2",
+  "arm": "on",
+  "performance_run": false,
+  "cases": [
+    {
+      "case": "four-k",
+      "prompt_tokens": 4096,
+      "request_sha256": "4a72dd4154f7ff79f3624506ad2f2d3b3bcbd2a5d702cd133d11cf4cac9ffc53",
+      "response_sha256": "fb7ba9275ddf423fa95435d0c65735bcfb6a888a4de0c53793ea5d5a76b3cbbd",
+      "gate": {
+        "text_equal": true,
+        "output_ids_equal": true,
+        "selected_logprob_ids_equal": true,
+        "selected_logprobs_exact": true,
+        "numeric": {
+          "status": "EXACT",
+          "compared_scores": 8,
+          "first_difference": null
+        },
+        "top_logprobs_exact": true,
+        "top_logprob_ids_exact": true,
+        "continuation_length": true,
+        "finite_selected_logprobs": true,
+        "layer_flags": true
+      },
+      "flag_checks": 40,
+      "compared_against_c2": true
+    },
+    {
+      "case": "35k-first",
+      "prompt_tokens": 35000,
+      "skipped": "holds the image token 129264 at position 8519"
+    },
+    {
+      "case": "35k-second",
+      "prompt_tokens": 35000,
+      "request_sha256": "dae3ee476dce7795b929279c832308839f65c88f09708765cf897ff07980c767",
+      "response_sha256": "163dc5100de71be12d5968ef55c3a58691a96609f793d49b11d8c44fc5e2602f",
+      "gate": {
+        "text_equal": true,
+        "output_ids_equal": true,
+        "selected_logprob_ids_equal": true,
+        "selected_logprobs_exact": true,
+        "numeric": {
+          "status": "EXACT",
+          "compared_scores": 8,
+          "first_difference": null
+        },
+        "top_logprobs_exact": true,
+        "top_logprob_ids_exact": true,
+        "continuation_length": true,
+        "finite_selected_logprobs": true,
+        "layer_flags": true
+      },
+      "flag_checks": 40,
+      "compared_against_c2": true
+    }
+  ],
+  "acceptance": "HELD",
+  "rotation": {
+    "text_equal": true,
+    "output_ids_equal": true,
+    "selected_logprob_ids_equal": true,
+    "selected_logprobs_exact": true,
+    "numeric": {
+      "status": "EXACT",
+      "compared_scores": 8,
+      "first_difference": null
+    },
+    "top_logprobs_exact": true,
+    "top_logprob_ids_exact": true,
+    "continuation_length": true,
+    "finite_selected_logprobs": true,
+    "swaps_logged": [
+      1415,
+      400
+    ],
+    "moved": true
+  },
+  "replay_0": {
+    "text_equal": true,
+    "output_ids_equal": true,
+    "selected_logprob_ids_equal": true,
+    "selected_logprobs_exact": true,
+    "numeric": {
+      "status": "EXACT",
+      "compared_scores": 1,
+      "first_difference": null
+    }
+  },
+  "replay_1": {
+    "text_equal": true,
+    "output_ids_equal": true,
+    "selected_logprob_ids_equal": true,
+    "selected_logprobs_exact": true,
+    "numeric": {
+      "status": "EXACT",
+      "compared_scores": 1,
+      "first_difference": null
+    }
+  },
+  "numerical_set_vs_c2": {
+    "status": "EXACT",
+    "compared_scores": 11496,
+    "first_difference": null
+  },
+  "vision": {
+    "answer": "red and blue",
+    "names_red": true,
+    "names_blue": true,
+    "prompt_tokens": 298,
+    "offloaded_at_load": true
+  },
+  "replay_0_after_image": {
+    "text_equal": true,
+    "output_ids_equal": true,
+    "selected_logprob_ids_equal": true,
+    "selected_logprobs_exact": true,
+    "numeric": {
+      "status": "EXACT",
+      "compared_scores": 1,
+      "first_difference": null
+    }
+  }
+}

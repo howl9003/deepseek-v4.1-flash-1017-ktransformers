@@ -1,0 +1,24 @@
+{
+  "changed": {
+    "enable_fp32_lm_head": {
+      "accepted": false,
+      "current": true
+    }
+  },
+  "added": {
+    "aux_hidden_state_capture": null,
+    "enable_return_aux_hidden_states": false,
+    "engram_config": {
+      "placement": "gpu",
+      "replication": "none",
+      "lookup": "auto"
+    },
+    "hicache_storage_head_partition": null,
+    "hicache_storage_key_scheme": "rank-suffix",
+    "hicache_storage_layer_partition": null,
+    "moe_ascend_ops_config": null,
+    "return_aux_hidden_state_layer_ids": null,
+    "unified_cache_external_linker_config": null
+  },
+  "removed": {}
+}

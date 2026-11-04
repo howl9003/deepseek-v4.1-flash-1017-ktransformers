@@ -15,7 +15,7 @@ while true; do
   echo "$(date -u +%H:%M) busy=$busy idle=$idle"
   if [ $idle -ge 4 ]; then
     echo "$(date -u +%H:%M) idle 20 minutes with nothing loaded: reloading the served model"
-    curl -s -m 1700 http://100.108.111.59:8080/v1/chat/completions -H "Content-Type: application/json" \
+    curl -s -m 1700 http://GATEWAY_HOST:8080/v1/chat/completions -H "Content-Type: application/json" \
       -d '{"model":"deepseek-v4.1-flash-sglang","max_tokens":16,"temperature":0,"messages":[{"role":"user","content":"Reply with one short sentence confirming you are running."}]}' | cut -c1-200
     echo
     exit 0

@@ -13,6 +13,8 @@ from typing import Optional
 import torch
 import triton
 
+from sglang.kernels.ops.attention.sm89_fp4_tile import FP4_BYTES_PER_TOKEN
+from sglang.kernels.ops.attention.sm89_v41_tile import V41_BYTES_PER_TOKEN
 from sglang.kernels.ops.attention.dsv4.triton_sparse_decode import (
     triton_mla_kernels_decode_fused as _F,
 )
@@ -52,6 +54,11 @@ def _no(reason: str) -> bool:
     return False
 
 
+def _CACHE_WIDTHS(k_cache, extra_k_cache):
+    # The extra cache may be FP4 (SGLANG_SM89_FP4_COMPRESSED_KV), the main cache V41 (SGLANG_SM89_V41_KV).
+    return (k_cache, (_V4_BYTES_PER_TOKEN, V41_BYTES_PER_TOKEN)), (extra_k_cache, (_V4_BYTES_PER_TOKEN, FP4_BYTES_PER_TOKEN))
+
+
 def supported(q, k_cache, extra_k_cache, head_dim_v, attn_sink) -> bool:
     """Shapes the wrapper maps without copies; anything else stays on today's path."""
     if q.ndim not in (3, 4):
@@ -60,14 +67,14 @@ def supported(q, k_cache, extra_k_cache, head_dim_v, attn_sink) -> bool:
         return _no(f"q {q.dtype} d={q.shape[-1]} head_dim_v={head_dim_v}")
     if q.ndim == 4 and q.shape[1] != 1:
         return _no(f"q seq dim {q.shape[1]}")
-    for c in (k_cache, extra_k_cache):
+    for c, widths in _CACHE_WIDTHS(k_cache, extra_k_cache):
         if c is None:
             continue
-        if c.ndim != 4 or c.shape[-1] != _V4_BYTES_PER_TOKEN or c.element_size() != 1:
+        if c.ndim != 4 or c.shape[-1] not in widths or c.element_size() != 1:
             return _no(
                 f"cache view {tuple(c.shape)} {c.dtype} (needs the V4 584 B layout)"
             )
-        if c.stride(-1) != 1 or c.stride(1) != _V4_BYTES_PER_TOKEN:
+        if c.stride(-1) != 1 or c.stride(1) != c.shape[-1]:
             return _no(f"cache strides {c.stride()}")
     h = q.shape[-2]
     if attn_sink is not None and attn_sink.numel() < h:
@@ -189,6 +196,8 @@ def sm89_dual_scope_decode(
         idx_extra.stride(1),
     )
 
+    extra_fp4 = has_extra and extra_k_cache.shape[-1] == FP4_BYTES_PER_TOKEN
+    main_v41 = k_cache.shape[-1] == V41_BYTES_PER_TOKEN
     split_k = _split_k(rows, h_q, topk_main + topk_extra)
     if split_k == 0 and rows <= _STAGED_ROWS and h_q <= 64:
         from sglang.kernels.ops.attention import sm89_gather_staged
@@ -227,11 +236,13 @@ def sm89_dual_scope_decode(
                     lse.stride(0),
                     lse.stride(1),
                 ),
-                dict(flags, HAS_ATTN_SINK=attn_sink is not None),
+                dict(flags, HAS_ATTN_SINK=attn_sink is not None, EXTRA_FP4=extra_fp4, MAIN_V41=main_v41),
             ),
         )
         return out.unsqueeze(1)
 
+    if extra_fp4 or main_v41:
+        raise ValueError("the FP4 and V41 KV layouts need SGLANG_SM89_ATTN_SPLITK=0")
     topk_per_split = (topk_main + topk_extra + split_k - 1) // split_k
     po, plse = _partials(split_k, rows, h_q, device)
     if _AUTOTUNE:
@@ -324,15 +335,17 @@ def flash_mla_sparse_sm89(
     """
     if q.ndim not in (3, 4) or (q.ndim == 4 and q.shape[1] != 1):
         raise ValueError("SM89 attention expects q [N,H,D] or [N,1,H,D]")
-    for cache in (k_cache, extra_k_cache):
+    for cache, widths in _CACHE_WIDTHS(k_cache, extra_k_cache):
         if cache is not None and (
-            cache.shape[-1] != _V4_BYTES_PER_TOKEN or cache.element_size() != 1
+            cache.shape[-1] not in widths or cache.element_size() != 1
         ):
             raise ValueError("SM89 attention requires the V4 584-byte KV layout")
     use_dual = _DUAL_SCOPE and supported(
         q, k_cache, extra_k_cache, head_dim_v, attn_sink
     )
     if not use_dual:
+        if k_cache.shape[-1] == V41_BYTES_PER_TOKEN or (extra_k_cache is not None and extra_k_cache.shape[-1] == FP4_BYTES_PER_TOKEN):
+            raise ValueError("the portable SM89 path cannot read the FP4 or V41 KV layouts")
         from sglang.kernels.ops.attention.flash_mla_sm120_triton import (
             flash_mla_sparse_decode_triton,
         )
