@@ -1,10 +1,10 @@
-# Rebuilding the recorded build
+# Rebuilding C2
 
-This is the source recipe for the tested build, not a fresh binary qualification. A rebuilt or relocated binary needs its own identity run. Packaging performed no compilation or model run. Use an isolated environment.
+This is the source recipe for the served build, not a binary qualification: a rebuilt or relocated binary needs its own identity run against C2. Use an isolated environment.
 
 ## Sources
 
-1. Check out `05yuki/deepseek-v4.1-flash-1017-ktransformers` at `5d53f72741dac6cbabd975a823f8ab3ab40dc0df` and let its tier 2 setup build SGLang `5d8e90a0f96e6ba35603f9b27f2f1039268c810e` and KTransformers `95009ea6856c0799e517e93cb12be5e8494bc7ce`. The two optional patches of the earlier snapshot are not applied: the overlay already carries them.
+1. Check out `05yuki/deepseek-v4.1-flash-1017-ktransformers` at `5d53f72741dac6cbabd975a823f8ab3ab40dc0df` and let its tier 2 setup build SGLang `5d8e90a0f96e6ba35603f9b27f2f1039268c810e` and KTransformers `95009ea6856c0799e517e93cb12be5e8494bc7ce`. The recipe's two optional patches are not applied: the overlay already carries them.
 2. Check, then apply:
 
 ```sh
@@ -12,7 +12,7 @@ python apply_overlay.py --sglang /path/to/sglang --ktransformers /path/to/ktrans
 python apply_overlay.py --sglang /path/to/sglang --ktransformers /path/to/ktransformers --apply
 ```
 
-Every changed input and overlay file is checked against `SOURCE_STACK.json` before any write. After `--apply` the script compares all 6,176 files of the SGLang tree with `SERVED_SGLANG_INVENTORY.json`, the served C2-with-vision tree. The recipe-patched base has 6,131 files, 6,094 equal the served tree, and the 82 overlay rows cover the other 37 and the 45 new files. For C1 that was established by applying the overlay at packaging time; the C2 rows were taken from the served trial's own inventory, every overlay file hash-checked against it, and have not been re-applied to a fresh checkout.
+Every changed input and overlay file is checked against `SOURCE_STACK.json` before any write. After `--apply` the script compares all 6,176 files of the SGLang tree with `SERVED_SGLANG_INVENTORY.json`, the served tree. The recipe-patched base has 6,131 files, 6,094 equal the served tree, and the 82 overlay rows cover the other 37 and the 45 new files. The rows were taken from the served trial's own inventory, every overlay file hash-checked against it; they have not been re-applied to a fresh checkout.
 
 3. Preserve the installed KT Python layer from `runtime/kt_kernel`, the Engram adapter from `runtime/engram-adapter`, and the wrappers in `runtime/`.
 
@@ -47,7 +47,9 @@ nvcc -c patha_expert_static.cu -o kernel.o -O3 -std=c++20 \
 g++ -shared kernel.o -ltorch ... -lcudart -o patha_expert_static_sm89_e0_s3_b8_t0.so
 ```
 
-`wo_a`: `native/wo-a-cuda/build_wo_a.py`, sm_89 only, `-O3 -fmad=false`. Route 3's kernel is unchanged from the earlier snapshot, binary SHA256 `51c179a96c838f2b51d9a01707706534a9472fe50752bedbab7c659905dca649`.
+`wo_a`: `native/wo-a-cuda/build_wo_a.py`, sm_89 only, `-O3 -fmad=false`. Route 3: `native/route3/route3_decode.py` builds `route3_decode.cu` with torch's extension loader, `-O3 -gencode=arch=compute_89,code=sm_89 -fmad=false --expt-relaxed-constexpr`, host `-O2`, `ROUTE3_EXT_NAME=route3_phase2_l2p0_r1`, `ROUTE3_L2_POLICY=0`. `runtime/route3_decode.py` only loads the built extension and requires SHA256 `51c179a96c838f2b51d9a01707706534a9472fe50752bedbab7c659905dca649`; another build has to be qualified as a new candidate.
+
+GGUF repacker: `native/repack/`, the tested source behind `${REPACK_LIBRARY}` in the profiles.
 
 Row store, as the recipe does it: `g++ -O2 -std=c++17 -shared -fPIC -pthread runtime/engram-adapter/row_store.cpp -o librow_store.so`.
 
@@ -57,8 +59,8 @@ Python 3.12, torch 2.14.1 with CUDA 13 wheels, CUDA toolkit 13.3. `dependencies/
 
 ## Launch
 
-The templates in `profiles/` are not a launcher: `tools/` holds the guarded chain that ran these loads on fea01. A template needs its `${VARIABLES}` set and its native paths pointed at your rebuilt files. Environment and argument order are part of the record.
+`profiles/*-as-run.json` hold the exact argument lists and environments; `*-template.json` replace host paths with the variables in `*-substitutions.json`. Set those and point the native paths at your rebuilt files. Environment and argument order are part of the record. `serving/` has the wrapper that serves the build on fea01 behind llama-swap.
 
 ## Bit identity
 
-Identity holds within one recorded build. Check a rebuild with `tools/stage_phase_g_g1v_adayid_r1.py`'s client against your own accepted baseline, and run `validation/kv_checks.py` unchanged through the feature client.
+Identity holds within one recorded build. Our identity check compares 11,496 scored positions, two replays, a 4K and two 35K cases and a rotation against the C2 archive on fea01. Check a rebuild against your own accepted baseline the same way, and run `validation/kv_checks.py` unchanged through `validation/feature_client.py`.

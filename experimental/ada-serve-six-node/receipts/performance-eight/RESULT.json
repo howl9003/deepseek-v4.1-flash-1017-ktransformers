@@ -1,0 +1,157 @@
+{
+  "status": "PERFORMANCE_COMPLETE_NOT_PR6_ACCEPTANCE",
+  "frozen_client_sha256": "4635dede1a4d69366ffe6291275e7cb0f02f9a1d44b231afb5cb7612b408d812",
+  "bench_sha256": "1c361c2010d7f69a8f1a93e33f26e7622bb684bd43a2de51b29b63a00b063f40",
+  "static_mode": "1",
+  "rounds": [
+    {
+      "index": 0,
+      "namespace": "phase-g-g1v-ada8c4-r1-round0",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/scratch/aster/bench/six-node-performance-r1/tools/client_fast_r1.py",
+        "--trial",
+        "/scratch/aster/bench/ada-perf-eight-c2-20261103-r3",
+        "--namespace",
+        "phase-g-g1v-ada8c4-r1-round0"
+      ],
+      "seconds": 427.532250794,
+      "client_receipt_sha256": "1f7d6aeaa448eb171950d5ac18384941e535fdbb857154184eca9bdd8272ab2d",
+      "breadth": [
+        {
+          "workload": "Chinese prose",
+          "tok_s": 32.3
+        },
+        {
+          "workload": "English prose",
+          "tok_s": 35.7
+        },
+        {
+          "workload": "English technical prose",
+          "tok_s": 34.2
+        },
+        {
+          "workload": "math",
+          "tok_s": 35.8
+        },
+        {
+          "workload": "JSON",
+          "tok_s": 35.6
+        },
+        {
+          "workload": "Python code",
+          "tok_s": 34.5
+        }
+      ],
+      "breadth_median_tok_s": 35.05,
+      "japanese_median_tok_s": 35.95,
+      "prefill35000_seconds": [
+        70.89,
+        56.86
+      ],
+      "post_timing_repeat": {
+        "text_equal": true,
+        "selected_logprobs_exact": true,
+        "full_acceptance": false
+      }
+    },
+    {
+      "index": 1,
+      "namespace": "phase-g-g1v-ada8c4-r1-round1",
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/scratch/aster/bench/six-node-performance-r1/tools/client_fast_r1.py",
+        "--trial",
+        "/scratch/aster/bench/ada-perf-eight-c2-20261103-r3",
+        "--namespace",
+        "phase-g-g1v-ada8c4-r1-round1"
+      ],
+      "seconds": 400.9082578480011,
+      "client_receipt_sha256": "8b748d37c3ce16454b3782915573293bfefc14510536b5aae9523b3397c5f693",
+      "breadth": [
+        {
+          "workload": "Chinese prose",
+          "tok_s": 32.2
+        },
+        {
+          "workload": "English prose",
+          "tok_s": 35.7
+        },
+        {
+          "workload": "English technical prose",
+          "tok_s": 33.9
+        },
+        {
+          "workload": "math",
+          "tok_s": 35.8
+        },
+        {
+          "workload": "JSON",
+          "tok_s": 35.5
+        },
+        {
+          "workload": "Python code",
+          "tok_s": 34.6
+        }
+      ],
+      "breadth_median_tok_s": 35.05,
+      "japanese_median_tok_s": 36.7,
+      "prefill35000_seconds": [
+        53.88,
+        52.82
+      ],
+      "post_timing_repeat": {
+        "text_equal": true,
+        "selected_logprobs_exact": true,
+        "full_acceptance": false
+      }
+    }
+  ],
+  "prefill4096_rounds": [
+    {
+      "index": 0,
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/scratch/aster/bench/six-node-performance-r1/source/bench.py",
+        "--url",
+        "http://127.0.0.1:18209",
+        "--prefill-only",
+        "--lengths",
+        "4096,4096"
+      ],
+      "seconds": [
+        28.5,
+        17.4
+      ],
+      "log_sha256": "9ae00b644fc7bbb6a2af1dd2f55c4d4538b6428ecc39fe0bb1da3f45543acb6e"
+    },
+    {
+      "index": 1,
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "/scratch/aster/bench/six-node-performance-r1/source/bench.py",
+        "--url",
+        "http://127.0.0.1:18209",
+        "--prefill-only",
+        "--lengths",
+        "4096,4096"
+      ],
+      "seconds": [
+        19.55,
+        17.08
+      ],
+      "log_sha256": "ace8e414cfbb5a02f33ba3a46a37a693d76cde3e3f582e3d3a87d9e484685500"
+    }
+  ],
+  "limitation": "Two consecutive same-profile rounds on one load; matched method, not an interleaved statistical study.",
+  "breadth_round_medians_tok_s": [
+    35.05,
+    35.05
+  ],
+  "breadth_median_tok_s": 35.05,
+  "breadth_run_to_run_range_tok_s": 0.0
+}

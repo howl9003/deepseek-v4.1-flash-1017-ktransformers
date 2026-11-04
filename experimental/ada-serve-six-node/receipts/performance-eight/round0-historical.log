@@ -1,0 +1,7 @@
+decode p0: 1024 tokens in 36.5 s = 28.0 tok/s
+decode p1: 1024 tokens in 28.8 s = 35.6 tok/s
+decode p2: 1024 tokens in 28.2 s = 36.3 tok/s
+decode p3: 1024 tokens in 27.9 s = 36.7 tok/s
+decode median: 35.9 tok/s
+prefill, first 35000-token prompt: 70.89 s = 494 tok/s
+prefill, second 35000-token prompt: 56.86 s = 616 tok/s

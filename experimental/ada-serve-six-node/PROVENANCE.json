@@ -1,17 +1,4 @@
 {
-  "c1_20261101": {
-    "launch_sha256": {
-      "identity": "90ec7878b86d4c57d4afa885b8abe0e902ddc15b5ff7848af72c72eb18f7bf2d",
-      "performance": "1c3a860aa4dd5bf204ea33814ce938279c36001b62edc075e8565da6916dee1d",
-      "serving_gate": "9c36003c5755baed4d00dc02e699a41e54809790e0bbce57687e45fac33a934f"
-    },
-    "prepared_manifest_sha256": "3befcb82626dc9c8ba846b1b683ce095fac8f2876e474b418e641b5dca60d916",
-    "trials": {
-      "identity": "/scratch/aster/bench/ada-identity-engram-20261101-r1",
-      "performance": "/scratch/aster/bench/ada-perf-engram-20261101-r1",
-      "serving_gate": "/scratch/aster/bench/ada-gate-engram-20261101-r1"
-    }
-  },
   "integrated_tree": {
     "inventory_sha256": "b71f046342cecba077034ddbd2dea2f6ff6ef2d191c78a6cc1a12c42052a32b7",
     "path": "/scratch/aster/bench/phase-g-g1-integrated-20261030-r6/src/sglang"
@@ -44,6 +31,7 @@
     "identity_repeat": "/scratch/aster/bench/ada-identity-c2-20261103-r2",
     "identity_vision": "/scratch/aster/bench/ada-identity-c2-vision-20261104-r2",
     "performance": "/scratch/aster/bench/ada-perf-v41kv-20261103-r2",
+    "performance_eight_nodes": "/scratch/aster/bench/ada-perf-eight-c2-20261103-r3",
     "serving": "/scratch/aster/bench/ada-serve-c2-vision-20261104-r1"
   }
 }

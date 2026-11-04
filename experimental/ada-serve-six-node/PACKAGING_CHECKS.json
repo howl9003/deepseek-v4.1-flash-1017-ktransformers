@@ -7,29 +7,17 @@
   },
   "before_link_rows": 1,
   "binaries": [],
-  "bytes": 13800489,
-  "c1_20261101": {
-    "base_accounting": {
-      "base_files": 6131,
-      "changed": 32,
-      "equal_to_served": 6099,
-      "new": 43
-    },
-    "bytes": 9113579,
-    "files": 315,
-    "served_inventory_files": 6174,
-    "sglang_overlay_rows": 75
-  },
+  "bytes": 11071512,
   "compilation_or_model_run": false,
   "credential_scan_hits": [],
   "credential_scan_reviewed": [
     {
-      "file": "serving/overlays/swa-tail/test_qualify_cache.py",
+      "file": "candidates/swa-tail/test_qualify_cache.py",
       "pattern": "assigned",
       "reason": "test fixture values for the redaction test, not credentials"
     }
   ],
-  "files": 486,
+  "files": 326,
   "frozen_lookup_tables": [
     "fp8_table.bin",
     "silu_table.bin"
@@ -39,11 +27,11 @@
   "ktransformers_overlay_rows": 16,
   "over_limit": [],
   "redacted": [
-    "serving/tools/served_reload_watchdog_r1.sh: gateway tailnet address as GATEWAY_HOST"
+    "serving/served_reload_watchdog_r1.sh: gateway tailnet address as GATEWAY_HOST"
   ],
   "rotated_or_frozen_paths": [],
   "served_inventory_files": 6176,
   "sglang_overlay_rows": 82,
   "status": "PASS",
-  "update": "C2 with vision, 4 Nov 2026: rows taken from the served trial ada-serve-c2-vision-20261104-r1 inventory, each overlay hash-checked; not re-applied to a fresh checkout"
+  "update": "C2 with vision, 4 Nov 2026: rows taken from the served trial ada-serve-c2-vision-20261104-r1 inventory, each overlay hash-checked; not re-applied to a fresh checkout. Cleaned to the C2 essentials on 4 Nov 2026."
 }
