@@ -22,7 +22,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 MODULE_SRC = HERE / 'dspark_plain_gate.py'
-MODULE_PIN = '5b46ae729eaf8e7b62cadf729c4f6066623f3d4a8157451e0b8a6dbd5593983a'
+MODULE_PIN = '6d0636b33eaf4dc18067d46bde923e9d9516f04f262a4366087e3733906d9e4d'
 MODULE_DST = 'srt/speculative/dspark_components/dspark_plain_gate.py'
 WORKER = 'srt/speculative/dspark_components/dspark_worker_v2.py'
 PINS = {

@@ -99,10 +99,11 @@ class ConfigTest(unittest.TestCase):
                 "KT_DSPARK_PLAIN_GATE_FORCE": " sspp ",
                 "KT_DSPARK_PLAIN_GATE_GRAPH": "0",
                 "KT_DSPARK_PLAIN_GATE_LOG": "100",
+                "KT_DSPARK_PLAIN_GATE_MAX_BS": "4",
             }
         )
         self.assertEqual((c.threshold, c.probe_every, c.alpha, c.min_spec), (1.9, 8, 0.5, 2))
-        self.assertEqual((c.force, c.graph, c.log_every), ("SSPP", False, 100))
+        self.assertEqual((c.force, c.graph, c.log_every, c.max_bs), ("SSPP", False, 100, 4))
 
     def test_invalid(self):
         for key, value in (
@@ -113,6 +114,8 @@ class ConfigTest(unittest.TestCase):
             ("KT_DSPARK_PLAIN_GATE_MIN_SPEC", "0"),
             ("KT_DSPARK_PLAIN_GATE_FORCE", "SPX"),
             ("KT_DSPARK_PLAIN_GATE_LOG", "-1"),
+            ("KT_DSPARK_PLAIN_GATE_MAX_BS", "0"),
+            ("KT_DSPARK_PLAIN_GATE_MAX_BS", "17"),
         ):
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
                 pg.GateConfig.from_env({key: value})
@@ -242,6 +245,92 @@ class GateTest(unittest.TestCase):
         gate.decide("a", verify_ct=3, correct_drafts=3, eligible=True)
         self.assertEqual(gate.ema("a"), 2.0)
         self.assertEqual(gate._reqs["a"].samples, 3)
+
+
+class BatchLoop:
+    """OverlapLoop for a batch: every request votes, the batch runs batch_kind(votes), every request records it.
+    `accept[rid](n)` is the tokens a speculative step commits for that request at step n."""
+
+    def __init__(self, gate, rids, accept, lag=2, max_bs=4):
+        self.gate, self.accept, self.lag, self.max_bs = gate, accept, lag, max_bs
+        self.reqs = {rid: Req(rid) for rid in rids}
+        self.inflight = deque()
+        self.kinds = []
+
+    def step(self, rids):
+        while len(self.inflight) >= self.lag:
+            for rid, committed in self.inflight.popleft():
+                if rid in self.reqs:
+                    self.reqs[rid].spec_verify_ct += 1
+                    self.reqs[rid].spec_num_correct_drafts += committed - 1
+        self.gate.prune(rids)
+        n = len(self.kinds)
+        eligible = 0 < len(rids) <= self.max_bs
+        votes = [self.gate.vote(rid, verify_ct=self.reqs[rid].spec_verify_ct,
+                                correct_drafts=self.reqs[rid].spec_num_correct_drafts, eligible=eligible)
+                 for rid in rids]
+        kind = pg.batch_kind(votes)
+        for rid in rids:
+            self.gate.record(rid, kind)
+        self.kinds.append(kind)
+        self.inflight.append([(rid, 1 if kind == pg.PLAIN else self.accept[rid](n)) for rid in rids])
+        return kind
+
+    def run(self, steps, rids):
+        return "".join(self.step(rids) for _ in range(steps))
+
+
+class BatchRuleTest(unittest.TestCase):
+    def test_batch_kind(self):
+        self.assertEqual(pg.batch_kind(["S"]), "S")
+        self.assertEqual(pg.batch_kind(["P"]), "P")
+        self.assertEqual(pg.batch_kind(["S", "S", "S"]), "S")
+        self.assertEqual(pg.batch_kind(["S", "P", "S"]), "P")
+
+    def test_one_request_matches_decide(self):
+        # bs = 1 through vote/record gives the r1 decide() sequence step for step.
+        accept = lambda n: 1 if n < 60 else 4
+        r1 = OverlapLoop(pg.PlainGate(cfg()), Req("a"), accept=accept).run(140)
+        r2 = BatchLoop(pg.PlainGate(cfg()), ["a"], {"a": accept}).run(140, ["a"])
+        self.assertEqual(r1, r2)
+
+    def test_two_code_requests_speculate(self):
+        loop = BatchLoop(pg.PlainGate(cfg()), ["a", "b"], {"a": lambda n: 4, "b": lambda n: 3})
+        self.assertEqual(loop.run(60, ["a", "b"]), "S" * 60)
+
+    def test_one_prose_request_makes_the_batch_plain(self):
+        loop = BatchLoop(pg.PlainGate(cfg()), ["a", "b"], {"a": lambda n: 4, "b": lambda n: 1})
+        kinds = loop.run(60, ["a", "b"])
+        # b's EMA falls below the threshold after min_spec samples (plus the lag); from then on plain, except when
+        # b probes while a still wants to speculate (the batch speculates only when both vote S).
+        self.assertEqual(kinds[:6], "S" * 5 + "P")  # 4 samples seen at step 5 (lag 2)
+        self.assertGreater(kinds[6:].count("P"), 50)
+
+    def test_votes_and_records_differ_without_losing_attribution(self):
+        # a votes S (high EMA) but runs plain steps with b; its EMA is unmoved by them and it speculates again alone.
+        gate = pg.PlainGate(cfg())
+        loop = BatchLoop(gate, ["a", "b"], {"a": lambda n: 4, "b": lambda n: 1})
+        loop.run(40, ["a", "b"])
+        ema_a = gate.ema("a")
+        self.assertGreaterEqual(ema_a, 3.9)
+        tail = loop.run(20, ["a"])  # b finished
+        self.assertEqual(tail, "S" * 20)
+        self.assertGreaterEqual(gate.ema("a"), 3.9)
+
+    def test_oversized_batch_speculates(self):
+        loop = BatchLoop(pg.PlainGate(cfg()), list("abcde"), {r: (lambda n: 1) for r in "abcde"}, max_bs=4)
+        self.assertEqual(loop.run(30, list("abcde")), "S" * 30)
+
+    def test_new_request_joins_plain_batch(self):
+        # A new request votes S, but the batch stays plain while the other votes P; the new one samples only on the
+        # other's probes (both vote S) and measures once it runs alone.
+        gate = pg.PlainGate(cfg())
+        loop = BatchLoop(gate, ["a", "b"], {"a": lambda n: 1, "b": lambda n: 4})
+        loop.run(20, ["a"])
+        kinds = loop.run(10, ["a", "b"])
+        self.assertGreaterEqual(kinds.count("P"), 8)
+        self.assertLessEqual(gate._reqs["b"].samples, kinds.count("S"))
+        self.assertEqual(loop.run(3, ["b"]), "S" * 3)
 
 
 class BookkeepingModelTest(unittest.TestCase):

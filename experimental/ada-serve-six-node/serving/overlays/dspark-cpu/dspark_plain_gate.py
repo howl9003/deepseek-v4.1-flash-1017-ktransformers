@@ -15,7 +15,10 @@ committed one position would:
 
 The DECODE forward replays its own CUDA graph (PlainDecodeCudaGraphRunner), captured beside the verify graphs on the
 same attention backend. Everything here runs only with KT_DSPARK_PLAIN_GATE=1; the worker never imports this module
-otherwise. Only bs = 1 takes plain steps; larger batches speculate as before.
+otherwise. Batches up to KT_DSPARK_PLAIN_GATE_MAX_BS requests (default 1) may take plain steps; larger ones speculate
+as before. In a batch of two or more, every request votes and the batch runs plain when any request votes plain, so a
+batch speculates only when all of its requests want to (r2, 4 Nov: a verify of b requests carries 4b rows' experts on
+the CPU, so a mixed batch is costed as plain).
 
 The gate (PlainGate) is pure Python: an EMA, per request, of tokens committed per speculative step, read from the
 scheduler's own CPU counters (Req.spec_verify_ct, Req.spec_num_correct_drafts), so it never syncs the device.
@@ -70,6 +73,7 @@ class GateConfig:
             force=env.get("KT_DSPARK_PLAIN_GATE_FORCE", "").strip().upper(),
             graph=env.get("KT_DSPARK_PLAIN_GATE_GRAPH", "1") == "1",
             log_every=int(env.get("KT_DSPARK_PLAIN_GATE_LOG", "0")),
+            max_bs=int(env.get("KT_DSPARK_PLAIN_GATE_MAX_BS", "1")),
         )
         config.validate()
         return config
@@ -87,6 +91,8 @@ class GateConfig:
             raise ValueError(f"KT_DSPARK_PLAIN_GATE_FORCE takes S and P only, got {self.force!r}")
         if self.log_every < 0:
             raise ValueError(f"KT_DSPARK_PLAIN_GATE_LOG must be >= 0, got {self.log_every}")
+        if not 1 <= self.max_bs <= 16:
+            raise ValueError(f"KT_DSPARK_PLAIN_GATE_MAX_BS must be in [1, 16], got {self.max_bs}")
 
 
 def refusal_reasons(
@@ -114,6 +120,12 @@ def step_eligible(
 ) -> bool:
     """A decode batch the plain step serves exactly as today's result path expects; others speculate."""
     return 0 < bs <= max_bs and not (has_grammar or return_logprob or return_hidden_states or sampling_masks)
+
+
+def batch_kind(votes: List[str]) -> str:
+    """The step a batch runs from its requests' votes: one request, its vote; two or more, plain when any votes plain
+    (an ineligible batch's votes are all SPEC)."""
+    return PLAIN if PLAIN in votes else SPEC
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -182,24 +194,32 @@ class PlainGate:
         state.last_ct, state.last_drafts = verify_ct, correct_drafts
         return state
 
-    def decide(self, rid: str, *, verify_ct: int, correct_drafts: int, eligible: bool) -> bool:
-        """True: run a plain step for this request now. Every decode step of a request must be decided here, in
-        order, so the gate can attribute its results."""
+    def vote(self, rid: str, *, verify_ct: int, correct_drafts: int, eligible: bool) -> str:
+        """The kind of step this request wants now. Absorbs its counters; the step is not issued until record()."""
         config = self.config
         state = self._absorb(rid, verify_ct, correct_drafts)
         if not eligible:
-            kind = SPEC
-        elif config.force:
-            kind = config.force[state.steps % len(config.force)]
-        elif state.samples < config.min_spec or state.ema is None or state.ema >= config.threshold:
-            kind = SPEC
-        elif state.plain_run >= config.probe_every:
-            kind = SPEC  # probe: re-measure the draft
-        else:
-            kind = PLAIN
+            return SPEC
+        if config.force:
+            return config.force[state.steps % len(config.force)]
+        if state.samples < config.min_spec or state.ema is None or state.ema >= config.threshold:
+            return SPEC
+        if state.plain_run >= config.probe_every:
+            return SPEC  # probe: re-measure the draft
+        return PLAIN
+
+    def record(self, rid: str, kind: str) -> None:
+        """The kind of step issued for this request (its batch's, which may differ from its vote)."""
+        state = self._reqs[rid]
         state.plain_run = state.plain_run + 1 if kind == PLAIN else 0
         state.steps += 1
         state.pending.append(kind)
+
+    def decide(self, rid: str, *, verify_ct: int, correct_drafts: int, eligible: bool) -> bool:
+        """True: run a plain step for this request now (one request: vote, then record it). Every decode step of a
+        request must be voted and recorded, in order, so the gate can attribute its results."""
+        kind = self.vote(rid, verify_ct=verify_ct, correct_drafts=correct_drafts, eligible=eligible)
+        self.record(rid, kind)
         return kind == PLAIN
 
 
@@ -451,14 +471,19 @@ class PlainStepController:
         reqs = batch.reqs
         self.gate.prune(req.rid for req in reqs)
         eligible = self._eligible(batch)
-        plain = False
-        for req in reqs:
-            plain |= self.gate.decide(
+        votes = [
+            self.gate.vote(
                 req.rid,
                 verify_ct=int(getattr(req, "spec_verify_ct", 0)),
                 correct_drafts=int(getattr(req, "spec_num_correct_drafts", 0)),
                 eligible=eligible,
             )
+            for req in reqs
+        ]
+        kind = batch_kind(votes)
+        plain = kind == PLAIN
+        for req in reqs:
+            self.gate.record(req.rid, kind)
         if not plain:
             self.num_spec += 1
             self._maybe_log(reqs)
