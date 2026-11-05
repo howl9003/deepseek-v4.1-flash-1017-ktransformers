@@ -1,0 +1,669 @@
+From 73dd03b4a282b2755f5bde37e4e0cb81e4a81dd8 Mon Sep 17 00:00:00 2001
+From: howl <howeili@gmail.com>
+Date: Thu, 5 Nov 2026 10:19:13 +0800
+Subject: [PATCH] sm89: keep the ratio-1/2 compressed KV in the reference's FP4
+ (SGLANG_SM89_FP4_COMPRESSED_KV)
+
+DeepSeek-V4.1 rounds its ratio-1/2 compressed latents to e2m1 with an e4m3 scale per 16
+after RoPE (fp4_act_quant in the checkpoint's model.py); SGLang has that layout (V41_FP4,
+288 B a token). On SM89 the pool kept them in the V4 584-byte layout instead (e4m3 per 64,
+RoPE part in bf16): a second rounding of values already on the fp4 grid.
+
+With SGLANG_SM89_FP4_COMPRESSED_KV=1, on compute capability 8.9 only:
+- the pool gives the ratio-1/2 caches V41_FP4 next to the V4 main cache, and the pair is
+  valid; another GPU that keeps the V4 main cache refuses to start (SM100 already has
+  V41_FP4), and so does SGLANG_DSV4_KV_LAYOUT=v4 with an fp8 compressed layout;
+- the store writes the e2m1 codes with the software helpers ROCm uses (SM89 has no
+  cvt.rn.satfinite.e2m1x2); other GPUs keep the hardware conversion;
+- the dual-scope decode kernels, unsplit and split-K, read the 288-byte rows through
+  sm89_fp4_tile.fp4_tile in a copy of _process_kv_block_aggressive: the same dots and
+  folds on the same shapes, only the tiles load differently. e2m1 x e4m3 is exact in bf16;
+- the portable separate-scope path refuses these rows.
+Off, nothing changes: the kernels take EXTRA_FP4=False, a constexpr.
+
+Checked by howl9003 on an RTX 4080 SUPER, on their SM89 build (SGLang 5d8e90a0, the
+unsplit kernel):
+- the store against fp4_act_quant after RoPE: 0 of 151,009,280 values differ;
+- the reader against SGLang's dequantization: 0 of 4,521,984; the attention against a
+  twin reading the same values as bf16 rows: 0 of 3,000 calls; off, the kernels against
+  the files before: 0 of 600 calls; no spills;
+- panel KL against the reference 0.01106 -> 0.01098, NLL paired by conversation -0.00056
+  (SE 0.00084); decode flat, 35K prefill +0.8%.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ .../sgl_kernel/deepseek_v4/fp4_utils.cuh      |  10 +-
+ .../sgl_kernel/deepseek_v4/kv_layout.cuh      |   2 +-
+ .../kernels/ops/attention/dsv4/kv_layout.py   |  13 +-
+ .../triton_mla_kernels_decode_fused.py        | 339 ++++++++++++++----
+ .../kernels/ops/attention/sm89_dual_scope.py  |  37 +-
+ .../kernels/ops/attention/sm89_fp4_tile.py    |  33 ++
+ .../srt/mem_cache/deepseek_v4_memory_pool.py  |  10 +
+ 7 files changed, 358 insertions(+), 86 deletions(-)
+ create mode 100644 python/sglang/kernels/ops/attention/sm89_fp4_tile.py
+
+diff --git a/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/fp4_utils.cuh b/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/fp4_utils.cuh
+index 5726efed..86353f61 100644
+--- a/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/fp4_utils.cuh
++++ b/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/fp4_utils.cuh
+@@ -9,6 +9,14 @@
+ #include <cuda_fp4.h>
+ #endif
+ 
++// e2m1 codes in software on ROCm and on SM89 (SGLANG_SM89_FP4_COMPRESSED_KV), which has no
++// cvt.rn.satfinite.e2m1x2; every other CUDA arch keeps the hardware conversion.
++#if defined(USE_ROCM) || (defined(__CUDA_ARCH__) && __CUDA_ARCH__ == 890)
++#define SGL_FP4_SOFT_CODES 1
++#else
++#define SGL_FP4_SOFT_CODES 0
++#endif
++
+ // FP4 (e2m1) helpers: per-32 UE8M0 for the indexer, per-16 E4M3 for compressed KV.
+ 
+ namespace sglang {
+@@ -23,7 +31,7 @@ constexpr float kAmaxFloor = 6.0f * 1.1754943508222875e-38f;
+ constexpr uint32_t kBlockSize = 32;
+ /// Compressed-KV elements sharing one E4M3 scale.
+ constexpr uint32_t kCompressedKVBlockSize = 16;
+-#ifdef USE_ROCM
++#if SGL_FP4_SOFT_CODES
+ /// \brief `cvt.rn.satfinite.e2m1x2.f32` for one value, in software: RNE onto the
+ /// e2m1 grid {0, .5, 1, 1.5, 2, 3, 4, 6}, saturated at 6, sign kept (also for -0).
+ SGL_DEVICE uint32_t e2m1_code(float x) {
+diff --git a/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/kv_layout.cuh b/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/kv_layout.cuh
+index 150f53fa..6fad99b7 100644
+--- a/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/kv_layout.cuh
++++ b/python/sglang/kernels/jit/include/sgl_kernel/deepseek_v4/kv_layout.cuh
+@@ -225,7 +225,7 @@ SGL_DEVICE void store_row_fp4(uint8_t* data_row, uint8_t* scale_row, uint32_t tx
+ #pragma unroll
+   for (uint32_t i = 0; i < kVecSize / 2; ++i) {
+     // IEEE division by the rounded scale, as the reference does; a reciprocal multiply could cross an e2m1 tie.
+-#ifdef USE_ROCM
++#if SGL_FP4_SOFT_CODES
+     out[i] = static_cast<uint8_t>(fp4::e2m1x2_code({__fdiv_rn(v[2 * i], scale), __fdiv_rn(v[2 * i + 1], scale)}));
+ #else
+     out[i] = static_cast<uint8_t>(__nv_cvt_float2_to_fp4x2(
+diff --git a/python/sglang/kernels/ops/attention/dsv4/kv_layout.py b/python/sglang/kernels/ops/attention/dsv4/kv_layout.py
+index f674dd13..ffcaea67 100644
+--- a/python/sglang/kernels/ops/attention/dsv4/kv_layout.py
++++ b/python/sglang/kernels/ops/attention/dsv4/kv_layout.py
+@@ -12,6 +12,7 @@ from __future__ import annotations
+ 
+ import enum
+ import functools
++import os
+ from typing import Union
+ 
+ 
+@@ -130,9 +131,19 @@ _INTERLEAVED_ENCODING = {
+ }
+ 
+ 
++def sm89_fp4_compressed_kv() -> bool:
++    """SGLANG_SM89_FP4_COMPRESSED_KV=1: on SM89 the ratio-1/2 compressed caches keep the
++    reference's e2m1 values (V41_FP4) next to the V4 main cache, instead of being rounded
++    again into the V4 layout."""
++    return os.environ.get("SGLANG_SM89_FP4_COMPRESSED_KV", "0") == "1"
++
++
+ def is_valid_kv_layout_pair(kv: KVLayout, extra_kv: KVLayout) -> bool:
+     """The (main, extra) cache pairs the decode kernel accepts: identical layouts,
+-    or the fp4 extra cache next to a V4.1 fp8 main cache of the same arrangement."""
++    or the fp4 extra cache next to a V4.1 fp8 main cache of the same arrangement
++    (on SM89 with SGLANG_SM89_FP4_COMPRESSED_KV, also next to the V4 main cache)."""
++    if kv is KVLayout.V4 and extra_kv is KVLayout.V41_FP4:
++        return sm89_fp4_compressed_kv()
+     return extra_kv is kv or (
+         kv.encoding is KVLayout.V41
+         and extra_kv.encoding is KVLayout.V41_FP4
+diff --git a/python/sglang/kernels/ops/attention/dsv4/triton_sparse_decode/triton_mla_kernels_decode_fused.py b/python/sglang/kernels/ops/attention/dsv4/triton_sparse_decode/triton_mla_kernels_decode_fused.py
+index c0a4f3bc..9e5c7874 100644
+--- a/python/sglang/kernels/ops/attention/dsv4/triton_sparse_decode/triton_mla_kernels_decode_fused.py
++++ b/python/sglang/kernels/ops/attention/dsv4/triton_sparse_decode/triton_mla_kernels_decode_fused.py
+@@ -17,6 +17,11 @@ import torch
+ import triton
+ import triton.language as tl
+ 
++from sglang.kernels.ops.attention.sm89_fp4_tile import (
++    FP4_DATA_BYTES,
++    FP4_SCALE_BYTES,
++    fp4_tile,
++)
+ from sglang.srt.utils.common import is_gfx942_supported
+ 
+ # gfx942/MI300/MI325 stores e4m3fnuz (bias 8);
+@@ -280,6 +285,100 @@ def _process_kv_block_aggressive(
+     return acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_new, l_new
+ 
+ 
++@triton.jit
++def _process_kv_block_fp4(
++    # KV cache parameters
++    kv_block_base,
++    nope_rope_offset,
++    scale_base_offset,
++    valid,
++    valid_2d,
++    # Query tiles
++    q_0,
++    q_1,
++    q_2,
++    q_3,
++    q_4,
++    q_5,
++    q_6,
++    q_7,
++    # Accumulators (passed by reference via return)
++    acc_0,
++    acc_1,
++    acc_2,
++    acc_3,
++    acc_4,
++    acc_5,
++    acc_6,
++    acc_7,
++    # Softmax state
++    m_i,
++    l_i,
++    # Other parameters
++    offs_tile,
++    sm_scale,
++    # Constants
++    TILE_SIZE: tl.constexpr,
++    D_NOPE: tl.constexpr,
++    LOG2E: tl.constexpr,
++    BLOCK_H: tl.constexpr,
++    BLOCK_N: tl.constexpr,
++):
++    """
++    _process_kv_block_aggressive over a V41_FP4 extra cache on SM89
++    (SGLANG_SM89_FP4_COMPRESSED_KV): the same dots and folds on the same shapes,
++    only the tiles load differently.
++    """
++    NEG_INF = float("-inf")
++
++    qk = tl.zeros([BLOCK_H, BLOCK_N], dtype=tl.float32)
++
++    kv_0 = fp4_tile(kv_block_base, nope_rope_offset, scale_base_offset, valid_2d, 0)
++    qk += tl.dot(q_0, tl.trans(kv_0)).to(tl.float32)
++
++    kv_1 = fp4_tile(kv_block_base, nope_rope_offset, scale_base_offset, valid_2d, 1)
++    qk += tl.dot(q_1, tl.trans(kv_1)).to(tl.float32)
++
++    kv_2 = fp4_tile(kv_block_base, nope_rope_offset, scale_base_offset, valid_2d, 2)
++    qk += tl.dot(q_2, tl.trans(kv_2)).to(tl.float32)
++
++    kv_3 = fp4_tile(kv_block_base, nope_rope_offset, scale_base_offset, valid_2d, 3)
++    qk += tl.dot(q_3, tl.trans(kv_3)).to(tl.float32)
++
++    kv_4 = fp4_tile(kv_block_base, nope_rope_offset, scale_base_offset, valid_2d, 4)
++    qk += tl.dot(q_4, tl.trans(kv_4)).to(tl.float32)
++
++    kv_5 = fp4_tile(kv_block_base, nope_rope_offset, scale_base_offset, valid_2d, 5)
++    qk += tl.dot(q_5, tl.trans(kv_5)).to(tl.float32)
++
++    kv_6 = fp4_tile(kv_block_base, nope_rope_offset, scale_base_offset, valid_2d, 6)
++    qk += tl.dot(q_6, tl.trans(kv_6)).to(tl.float32)
++
++    kv_7 = fp4_tile(kv_block_base, nope_rope_offset, scale_base_offset, valid_2d, 7)
++    qk += tl.dot(q_7, tl.trans(kv_7)).to(tl.float32)
++
++    qk = qk * sm_scale
++    qk = tl.where(valid[None, :], qk, NEG_INF)
++
++    m_ij = tl.max(qk, axis=1)
++    m_new = tl.maximum(m_i, m_ij)
++    alpha = tl.where(m_i == NEG_INF, 0.0, tl.math.exp2((m_i - m_new) * LOG2E))
++    p = tl.where(qk == NEG_INF, 0.0, tl.math.exp2((qk - m_new[:, None]) * LOG2E))
++    l_new = alpha * l_i + tl.sum(p, axis=1)
++    p_bf16 = p.to(tl.bfloat16)
++
++    acc_0 = acc_0 * alpha[:, None] + tl.dot(p_bf16, kv_0).to(tl.float32)
++    acc_1 = acc_1 * alpha[:, None] + tl.dot(p_bf16, kv_1).to(tl.float32)
++    acc_2 = acc_2 * alpha[:, None] + tl.dot(p_bf16, kv_2).to(tl.float32)
++    acc_3 = acc_3 * alpha[:, None] + tl.dot(p_bf16, kv_3).to(tl.float32)
++    acc_4 = acc_4 * alpha[:, None] + tl.dot(p_bf16, kv_4).to(tl.float32)
++    acc_5 = acc_5 * alpha[:, None] + tl.dot(p_bf16, kv_5).to(tl.float32)
++    acc_6 = acc_6 * alpha[:, None] + tl.dot(p_bf16, kv_6).to(tl.float32)
++    acc_7 = acc_7 * alpha[:, None] + tl.dot(p_bf16, kv_7).to(tl.float32)
++
++    return acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_new, l_new
++
++
+ # ============================================================================
+ # DSV4 Fused Gather+Dequant+Attention Kernel (Single Scope)
+ # ============================================================================
+@@ -901,6 +1000,7 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
+     HAS_ATTN_SINK: tl.constexpr,
+     BLOCK_H: tl.constexpr,
+     BLOCK_N: tl.constexpr,
++    EXTRA_FP4: tl.constexpr = False,
+ ):
+     """
+     OPTIMIZED fused gather+dequant+attention kernel for DSV4 with dual scope.
+@@ -1119,49 +1219,92 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
+ 
+             stride_kv_block_extra_64 = tl.cast(stride_kv_block_extra, tl.int64)
+             kv_block_base = KV_Cache_Extra + block_idx_64 * stride_kv_block_extra_64
+-            nope_rope_offset = offset_in_block_64 * BYTES_PER_TOKEN_DATA
+-            scale_base_offset = (
+-                block_size_extra * BYTES_PER_TOKEN_DATA
+-                + offset_in_block_64 * BYTES_PER_TOKEN_SCALE
+-            )
++            if EXTRA_FP4:
++                nope_rope_offset = offset_in_block_64 * FP4_DATA_BYTES
++                scale_base_offset = (
++                    block_size_extra * FP4_DATA_BYTES
++                    + offset_in_block_64 * FP4_SCALE_BYTES
++                )
++            else:
++                nope_rope_offset = offset_in_block_64 * BYTES_PER_TOKEN_DATA
++                scale_base_offset = (
++                    block_size_extra * BYTES_PER_TOKEN_DATA
++                    + offset_in_block_64 * BYTES_PER_TOKEN_SCALE
++                )
+ 
+             valid_2d = valid[:, None]
+ 
+             # Use helper function for KV processing
+-            acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_i, l_i = (
+-                _process_kv_block_aggressive(
+-                    kv_block_base,
+-                    nope_rope_offset,
+-                    scale_base_offset,
+-                    valid,
+-                    valid_2d,
+-                    q_0,
+-                    q_1,
+-                    q_2,
+-                    q_3,
+-                    q_4,
+-                    q_5,
+-                    q_6,
+-                    q_7,
+-                    acc_0,
+-                    acc_1,
+-                    acc_2,
+-                    acc_3,
+-                    acc_4,
+-                    acc_5,
+-                    acc_6,
+-                    acc_7,
+-                    m_i,
+-                    l_i,
+-                    offs_tile,
+-                    sm_scale,
+-                    TILE_SIZE,
+-                    D_NOPE,
+-                    LOG2E,
+-                    BLOCK_H,
+-                    BLOCK_N,
++            if EXTRA_FP4:
++                acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_i, l_i = (
++                    _process_kv_block_fp4(
++                        kv_block_base,
++                        nope_rope_offset,
++                        scale_base_offset,
++                        valid,
++                        valid_2d,
++                        q_0,
++                        q_1,
++                        q_2,
++                        q_3,
++                        q_4,
++                        q_5,
++                        q_6,
++                        q_7,
++                        acc_0,
++                        acc_1,
++                        acc_2,
++                        acc_3,
++                        acc_4,
++                        acc_5,
++                        acc_6,
++                        acc_7,
++                        m_i,
++                        l_i,
++                        offs_tile,
++                        sm_scale,
++                        TILE_SIZE,
++                        D_NOPE,
++                        LOG2E,
++                        BLOCK_H,
++                        BLOCK_N,
++                    )
++                )
++            else:
++                acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_i, l_i = (
++                    _process_kv_block_aggressive(
++                        kv_block_base,
++                        nope_rope_offset,
++                        scale_base_offset,
++                        valid,
++                        valid_2d,
++                        q_0,
++                        q_1,
++                        q_2,
++                        q_3,
++                        q_4,
++                        q_5,
++                        q_6,
++                        q_7,
++                        acc_0,
++                        acc_1,
++                        acc_2,
++                        acc_3,
++                        acc_4,
++                        acc_5,
++                        acc_6,
++                        acc_7,
++                        m_i,
++                        l_i,
++                        offs_tile,
++                        sm_scale,
++                        TILE_SIZE,
++                        D_NOPE,
++                        LOG2E,
++                        BLOCK_H,
++                        BLOCK_N,
++                    )
+                 )
+-            )
+ 
+     # ========================================================================
+     # Finalize: compute LSE and output
+@@ -1309,6 +1452,7 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
+     HAS_TOPK_LENGTH_EXTRA: tl.constexpr,
+     BLOCK_H: tl.constexpr,
+     BLOCK_N: tl.constexpr,
++    EXTRA_FP4: tl.constexpr = False,
+ ):
+     """
+     Split-K fused gather+dequant+attention kernel for DSV4 with dual scope.
+@@ -1515,48 +1659,91 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
+             offset_in_block_64 = offset_in_block.to(tl.int64)
+ 
+             kv_block_base = KV_Cache_Extra + block_idx_64 * stride_kv_block_extra_64
+-            nope_rope_offset = offset_in_block_64 * BYTES_PER_TOKEN_DATA
+-            scale_base_offset = (
+-                block_size_extra * BYTES_PER_TOKEN_DATA
+-                + offset_in_block_64 * BYTES_PER_TOKEN_SCALE
+-            )
++            if EXTRA_FP4:
++                nope_rope_offset = offset_in_block_64 * FP4_DATA_BYTES
++                scale_base_offset = (
++                    block_size_extra * FP4_DATA_BYTES
++                    + offset_in_block_64 * FP4_SCALE_BYTES
++                )
++            else:
++                nope_rope_offset = offset_in_block_64 * BYTES_PER_TOKEN_DATA
++                scale_base_offset = (
++                    block_size_extra * BYTES_PER_TOKEN_DATA
++                    + offset_in_block_64 * BYTES_PER_TOKEN_SCALE
++                )
+ 
+             valid_2d = valid[:, None]
+ 
+-            acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_i, l_i = (
+-                _process_kv_block_aggressive(
+-                    kv_block_base,
+-                    nope_rope_offset,
+-                    scale_base_offset,
+-                    valid,
+-                    valid_2d,
+-                    q_0,
+-                    q_1,
+-                    q_2,
+-                    q_3,
+-                    q_4,
+-                    q_5,
+-                    q_6,
+-                    q_7,
+-                    acc_0,
+-                    acc_1,
+-                    acc_2,
+-                    acc_3,
+-                    acc_4,
+-                    acc_5,
+-                    acc_6,
+-                    acc_7,
+-                    m_i,
+-                    l_i,
+-                    offs_tile,
+-                    sm_scale,
+-                    TILE_SIZE,
+-                    D_NOPE,
+-                    LOG2E,
+-                    BLOCK_H,
+-                    BLOCK_N,
++            if EXTRA_FP4:
++                acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_i, l_i = (
++                    _process_kv_block_fp4(
++                        kv_block_base,
++                        nope_rope_offset,
++                        scale_base_offset,
++                        valid,
++                        valid_2d,
++                        q_0,
++                        q_1,
++                        q_2,
++                        q_3,
++                        q_4,
++                        q_5,
++                        q_6,
++                        q_7,
++                        acc_0,
++                        acc_1,
++                        acc_2,
++                        acc_3,
++                        acc_4,
++                        acc_5,
++                        acc_6,
++                        acc_7,
++                        m_i,
++                        l_i,
++                        offs_tile,
++                        sm_scale,
++                        TILE_SIZE,
++                        D_NOPE,
++                        LOG2E,
++                        BLOCK_H,
++                        BLOCK_N,
++                    )
++                )
++            else:
++                acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_i, l_i = (
++                    _process_kv_block_aggressive(
++                        kv_block_base,
++                        nope_rope_offset,
++                        scale_base_offset,
++                        valid,
++                        valid_2d,
++                        q_0,
++                        q_1,
++                        q_2,
++                        q_3,
++                        q_4,
++                        q_5,
++                        q_6,
++                        q_7,
++                        acc_0,
++                        acc_1,
++                        acc_2,
++                        acc_3,
++                        acc_4,
++                        acc_5,
++                        acc_6,
++                        acc_7,
++                        m_i,
++                        l_i,
++                        offs_tile,
++                        sm_scale,
++                        TILE_SIZE,
++                        D_NOPE,
++                        LOG2E,
++                        BLOCK_H,
++                        BLOCK_N,
++                    )
+                 )
+-            )
+ 
+     # Finalize: compute partial LSE and store partial output
+     lse = m_i + tl.math.log2(tl.where(l_i == 0.0, 1.0, l_i)) / LOG2E
+diff --git a/python/sglang/kernels/ops/attention/sm89_dual_scope.py b/python/sglang/kernels/ops/attention/sm89_dual_scope.py
+index 623b0e87..ba5d35c7 100644
+--- a/python/sglang/kernels/ops/attention/sm89_dual_scope.py
++++ b/python/sglang/kernels/ops/attention/sm89_dual_scope.py
+@@ -13,6 +13,7 @@ from typing import Optional
+ import torch
+ import triton
+ 
++from sglang.kernels.ops.attention.dsv4.kv_layout import sm89_fp4_compressed_kv
+ from sglang.kernels.ops.attention.dsv4.triton_sparse_decode import (
+     triton_mla_kernels_decode_fused as _F,
+ )
+@@ -21,6 +22,15 @@ from sglang.kernels.ops.attention.dsv4.triton_sparse_decode.triton_mla_kernels_d
+ )
+ 
+ _V4_BYTES_PER_TOKEN = 584  # 448 fp8 nope + 64 bf16 rope + 7 ue8m0 scales + 1 pad
++_FP4_BYTES_PER_TOKEN = 288  # V41_FP4: 512 e2m1 + 32 e4m3 scales (one per 16)
++# Cache widths this process reads: the V4 layout, and the V41_FP4 extra (compressed)
++# cache with SGLANG_SM89_FP4_COMPRESSED_KV.
++_MAIN_WIDTHS = (_V4_BYTES_PER_TOKEN,)
++_EXTRA_WIDTHS = (
++    (_V4_BYTES_PER_TOKEN, _FP4_BYTES_PER_TOKEN)
++    if sm89_fp4_compressed_kv()
++    else (_V4_BYTES_PER_TOKEN,)
++)
+ _D = 512
+ _POOL_MAX_ROWS = 64
+ 
+@@ -58,14 +68,14 @@ def supported(q, k_cache, extra_k_cache, head_dim_v, attn_sink) -> bool:
+         return _no(f"q {q.dtype} d={q.shape[-1]} head_dim_v={head_dim_v}")
+     if q.ndim == 4 and q.shape[1] != 1:
+         return _no(f"q seq dim {q.shape[1]}")
+-    for c in (k_cache, extra_k_cache):
++    for c, widths in ((k_cache, _MAIN_WIDTHS), (extra_k_cache, _EXTRA_WIDTHS)):
+         if c is None:
+             continue
+-        if c.ndim != 4 or c.shape[-1] != _V4_BYTES_PER_TOKEN or c.element_size() != 1:
++        if c.ndim != 4 or c.shape[-1] not in widths or c.element_size() != 1:
+             return _no(
+                 f"cache view {tuple(c.shape)} {c.dtype} (needs the V4 584 B layout)"
+             )
+-        if c.stride(-1) != 1 or c.stride(1) != _V4_BYTES_PER_TOKEN:
++        if c.stride(-1) != 1 or c.stride(1) != c.shape[-1]:
+             return _no(f"cache strides {c.stride()}")
+     h = q.shape[-2]
+     if attn_sink is not None and attn_sink.numel() < h:
+@@ -161,6 +171,8 @@ def sm89_dual_scope_decode(
+     flags = dict(
+         HAS_TOPK_LENGTH_MAIN=topk_length is not None,
+         HAS_TOPK_LENGTH_EXTRA=extra_topk_length is not None,
++        # the V41_FP4 compressed cache, read by both the unsplit and the split-K kernels
++        EXTRA_FP4=has_extra and extra_k_cache.shape[-1] == _FP4_BYTES_PER_TOKEN,
+     )
+     common_head = (q3, kv_main, idx_main, tl_main, kv_extra, idx_extra, tl_extra)
+     shape_args = (
+@@ -304,19 +316,30 @@ def flash_mla_sparse_sm89(
+ 
+     The portable reference handles unsupported dual-scope query shapes. Neither
+     implementation understands V41/FP4 cache bytes, so fail before interpreting
+-    them as V4. SM89's default layout selection already stays on V4.
++    them as V4. SM89's default layout selection already stays on V4; with
++    SGLANG_SM89_FP4_COMPRESSED_KV the dual-scope kernels read the V41_FP4 extra
++    cache, which the portable path cannot.
+     """
+     if q.ndim not in (3, 4) or (q.ndim == 4 and q.shape[1] != 1):
+         raise ValueError("SM89 attention expects q [N,H,D] or [N,1,H,D]")
+-    for cache in (k_cache, extra_k_cache):
++    for cache, widths in ((k_cache, _MAIN_WIDTHS), (extra_k_cache, _EXTRA_WIDTHS)):
+         if cache is not None and (
+-            cache.shape[-1] != _V4_BYTES_PER_TOKEN or cache.element_size() != 1
++            cache.shape[-1] not in widths or cache.element_size() != 1
+         ):
+-            raise ValueError("SM89 attention requires the V4 584-byte KV layout")
++            raise ValueError(
++                "SM89 attention requires the V4 584-byte KV layout, or the V41 / V41_FP4 "
++                "layouts its selectors enable (SGLANG_SM89_V41_KV, SGLANG_SM89_FP4_COMPRESSED_KV)"
++            )
+     use_dual = _DUAL_SCOPE and supported(
+         q, k_cache, extra_k_cache, head_dim_v, attn_sink
+     )
+     if not use_dual:
++        for cache in (k_cache, extra_k_cache):
++            if cache is not None and cache.shape[-1] != _V4_BYTES_PER_TOKEN:
++                raise ValueError(
++                    "the portable SM89 path reads only the V4 layout; the V41 / V41_FP4 "
++                    "caches need the dual-scope kernels (SGLANG_SM89_ATTN_DUAL=1)"
++                )
+         from sglang.kernels.ops.attention.flash_mla_sm120_triton import (
+             flash_mla_sparse_decode_triton,
+         )
+diff --git a/python/sglang/kernels/ops/attention/sm89_fp4_tile.py b/python/sglang/kernels/ops/attention/sm89_fp4_tile.py
+new file mode 100644
+index 00000000..cf3ea9cb
+--- /dev/null
++++ b/python/sglang/kernels/ops/attention/sm89_fp4_tile.py
+@@ -0,0 +1,33 @@
++"""One 64-value tile of a V41_FP4 cache row on SM89 (SGLANG_SM89_FP4_COMPRESSED_KV=1).
++
++The ratio-1/2 latents are E2M1 with E4M3 scales per 16, so this layout holds them without the second rounding the V4 layout needs.
++Decoded values match what `_rope_fq4` hands the V4 store: E2M1 x E4M3 has at most 6 significant bits, so it is exact in BF16.
++"""
++import triton
++import triton.language as tl
++
++FP4_DATA_BYTES, FP4_SCALE_BYTES = tl.constexpr(256), tl.constexpr(32)
++FP4_BYTES_PER_TOKEN = 288
++
++
++@triton.jit
++def _e2m1_bits(code):
++    """The FP32 bits of a 4-bit E2M1 code, in integers: bit 3 the sign, bits 0-2 index [0, .5, 1, 1.5, 2, 3, 4, 6]. A negative zero stays -0.0."""
++    m = code & 7
++    bits = tl.where(m >= 2, (((m >> 1) + 126) << 23) | ((m & 1) << 22), tl.where(m == 1, 0x3F000000, 0))
++    return bits | ((code & 8) << 28)
++
++
++@triton.jit
++def fp4_tile(kv_block_base, data_off, scale_off, valid_2d, tile):
++    """Tile 0-7 of each token, [tokens, 64] BF16: 32 bytes of codes, the even element in the low nibble, and the tile's four scales."""
++    BYTES: tl.constexpr = 32
++    offs_b = tl.arange(0, BYTES)
++    base = kv_block_base[:, None] + data_off[:, None]
++    packed = tl.load(base + tile * BYTES + offs_b[None, :], mask=valid_2d, other=0).to(tl.int32)
++    scale_u8 = tl.load(kv_block_base[:, None] + scale_off[:, None] + tile * 4 + offs_b[None, :] // 8, mask=valid_2d, other=0)
++    scale = scale_u8.to(tl.float8e4nv, bitcast=True).to(tl.float32)
++    lo = _e2m1_bits(packed & 15).to(tl.float32, bitcast=True) * scale
++    hi = _e2m1_bits(packed >> 4).to(tl.float32, bitcast=True) * scale
++    kv = tl.interleave(lo, hi).to(tl.bfloat16)
++    return tl.where(valid_2d, kv, 0.0)
+diff --git a/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py b/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py
+index 271e4f21..71ce338d 100644
+--- a/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py
++++ b/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py
+@@ -22,6 +22,7 @@ from sglang.kernels.ops.attention.dsv4 import (
+ from sglang.kernels.ops.attention.dsv4.kv_layout import (
+     KVLayout,
+     is_valid_kv_layout_pair,
++    sm89_fp4_compressed_kv,
+ )
+ from sglang.kernels.ops.attention.dsv4.kv_norm_rope_store import (
+     fused_k_norm_rope_uniform_fp8,
+@@ -195,6 +196,15 @@ def resolve_compressed_kv_layout(
+         if option == "auto":
+             option = None
+     if kv_layout is KVLayout.V4:
++        if compress_ratio in (1, 2) and sm89_fp4_compressed_kv():
++            if torch.cuda.get_device_capability() != (8, 9):
++                raise ValueError("SGLANG_SM89_FP4_COMPRESSED_KV is for SM89 (Ada) GPUs only")
++            if option not in (None, "fp4"):
++                raise ValueError(
++                    "SGLANG_SM89_FP4_COMPRESSED_KV keeps the ratio-1/2 caches in fp4; "
++                    f"SGLANG_DSV4_COMPRESSED_KV_LAYOUT={option!r} conflicts"
++                )
++            return KVLayout.V41_FP4
+         assert option in (None, "fp8"), "the V4 main cache only pairs with V4 caches"
+         return KVLayout.V4
+     assert kv_layout.encoding is KVLayout.V41, f"{kv_layout} is not a main-cache layout"

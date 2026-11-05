@@ -33,7 +33,7 @@ pages on the GPU. If the server runs out of memory at launch, a shorter context
   kt-kernel is built for the CPU it is built on (`CPUINFER_CPU_INSTRUCT=NATIVE`). Its
   MXFP4 kernels need AVX2.
 - **GPU:** SM90 and newer on their own attention; SM89 (Ada, RTX 40) on a Triton
-  fallback that keeps the V4 cache layout ([sm89.md](sm89.md)).
+  fallback that reads V4.1's cache formats ([sm89.md](sm89.md)).
 - **VRAM: 16 GB a card.** The dense layers and the KV pool's GPU part have to fit; the
   prefill chunks and the extra hot experts take the rest, so the cards show nearly full
   whatever room is left. `CUDA_VISIBLE_DEVICES` picks the GPUs, one tensor-parallel rank each.

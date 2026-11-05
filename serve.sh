@@ -77,6 +77,10 @@ if [[ "$cap" == "8.9" ]]; then
   export SGLANG_OPT_USE_TILELANG_MHC_PRE="${SGLANG_OPT_USE_TILELANG_MHC_PRE:-0}"
   export SGLANG_OPT_DEEPGEMM_HC_PRENORM="${SGLANG_OPT_DEEPGEMM_HC_PRENORM:-0}"
   export SGLANG_FP8_PAGED_MQA_LOGITS_TORCH="${SGLANG_FP8_PAGED_MQA_LOGITS_TORCH:-1}"
+  # The window KV and the ratio-1/2 compressed KV in V4.1's own formats, as the reference stores
+  # them (tier 0's 15-sm89-v41-window-kv, which implies 14-sm89-fp4-compressed-kv's
+  # SGLANG_SM89_FP4_COMPRESSED_KV); 0 keeps the V4 layout (docs/sm89.md)
+  export SGLANG_SM89_V41_KV="${SGLANG_SM89_V41_KV:-1}"
 fi
 n_nodes="$(ls -d /sys/devices/system/node/node[0-9]* 2>/dev/null | wc -l)"
 (( n_nodes > 0 )) || n_nodes=1
@@ -142,6 +146,12 @@ chunked_prefill="${SGLANG_CHUNKED_PREFILL_SIZE:-2048}"
 swa_prefix_tails="${SGLANG_SWA_PREFIX_TAILS:-6}"
 # split on whitespace on purpose: SGLANG_EXTRA_ARGS="--a 1 --b 2" gives four words (no quoting inside)
 extra_args=(${SGLANG_EXTRA_ARGS:-})
+# FP32 logits: the lm_head's BF16 x BF16 product kept in FP32 (SGLang's --enable-fp32-lm-head),
+# not rounded to BF16. On by default on SM89 (docs/sm89.md); 0 turns it off, 1 turns it on elsewhere
+fp32_head_default=0
+[[ "$cap" == "8.9" ]] && fp32_head_default=1
+fp32_head="${SGLANG_FP32_LM_HEAD:-$fp32_head_default}"
+[[ "$fp32_head" == 1 ]] && extra_args+=(--enable-fp32-lm-head)
 # The prefix cache: a prompt that starts like an earlier one reads that part from the cache.
 # With tier-1 hicache its pages are also kept in host memory (HiCache, write-back, twice the
 # GPU pool: about 5 GiB a GPU with the 1M pool), so a prefix the GPU has given up is loaded
@@ -450,7 +460,13 @@ printf '%s\n' "DeepSeek-V4.1-Flash on SGLang + KTransformers: $model"
 printf '%s\n' "GPUs ${CUDA_VISIBLE_DEVICES} (sm $cap), TP $tp on NUMA nodes $numa_list; CPU experts: $cpu_threads threads in $threadpools pools; GPU experts $gpu_experts a layer"
 [[ "${KT_MXFP4_EXPERT_CACHE_GIB:-0}" != 0 ]] && printf '%s\n' "expert cache: $KT_MXFP4_EXPERT_CACHE_GIB GiB of node $pool_node's RAM, the other experts read from $model when routed (reads on CPUs ${KT_IO_CPUS:-any})"
 printf '%s\n' "prefix cache: $( [[ "${radix_args[0]:-}" == --disable-radix-cache ]] && echo off || { [[ "${radix_args[0]:-}" == --enable-hierarchical-cache ]] && echo "on, HiCache in host memory (ratio ${DSV41_HICACHE_RATIO:-2})" || echo "on, GPU only"; })"
-printf '%s\n' "patch tier $tier; context $context_length; attention output FP8 before wo_a: block ${SGLANG_DSV4_O_FP8_QDQ_BLOCK:-0}; KV layout ${SGLANG_DSV4_KV_LAYOUT:-v4}"
+kv_layout_desc="${SGLANG_DSV4_KV_LAYOUT:-v4}"
+if [[ "$cap" == "8.9" && "${SGLANG_SM89_V41_KV:-0}" == 1 ]]; then
+  kv_layout_desc="v41, fp4 compressed (SGLANG_SM89_V41_KV)"
+elif [[ "$cap" == "8.9" && "${SGLANG_SM89_FP4_COMPRESSED_KV:-0}" == 1 ]]; then
+  kv_layout_desc="v4, fp4 compressed (SGLANG_SM89_FP4_COMPRESSED_KV)"
+fi
+printf '%s\n' "patch tier $tier; context $context_length; attention output FP8 before wo_a: block ${SGLANG_DSV4_O_FP8_QDQ_BLOCK:-0}; KV layout $kv_layout_desc; logits $([[ "$fp32_head" == 1 ]] && echo FP32 || echo BF16)"
 (( tier >= 1 )) && printf '%s\n' "tier-1 features: $( [[ -f "$features_file" ]] && tr '\n' ' ' < "$features_file" || echo all)"
 (( tier >= 1 )) && printf '%s\n' "wo_a native FP8: $SGLANG_DSV4_WO_A_FP8_NATIVE; vision tower on demand: $SGLANG_DSV4_VISION_ON_DEMAND; RoPE tables as the context grows: $SGLANG_DSV4_ROPE_LAZY; token embedding on host: $SGLANG_DSV4_EMBED_ON_HOST; MXFP4 MoE fp32: $SGLANG_MXFP4_MOE_FP32; Marlin MoE fp32 glue: $SGLANG_MARLIN_MOE_FP32_GLUE; CPU scale codes: $KT_MXFP4_SCALE_CODES; hot lend spare floor: ${KT_KV_HOT_SPARE_FLOOR_MB:-off} MiB; dynamic hot slots: ${KT_KV_HOT_DYNAMIC_SLOTS:-0}, resident rows too: ${KT_KV_HOT_DYNAMIC_RESIDENT:-0}; shared expert after submit: ${KT_SHARED_AFTER_SUBMIT:-0}; packed hand-off: ${KT_HANDOFF_PACK:-0}; short-prompt CPU share: ${KT_STREAM_CPU_SHORT:-off}"
 printf '%s\n' "Run directory: $run_dir"

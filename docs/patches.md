@@ -58,6 +58,22 @@ patch goes and the pin moves past it.
 | `11-v41-kv-layout` | [#45851](https://github.com/sgl-project/sglang/pull/45851) |
 | `12-low-ratio-pool-bytes` | dropped 2026-10-28: SGLang main prices the ratio-1/2 entry by its own layout ([#41275](https://github.com/sgl-project/sglang/pull/41275)), the change #45931 made, and counts the pages the pool reserves on top |
 | `13-sm89-attention` | [SM89 fallback and validation](sm89.md) |
+| `14-sm89-fp4-compressed-kv` | not sent ([SM89 KV cache and logits](sm89.md#the-kv-cache-and-the-logits)) |
+| `15-sm89-v41-window-kv` | not sent (the same) |
+
+### SM89 KV cache and logits
+
+`kernels/ops/attention/dsv4/kv_layout.py`, `srt/mem_cache/deepseek_v4_memory_pool.py`,
+`kernels/jit/include/sgl_kernel/deepseek_v4/{fp4_utils,kv_layout}.cuh`,
+`kernels/ops/attention/sm89_dual_scope.py`, `sm89_{fp4,v41}_tile.py`,
+`dsv4/triton_sparse_decode/triton_mla_kernels_decode_fused.py`; compute capability 8.9 only.
+
+Ada's KV in V4.1's own formats, as the reference stores it: the ratio-1/2 caches in V41_FP4
+(`SGLANG_SM89_FP4_COMPRESSED_KV`, 14) and the window cache in V41 (`SGLANG_SM89_V41_KV`,
+15, which implies 14). The writers are SGLang's (Ada writes the e2m1 codes in software); the
+dual-scope kernels, unsplit and split-K, read both. `serve.sh` turns them on for 8.9, with
+FP32 logits (`--enable-fp32-lm-head`, `SGLANG_FP32_LM_HEAD`). Off, nothing changes. What
+they do and what they were measured to change is in [sm89.md](sm89.md#the-kv-cache-and-the-logits).
 
 ### KTransformers wrapper
 
@@ -238,11 +254,20 @@ CI checks that each still applies.
   `tools/test_fused_merge_wiring.py` ([sm89-fused-merge.md](sm89-fused-merge.md)). It moves to
   tier 0 once the switch has an A/B on an SM89 GPU (decode tok/s and the `tools/nll.py` check,
   with and without it).
+- `02-sm89-staged-gather.patch`: one default-off switch scoped to the SM89 attention,
+  `SGLANG_SM89_ATTN_STAGED=1` (up to eight rows, the dual-scope gather as three kernels across
+  the card, bit for bit the unsplit kernel). Contributed by howl9003, measured only against the
+  unsplit kernel ([sm89-staged-gather.md](sm89-staged-gather.md)). It moves to tier 0 once it has
+  an A/B against `SGLANG_SM89_ATTN_SPLITK=auto` on an SM89 GPU.
 
 ## Tests
 
 - `tools/dsv4-o-fp8-qdq-test.py`: 1017's FP8 step against the checkpoint's own `act_quant`.
 - `tools/e4m3-emulation-test.py`: the fp32 e4m3 rounding for GPUs before sm89.
+- `tools/sm89-kv-layout-test.py`: on an SM89 GPU, the V41 / V41_FP4 stores against the
+  checkpoint's `act_quant` / `fp4_act_quant`, the readers against SGLang's dequantization, the
+  attention against BF16-row twins in every split, the switches off against the files before the
+  patches, spills, and the prices ([sm89.md](sm89.md#checking-an-sm89-card)).
 - `tools/dsv41-encoding-check.py`: SGLang's chat encoding and tool parsing against the
   checkpoint's `encoding/encoding.py` and its tests, byte for byte.
 - `tools/kt-mxfp4-decode-bw.py`: the CPU experts' decode call on one socket (time, read rate,

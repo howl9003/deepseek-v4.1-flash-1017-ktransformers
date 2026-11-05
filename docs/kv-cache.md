@@ -15,7 +15,9 @@ Tier 0's `11-v41-kv-layout` adds SM120 and SM121. The attention reads the format
 FlashInfer's SM120 sparse MLA on its full-BF16 route, which computes as the reference
 does: bf16 queries and probabilities, exact dequantization on chip, and fp32 softmax.
 `serve.sh` selects them on SM100 and SM12x (`SGLANG_DSV4_KV_LAYOUT=v41`; `v4` gives the
-old layout).
+old layout). Tier 0's `14-sm89-fp4-compressed-kv` and `15-sm89-v41-window-kv` add SM89
+(Ada), read by its dual-scope Triton kernels; `serve.sh` selects them there too
+(`SGLANG_SM89_V41_KV=1`, [sm89.md](sm89.md#the-kv-cache-and-the-logits)).
 
 - **Writers:** SGLang's writers for both formats match the reference's quantizers bit for
   bit.
