@@ -1,12 +1,12 @@
 {
   "base_commit": "0fc19067a13ab8ac92d252908722c7c2b04594c7",
   "branch": "ada-serve-six-node-20261102",
-  "bytes_excluding_self": 11092267,
+  "bytes_excluding_self": 11074447,
   "destination": "howl9003/deepseek-v4.1-flash-1017-ktransformers",
   "files": {
     "README.md": {
-      "bytes": 20755,
-      "sha256": "2af9cb7d0321977c9d25e2e2647a81e823844b4c5bbab33c97d96dd4d0436abf"
+      "bytes": 2935,
+      "sha256": "11ef38c0095745eb42fa6a812a82a4f2486240766a8881e497422130afe3302a"
     },
     "experimental/ada-serve-six-node/.gitattributes": {
       "bytes": 71,
