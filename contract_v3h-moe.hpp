@@ -42,6 +42,12 @@
  * The output is the same raw int64 [qlen, hidden]: every value is the same exact integer sum, so no bit can change and
  * the hand-off (v3_his.py cpu_submit / cpu_sync, the GPU-side add, the cross-rank sum) is untouched.
  *
+ * Node scaling (14 Nov, concept-r1 NODE_SCALING_r1.md section 3, branch pathb-nodescale-r1): parts of different sizes
+ * in whole 32-column blocks (KT_TP_PART_BLOCKS, his moe-tp.hpp as edited by build_bs.py; his loader at prefix offsets,
+ * mxfp4-moe.hpp), and load_weights_image(): the layer from the block-ordered expert image. A column's arithmetic never
+ * depends on which part computes it (gate/up per column over all K blocks, SwiGLU per column, the down-input quantiser
+ * per 32-block of the part, down as exact int64 sums added with wrapping adds), so the split changes no bit.
+ *
  * The pre-read (13 Nov, concept-r1 PREREAD_r1.md), KT_PREREAD=1, off by default: after a decode call has finished and
  * nothing is queued, the task-queue worker's idle hook (cpu_backend/task_queue.h) has the pool's threads read, part by
  * part on their own node, the weight bytes and scale codes of the experts the CPU ran most often in the next layer's last
@@ -541,7 +547,25 @@ class TP_MOE<AVX2_CONTRACT_V3H_TP<K>> : public TP_MOE<AVX2_MXFP4_MOE_TP<K>> {
 
   auto* part(int i) { return this->tps[i].get(); }   // AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>*: public BufferBs
 
-  void load_weights() override {
+  void load_weights() override { v3_load(false); }
+
+  // pathb-nodescale (NODE_SCALING_r1.md section 3, 14 Nov): the same load from the block-ordered expert image
+  // (image_prepare first; mxfp4-moe.hpp load_weights_image_parts and kt_image.hpp), then the same code tables,
+  // report, collapse and pre-read install as load_weights(). Never throws: image_status() is "ok" or the reason, and on
+  // any failure weights_loaded stays false, so the caller loads the layer through load_weights() with a new object.
+  void load_weights_image() {
+    try {
+      v3_load(true);
+    } catch (const std::exception& ex) {
+      this->image_status_ = std::string("image: after the load: ") + ex.what();
+      this->weights_loaded = false;
+    } catch (...) {
+      this->image_status_ = "image: after the load: unknown exception";
+      this->weights_loaded = false;
+    }
+  }
+
+  void v3_load(bool from_image) {
     if (kt_contract_v3h::env_on("KT_MXFP4_SCALE_CODES"))
       throw std::runtime_error("contract v3: KT_MXFP4_SCALE_CODES must be off (the FP32 scales must stay in BufferB::d)");
     if (AVX2_MXFP4_MOE_TP<K>::kt_cache_mode())
@@ -555,7 +579,11 @@ class TP_MOE<AVX2_CONTRACT_V3H_TP<K>> : public TP_MOE<AVX2_MXFP4_MOE_TP<K>> {
       pr_lk = std::unique_lock<std::mutex>(sh().mu);
       if (outside) kt_preread::outside_waiters().fetch_sub(1, std::memory_order_acq_rel);
     }
-    Base::load_weights();
+    if (!from_image) {
+      Base::load_weights();
+    } else if (!Base::load_weights_image_parts()) {
+      return;   // image_status() says why; nothing else is built
+    }
     const int E = this->config.expert_num;
     free_codes();
     codes_.assign(this->tp_count, std::vector<Codes>(E));

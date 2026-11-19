@@ -16,6 +16,9 @@
 #include <tmmintrin.h>
 
 #include <algorithm>
+#include <tuple>
+#include <functional>
+#include <chrono>
 #include <atomic>
 #include <memory>
 #include <cmath>
@@ -89,6 +92,7 @@ static inline bool kt_scale_codes_load_all() {
 #include "avx2_bf16_utils.hpp"
 #include "moe_base.hpp"
 #include "mxfp4-expert-cache.hpp"
+#include "kt_image.hpp"   // pathb-nodescale: the block-ordered expert image (NODE_SCALING_r1.md section 3)
 
 
 // kt-kernel-nvfp4-cpu-a4.py: flashinfer's NVFP4 activation quantize, on the CPU
@@ -1707,6 +1711,9 @@ class AVX2_MXFP4_MOE_TP : public AVX2_MOE_BASE<T, AVX2_MXFP4_MOE_TP<T>> {
  public:
   using typename Base::input_t;
   using typename Base::output_t;
+  // pathb-nodescale: this part type takes parts of different sizes in whole blocks of 32 intermediate columns
+  // (KT_TP_PART_BLOCKS, read by TP_MOE_Common in moe-tp.hpp). Only the contract v3 backend loads them (load_weights).
+  static constexpr int KT_PART_GRANULE = 32;
 
   AVX2_MXFP4_MOE_TP() = default;
   AVX2_MXFP4_MOE_TP(GeneralMOEConfig config, int tp_part_idx_ = 0) : Base(config, tp_part_idx_) {}
@@ -2155,6 +2162,24 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
   using Base = TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>>;
   using Base::Base;
 
+  // pathb-nodescale (NODE_SCALING_r1.md section 3): part i's first intermediate row, the sum of the sizes before it
+  // (i * I / P when the parts are equal, so the equal split loads exactly as before)
+  size_t kt_part_row0(int i) const {
+    size_t r = 0;
+    for (int j = 0; j < i; j++) r += (size_t)this->tp_configs[j].intermediate_size;
+    return r;
+  }
+  bool kt_parts_uneven() const {
+    for (const auto& c : this->tp_configs)
+      if (c.intermediate_size != this->tp_configs[0].intermediate_size) return true;
+    return false;
+  }
+  std::vector<int> contract_v3_part_rows() const {   // tests and the streamer's cross-check
+    std::vector<int> v;
+    for (const auto& c : this->tp_configs) v.push_back(c.intermediate_size);
+    return v;
+  }
+
   ~TP_MOE() {
     for (auto& part : tp_weight_arenas_)
       for (auto& a : part) AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>::free_expert_arena(a);
@@ -2206,6 +2231,14 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
       if (!use_per_expert || kt_mxc::on())
         throw std::runtime_error("KT_ARENA_SCALE_BYTES=1 needs per-expert weights and no expert cache");
     }
+    // pathb-nodescale: parts of different sizes (KT_TP_PART_BLOCKS) load only for the contract v3 backend, per expert
+    if (kt_parts_uneven()) {
+      if (!arena_scale_bytes_reader())
+        throw std::runtime_error("KT_TP_PART_BLOCKS: parts of different sizes need the contract v3 backend "
+                                 "(KT_MXFP4_BACKEND=contract_v3)");
+      if (!use_per_expert || kt_mxc::on())
+        throw std::runtime_error("KT_TP_PART_BLOCKS: parts of different sizes need per-expert weights and no expert cache");
+    }
     std::atomic<bool> kt_scale_bytes_bad{false};
     if (kt_mxc::on()) {  // kt-mxfp4-expert-cache: nothing is copied; the sources came with kt_cache_source
       if (this->tp_count != 1)
@@ -2235,6 +2268,7 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
         auto& tpc = tp->config_;
         tpc.physical_to_logical_map = config.physical_to_logical_map;
         int per_tp_interm = tpc.intermediate_size;
+        const size_t row0 = kt_part_row0(i);   // pathb-nodescale: i * per_tp_interm when the parts are equal
         if (per_tp_interm % 2 != 0)
           throw std::runtime_error("MXFP4 TP: per_tp_interm must be even for nibble-aligned addressing, got " +
                                    std::to_string(per_tp_interm));
@@ -2281,7 +2315,7 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
         auto subpool = pool->get_subpool(i);
         subpool->do_work_stealing_job(
             tpc.expert_num, nullptr,
-            [&, i, per_tp_interm, full_interm, gate_buf, up_buf, down_buf, gate_up_wt_per_expert,
+            [&, i, row0, per_tp_interm, full_interm, gate_buf, up_buf, down_buf, gate_up_wt_per_expert,
              down_wt_per_expert](int eid) {
               if (tpc.should_skip_expert(eid)) return;
               uint64_t lid = expert_map(physical_to_logical_map, eid);
@@ -2298,7 +2332,7 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
 
               // gate/up weights: N-split, contiguous rows → memcpy TP slice into owned buffer
               // Each TP partition handles per_tp_interm rows starting at row i*per_tp_interm
-              size_t n_byte_off = (size_t)i * per_tp_interm * tpc.hidden_size / 2;
+              size_t n_byte_off = row0 * tpc.hidden_size / 2;   // pathb-nodescale: was i * per_tp_interm * H / 2
               uint8_t* dst_gate = gate_buf + (size_t)eid * gate_up_wt_per_expert;
               uint8_t* dst_up = up_buf + (size_t)eid * gate_up_wt_per_expert;
               std::memcpy(dst_gate, (const uint8_t*)config.gate_projs[0][lid] + n_byte_off, gate_up_wt_per_expert);
@@ -2308,7 +2342,7 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
 
               // gate/up scales: contiguous → convert BF16→FP32
               size_t scale_count = (size_t)(tpc.hidden_size / group_size) * per_tp_interm;
-              size_t scale_off = (size_t)i * per_tp_interm * (tpc.hidden_size / group_size);
+              size_t scale_off = row0 * (tpc.hidden_size / group_size);   // pathb-nodescale: was i * per_tp_interm * ...
               if (config.gate_scales[0][lid] == nullptr || config.up_scales[0][lid] == nullptr) {
                 throw std::runtime_error("TP_MOE load_weights: null scale pointer for expert " + std::to_string(lid));
               }
@@ -2330,7 +2364,7 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
               uint8_t* dst_down = down_buf + (size_t)eid * down_wt_per_expert;
               for (int row = 0; row < tpc.hidden_size; row++) {
                 std::memcpy(dst_down + (size_t)row * per_tp_interm / 2,
-                            src_down + (size_t)row * full_interm / 2 + (size_t)i * per_tp_interm / 2,
+                            src_down + (size_t)row * full_interm / 2 + row0 / 2,
                             per_tp_interm / 2);
               }
               tp->down_bb_[eid]->b = dst_down;
@@ -2347,7 +2381,7 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
                 uint8_t* dst_dc = tp->down_bb_[eid]->code;
                 for (int row = 0; row < tpc.hidden_size; row++) {
                   if (!kt_bf16_scales_to_e8m0(dst_dc + (size_t)row * per_tp_groups,
-                                              src_ds + (size_t)row * full_interm_groups + (size_t)i * per_tp_groups,
+                                              src_ds + (size_t)row * full_interm_groups + row0 / group_size,
                                               per_tp_groups))
                     kt_scale_bytes_bad.store(true);
                 }
@@ -2356,7 +2390,7 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
               float* dst_ds = tp->down_bb_[eid]->d;
               for (int row = 0; row < tpc.hidden_size; row++) {
                 convert_or_copy(dst_ds + (size_t)row * per_tp_groups,
-                                src_ds + (size_t)row * full_interm_groups + (size_t)i * per_tp_groups, per_tp_groups);
+                                src_ds + (size_t)row * full_interm_groups + row0 / group_size, per_tp_groups);
               }
             },
             nullptr);
@@ -2465,11 +2499,187 @@ class TP_MOE<AVX2_MXFP4_MOE_TP<K>> : public TP_MOE<AVX2_MOE_BASE<K, AVX2_MXFP4_M
     this->weights_loaded = true;
   }
 
+  // ---- pathb-nodescale (NODE_SCALING_r1.md section 3, 14 Nov): load the layer from the block-ordered expert image ----
+  // image_prepare() takes the layer's file and digests (the Python side read and checked the pinned manifest);
+  // load_weights_image_parts() then fills the same buffers load_weights() fills, from the image instead of the
+  // checkpoint pointers: each part reads only its blocks' chunks, on its own subpool, verifies each chunk's sha256 and
+  // scatters it (kt_image.hpp). Byte-scale arenas only (KT_ARENA_SCALE_BYTES=1, the contract v3 backend). Image
+  // problems never throw: image_status() is "ok" or the first reason, weights_loaded stays false, and the caller loads
+  // the layer through load_weights() with a new object.
+  kt_image::Spec image_spec_;
+  std::string image_status_ = "not run";
+  uint64_t image_bytes_ = 0, image_chunks_ = 0;
+  double image_seconds_ = 0;
+  bool image_direct_ = false;
+
+  std::string image_prepare(const std::string& path, uint64_t file_bytes, const std::vector<int64_t>& geometry,
+                            const std::string& digests) {
+    std::string why = kt_image::make_spec(image_spec_, path, file_bytes, geometry, digests);
+    if (why.empty() && (image_spec_.E != this->config.expert_num || image_spec_.H != this->config.hidden_size ||
+                        image_spec_.I != this->config.intermediate_size))
+      why = "image: geometry differs from the layer's";
+    if (!why.empty()) image_spec_.ready = false;
+    image_status_ = why.empty() ? "prepared" : why;
+    return why.empty() ? "ok" : why;
+  }
+  std::string image_status() const { return image_status_; }
+  std::tuple<uint64_t, uint64_t, double, bool> image_stats() const {
+    return std::make_tuple(image_chunks_, image_bytes_, image_seconds_, image_direct_);
+  }
+
+  bool load_weights_image_parts() {
+    const auto t0 = std::chrono::steady_clock::now();
+    image_bytes_ = image_chunks_ = 0;
+    std::string why;
+    try {
+      why = load_weights_image_inner();
+    } catch (const std::exception& ex) {
+      why = std::string("image: ") + ex.what();
+    } catch (...) {
+      why = "image: unknown exception";
+    }
+    image_seconds_ = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+    image_status_ = why.empty() ? "ok" : why;
+    if (why.empty()) this->weights_loaded = true;
+    return why.empty();
+  }
+
+  std::string load_weights_image_inner() {
+    auto& config = this->config;
+    auto& tps = this->tps;
+    auto pool = config.pool;
+    if (this->weights_loaded) return "image: weights already loaded";
+    if (!image_spec_.ready) return "image: not prepared (" + image_status_ + ")";
+    if (!arena_scale_bytes() || !arena_scale_bytes_reader())
+      return "image: needs byte-scale arenas (KT_ARENA_SCALE_BYTES=1) and the contract v3 backend";
+    if (kt_mxc::on()) return "image: the MXFP4 expert cache must be off";
+    if (config.quant_config.group_size != kt_image::kGroup) return "image: group size is not 32";
+    const uint64_t* physical_to_logical_map = (const uint64_t*)config.physical_to_logical_map;
+    kt_image::File file;
+    std::string why = file.open(image_spec_);
+    if (!why.empty()) return why;
+    image_direct_ = file.direct;
+    tp_owned_down_bufs_.assign(this->tp_count, nullptr);
+    tp_owned_gate_bufs_.assign(this->tp_count, nullptr);
+    tp_owned_up_bufs_.assign(this->tp_count, nullptr);
+    std::vector<std::string> errs(this->tp_count);
+    std::vector<uint64_t> nbytes(this->tp_count, 0), nchunks(this->tp_count, 0);
+    pool->dispense_backend()->do_numa_job([&, this](int i) {
+      try {
+        auto* tp = tps[i].get();
+        auto& tpc = tp->config_;
+        tpc.physical_to_logical_map = config.physical_to_logical_map;
+        const int per_tp_interm = tpc.intermediate_size;
+        const size_t row0 = kt_part_row0(i);
+        if (per_tp_interm % kt_image::kBlock || row0 % kt_image::kBlock) {
+          errs[i] = "image: part " + std::to_string(i) + " is not whole blocks";
+          return;
+        }
+        // the part's weight buffers, exactly as load_weights() makes them
+        const size_t gate_up_wt_per_expert = (size_t)per_tp_interm * tpc.hidden_size / 2;
+        const size_t gate_up_alloc = ((size_t)tpc.expert_num * gate_up_wt_per_expert + 63) & ~(size_t)63;
+        const size_t down_wt_per_expert = (size_t)tpc.hidden_size * per_tp_interm / 2;
+        const size_t alloc_size = ((size_t)tpc.expert_num * down_wt_per_expert + 63) & ~(size_t)63;
+        uint8_t *gate_buf, *up_buf, *down_buf;
+        if (AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>::expert_shm_enabled()) {
+          if (gate_up_wt_per_expert % 64 || down_wt_per_expert % 64) {
+            errs[i] = "image: KT_EXPERT_SHM: per-expert weight bytes must be 64-aligned";
+            return;
+          }
+          std::vector<ExpertArena> arenas;
+          arenas.push_back(AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>::make_expert_arena(gate_up_wt_per_expert,
+                                                                                     tpc.expert_num, "kt_gate_w"));
+          arenas.push_back(AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>::make_expert_arena(gate_up_wt_per_expert,
+                                                                                     tpc.expert_num, "kt_up_w"));
+          arenas.push_back(AVX2_MOE_BASE<K, AVX2_MXFP4_MOE_TP<K>>::make_expert_arena(down_wt_per_expert,
+                                                                                     tpc.expert_num, "kt_down_w"));
+          gate_buf = arenas[0].base;
+          up_buf = arenas[1].base;
+          down_buf = arenas[2].base;
+          {
+            static std::mutex m;
+            std::lock_guard<std::mutex> g(m);
+            if (tp_weight_arenas_.size() < this->tps.size()) tp_weight_arenas_.resize(this->tps.size());
+            tp_weight_arenas_[i] = std::move(arenas);
+          }
+        } else {
+          gate_buf = (uint8_t*)std::aligned_alloc(64, gate_up_alloc);
+          up_buf = (uint8_t*)std::aligned_alloc(64, gate_up_alloc);
+          down_buf = (uint8_t*)std::aligned_alloc(64, alloc_size);
+          if (!gate_buf || !up_buf || !down_buf) {
+            errs[i] = "image: aligned_alloc failed for the part's buffers";
+            return;
+          }
+        }
+        tp_owned_gate_bufs_[i] = gate_buf;
+        tp_owned_up_bufs_[i] = up_buf;
+        tp_owned_down_bufs_[i] = down_buf;
+        kt_image::PartDst d;
+        d.Ip = per_tp_interm;
+        d.b0 = (int)(row0 / kt_image::kBlock);
+        const int E = tpc.expert_num;
+        d.lid.assign(E, -1);
+        for (int p = 0; p < 3; p++) {
+          d.w[p].assign(E, nullptr);
+          d.s[p].assign(E, nullptr);
+        }
+        for (int eid = 0; eid < E; eid++) {
+          if (tpc.should_skip_expert(eid)) continue;
+          const uint64_t lid = expert_map(physical_to_logical_map, eid);
+          if (lid >= (uint64_t)config.expert_num) {
+            errs[i] = "image: the expert map points outside the layer (" + std::to_string(lid) + ")";
+            return;
+          }
+          if (!tp->gate_bb_[eid] || !tp->up_bb_[eid] || !tp->down_bb_[eid] || !tp->gate_bb_[eid]->arena_bytes ||
+              !tp->up_bb_[eid]->arena_bytes || !tp->down_bb_[eid]->arena_bytes || !tp->gate_bb_[eid]->code ||
+              !tp->up_bb_[eid]->code || !tp->down_bb_[eid]->code) {
+            errs[i] = "image: expert " + std::to_string(eid) + " has no byte-scale arena";
+            return;
+          }
+          d.lid[eid] = (int64_t)lid;
+          d.w[0][eid] = gate_buf + (size_t)eid * gate_up_wt_per_expert;
+          d.w[1][eid] = up_buf + (size_t)eid * gate_up_wt_per_expert;
+          d.w[2][eid] = down_buf + (size_t)eid * down_wt_per_expert;
+          d.s[0][eid] = tp->gate_bb_[eid]->code;
+          d.s[1][eid] = tp->up_bb_[eid]->code;
+          d.s[2][eid] = tp->down_bb_[eid]->code;
+        }
+        auto subpool = pool->get_subpool(i);
+        auto parfor = [&](int n, const std::function<void(int)>& fn) {
+          subpool->do_work_stealing_job(n, nullptr, fn, nullptr);
+        };
+        errs[i] = kt_image::load_part(image_spec_, file.fd, d, parfor, &nbytes[i], &nchunks[i]);
+        if (!errs[i].empty()) return;
+        for (int eid = 0; eid < E; eid++) {   // the pointers load_weights() sets, for the experts this part holds
+          if (d.lid[eid] < 0) continue;
+          tp->gate_bb_[eid]->b = d.w[0][eid];
+          tp->up_bb_[eid]->b = d.w[1][eid];
+          tp->down_bb_[eid]->b = d.w[2][eid];
+        }
+      } catch (const std::exception& ex) {
+        errs[i] = std::string("image: part ") + std::to_string(i) + ": " + ex.what();
+      } catch (...) {
+        errs[i] = "image: part " + std::to_string(i) + ": unknown exception";
+      }
+    });
+    for (int i = 0; i < this->tp_count; i++) {
+      image_bytes_ += nbytes[i];
+      image_chunks_ += nchunks[i];
+    }
+    for (auto& e : errs)
+      if (!e.empty()) return e;
+    return "";
+  }
+
   void write_weight_scale_to_buffer(int gpu_tp_count, int expert_id, const std::vector<uintptr_t>& w13_weight_ptrs,
                                     const std::vector<uintptr_t>& w13_scale_ptrs,
                                     const std::vector<uintptr_t>& w2_weight_ptrs,
                                     const std::vector<uintptr_t>& w2_scale_ptrs) {
     if (!this->weights_loaded) throw std::runtime_error("Not Loaded");
+    // pathb-nodescale: his writer maps parts to GPU slices by equal counts
+    if (kt_parts_uneven() || gpu_tp_count <= 0 || (this->tp_count % gpu_tp_count && gpu_tp_count % this->tp_count))
+      throw std::runtime_error("write_weight_scale_to_buffer: parts of different sizes, or part and GPU counts that do "
+                               "not divide, are not supported here");
     if ((int)w13_weight_ptrs.size() != gpu_tp_count || (int)w13_scale_ptrs.size() != gpu_tp_count ||
         (int)w2_weight_ptrs.size() != gpu_tp_count || (int)w2_scale_ptrs.size() != gpu_tp_count) {
       throw std::runtime_error("Pointer arrays size must match gpu_tp_count");

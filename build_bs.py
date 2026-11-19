@@ -1,10 +1,26 @@
-"""pathb-stagger-r2 (13 Nov, concept-r1 STAGGER_DESIGN_r1.md section 9.2; branch pathb-stagger-r2 off pathb-cpu-r1 c64e1ca):
+"""pathb-image-r1 (15 Nov, concept-r1 IMAGE_LOAD_DESIGN_r1.md; branch pathb-image-r1 off pathb-stagger-r2 e2eef18 = arm T3S's
+module 23194614, with pathb-nodescale-r1 0264d2b merged): the two builds below together. KT_IMAGE_DIR unset: no image
+code runs and the arenas are built by the same statements as the stagger-r2 module's (KT_TP_PART_BLOCKS unset: his
+split, kt_part_row0(i) = i * I / P). No arithmetic, kernel or thread change.
+
+pathb-stagger-r2 (13 Nov, concept-r1 STAGGER_DESIGN_r1.md section 9.2; branch pathb-stagger-r2 off pathb-cpu-r1 c64e1ca):
 the pathb-cpu-r1 build below, unchanged in its steps, with KT_MEMOP_SYNC_PER_TASK=1 added (off unless set) in
 cpu_backend/cpuinfer.h, task_queue.h, task_queue.cpp and the new cpu_backend/memop_per_task.h (copied next to
 memop_detect.h): a stream-memop sync is served only after its own submit (KT_MEMOP_PAIRED's rule, implied) and raises its
 done flag once that submit's task has finished, without blocking the poller, so two decode lanes stop waiting for each
 other's CPU task. Unset, the module behaves as the pathb-cpu-r1 one (the TaskQueue counters stay off, the pollers are
 unchanged). No arithmetic, binding or kernel changes.
+
+pathb-nodescale-r1 (14 Nov, concept-r1 NODE_SCALING_r1.md section 3; branch pathb-nodescale-r1 off pathb-cpu-r1): the
+build below plus (a) parts of different sizes: KT_TP_PART_BLOCKS="b0,b1,..." gives NUMA part i b_i blocks of 32
+intermediate columns, by anchored edits of his operators/moe-tp.hpp (TP_MOE_Common's constructor; the tree's file must be
+263d40c1, the one the edit was made from, and the three anchors unique, or the build stops) and the loader at prefix
+offsets in mxfp4-moe.hpp (equal parts load exactly as before);
+only the contract v3 backend loads uneven parts; (b) the block-ordered expert image: operators/avx2/kt_image.hpp (new),
+load_weights_image() in the contract v3 class, and in amx.py the hook that loads a layer from the image when
+KT_IMAGE_DIR and KT_IMAGE_MANIFEST_SHA256 are set (python/utils/kt_image.py appended to amx.py). Bindings added:
+load_weights_image_task, image_prepare, image_status, image_stats, contract_v3_part_rows. Unset, every path is the
+pathb-cpu-r1 module's.
 
 pathb-cpu-r1 (13 Nov, concept-r1 ZEN3_OPTIMISATION_r1.md section 3.2; branch pathb-cpu-r1 off pathb-pairfix with
 pathb-preread and pathb-kernel-rw merged): every source of the three lines below, plus the CPU switches of this branch, each
@@ -171,6 +187,81 @@ def main():
             'extern "C" const uint32_t kt_contract_v3_silu_bits[65536] = {\n' + ",\n".join(rows) + "\n};\n")
         shutil.copy2(HERE / "contract_v3h-moe.hpp", kt / "operators/avx2/contract_v3h-moe.hpp")
 
+        # pathb-nodescale: the image reader (new file) and KT_TP_PART_BLOCKS in his moe-tp.hpp (mandatory edits)
+        if (kt / "operators/avx2/kt_image.hpp").exists():
+            raise SystemExit("operators/avx2/kt_image.hpp already exists in the tree")
+        shutil.copy2(HERE / "operators/avx2/kt_image.hpp", kt / "operators/avx2/kt_image.hpp")
+        report["replaced"]["operators/avx2/kt_image.hpp"] = {"from": None, "to": sha(kt / "operators/avx2/kt_image.hpp")}
+        mt = kt / "operators/moe-tp.hpp"
+        mt_before = sha(mt)
+        mt_src = mt.read_text()
+        mt_a0 = "template <MOE_TP_PART T, typename Concrete = T>\nclass TP_MOE_Common : public MoE_Interface {\n"
+        mt_b0 = (
+            "// pathb-nodescale (concept-r1 NODE_SCALING_r1.md section 3, 14 Nov): KT_TP_PART_BLOCKS=\"b0,b1,...\" gives NUMA part i\n"
+            "// b_i blocks of the part type's KT_PART_GRANULE intermediate columns, in part order. Unset or empty: the split below,\n"
+            "// unchanged. Set: one positive count a part, summing to the layer's blocks, and a part type that declares\n"
+            "// KT_PART_GRANULE; anything else refuses (std::runtime_error) when the layer is made.\n"
+            "inline std::vector<int> kt_part_blocks_table(int tp_count) {\n"
+            "  std::vector<int> out;\n"
+            "  const char* env = std::getenv(\"KT_TP_PART_BLOCKS\");\n"
+            "  if (!env || !*env) return out;\n"
+            "  const std::string s(env);\n"
+            "  size_t i = 0;\n"
+            "  while (true) {\n"
+            "    const size_t j = s.find(',', i);\n"
+            "    const std::string tok = s.substr(i, j == std::string::npos ? std::string::npos : j - i);\n"
+            "    if (tok.empty() || tok.size() > 6 || tok.find_first_not_of(\"0123456789\") != std::string::npos || std::stoi(tok) <= 0)\n"
+            "      throw std::runtime_error(\"KT_TP_PART_BLOCKS: \\\"\" + s + \"\\\" is not a comma-separated list of positive integers\");\n"
+            "    out.push_back(std::stoi(tok));\n"
+            "    if (j == std::string::npos) break;\n"
+            "    i = j + 1;\n"
+            "  }\n"
+            "  if ((int)out.size() != tp_count)\n"
+            "    throw std::runtime_error(\"KT_TP_PART_BLOCKS: \" + std::to_string(out.size()) + \" entries for \" + std::to_string(tp_count) +\n"
+            "                             \" NUMA parts\");\n"
+            "  return out;\n"
+            "}\n\n" + mt_a0)
+        mt_a1 = ("    tp_count = config.pool->config.subpool_count;\n"
+                 "    if (config.intermediate_size % tp_count != 0) {\n")
+        mt_b1 = ("    tp_count = config.pool->config.subpool_count;\n"
+                 "    const std::vector<int> kt_part_tbl = kt_part_blocks_table(tp_count);   // pathb-nodescale KT_TP_PART_BLOCKS\n"
+                 "    if (kt_part_tbl.empty() && config.intermediate_size % tp_count != 0) {\n")
+        mt_a2 = "    if constexpr (is_llamafile || has_tp_block) {\n"
+        mt_b2 = ("    if (!kt_part_tbl.empty()) {   // pathb-nodescale: the part sizes from KT_TP_PART_BLOCKS\n"
+                 "      if constexpr (requires { Concrete::KT_PART_GRANULE; }) {\n"
+                 "        constexpr int gran = Concrete::KT_PART_GRANULE;\n"
+                 "        long blocks = 0;\n"
+                 "        for (int b : kt_part_tbl) blocks += b;\n"
+                 "        if (blocks * gran != (long)config.intermediate_size)\n"
+                 "          throw std::runtime_error(\"KT_TP_PART_BLOCKS: \" + std::to_string(blocks) + \" blocks of \" + std::to_string(gran) +\n"
+                 "                                   \" columns are not the layer's intermediate size \" + std::to_string(config.intermediate_size));\n"
+                 "        std::string kt_rows;\n"
+                 "        for (int i = 0; i < tp_count; i++) {\n"
+                 "          tps.push_back(nullptr);\n"
+                 "          GeneralMOEConfig tp_config = config;\n"
+                 "          tp_config.intermediate_size = kt_part_tbl[i] * gran;\n"
+                 "          tp_configs.push_back(tp_config);\n"
+                 "          kt_rows += (i ? \",\" : \"\") + std::to_string(tp_config.intermediate_size);\n"
+                 "        }\n"
+                 "        printf(\"[kt-parts] layer %d: KT_TP_PART_BLOCKS: %d parts of %s rows (granule %d)\\n\", config.layer_idx, tp_count,\n"
+                 "               kt_rows.c_str(), gran);\n"
+                 "      } else {\n"
+                 "        throw std::runtime_error(\"KT_TP_PART_BLOCKS is set, but this backend does not take parts of different sizes\");\n"
+                 "      }\n"
+                 "    } else if constexpr (is_llamafile || has_tp_block) {\n")
+        counts = [mt_src.count(a) for a in (mt_a0, mt_a1, mt_a2)]
+        report["moe_tp"] = {"before": mt_before, "made_from": "263d40c173e60ad69afd2406723081a381d53c703af400eaef94311c7ee8ff40",
+                            "anchor_counts": counts}
+        if mt_before != report["moe_tp"]["made_from"]:   # fail closed: the edit is only known good on that file
+            save()
+            raise SystemExit("operators/moe-tp.hpp in the tree is not the file the KT_TP_PART_BLOCKS edit was made from: "
+                             f"sha256 {mt_before}, want {report['moe_tp']['made_from']}")
+        if counts != [1, 1, 1]:
+            save()
+            raise SystemExit(f"operators/moe-tp.hpp: KT_TP_PART_BLOCKS anchors not unique {counts}")
+        mt.write_text(mt_src.replace(mt_a0, mt_b0).replace(mt_a1, mt_b1).replace(mt_a2, mt_b2))
+        report["moe_tp"].update(after=sha(mt), same_base=mt_before == report["moe_tp"]["made_from"])
+
         # pathb-cpu-r1: KT_NUMA_WAIT_PAUSE in his worker_pool.cpp (do_numa_job's wait), by two anchored edits applied only
         # when both anchors are unique; otherwise the file stays as it is and the knob does nothing (recorded here)
         wp = kt / "cpu_backend/worker_pool.cpp"
@@ -234,6 +325,17 @@ def main():
                      '        Args* a = new Args{nullptr, moe.get(), qlen, k, ids, weights, input, output};\n'
                      '        return std::make_pair((intptr_t)&inner, (intptr_t)a);\n'
                      '      }\n'
+                     '      // pathb-nodescale: the layer from the block-ordered expert image, as a CPUInfer task (map as load_weights_task)\n'
+                     '      struct ImgArgs { CPUInfer* cpuinfer; MoeClass* moe; };\n'
+                     '      static void img_inner(void* p) {\n'
+                     '        ImgArgs* a = (ImgArgs*)p;\n'
+                     '        a->cpuinfer->enqueue(&MoeClass::load_weights_image, a->moe);\n'
+                     '      }\n'
+                     '      static std::pair<intptr_t, intptr_t> img_task(std::shared_ptr<MoeClass> moe, const uintptr_t map) {\n'
+                     '        ImgArgs* a = new ImgArgs{nullptr, moe.get()};\n'
+                     '        if (map) moe->config.physical_to_logical_map = reinterpret_cast<void*>(map);\n'
+                     '        return std::make_pair((intptr_t)&img_inner, (intptr_t)a);\n'
+                     '      }\n'
                      '    };\n'
                      '    moe_cls.def("forward_partials_task", &ContractV3PartialBindings::task)\n'
                      '        .def("forward_partials", &MoeClass::forward_partials_binding)\n'
@@ -257,7 +359,12 @@ def main():
                      '        .def("contract_v3_set_rw", &MoeClass::contract_v3_set_rw)\n'
                      '        .def("contract_v3_rw", &MoeClass::contract_v3_rw)\n'
                      '        .def("contract_v3_thp", &MoeClass::contract_v3_thp)\n'
-                     '        .def("contract_v3_sum_part", &MoeClass::contract_v3_sum_part);\n'
+                     '        .def("contract_v3_sum_part", &MoeClass::contract_v3_sum_part)\n'
+                     '        .def("load_weights_image_task", &ContractV3PartialBindings::img_task)\n'
+                     '        .def("image_prepare", &MoeClass::image_prepare)\n'
+                     '        .def("image_status", &MoeClass::image_status)\n'
+                     '        .def("image_stats", &MoeClass::image_stats)\n'
+                     '        .def("contract_v3_part_rows", &MoeClass::contract_v3_part_rows);\n'
                      '  }\n'
                      '#endif\n'
                      '  // kt-moe-partials-out.py\n  if constexpr (requires { &MoeClass::set_partial_outputs; }) {')
@@ -277,12 +384,22 @@ def main():
                      '            raise RuntimeError("KT_MXFP4_BACKEND=contract_v3 requested, but AVX2ContractV3_MOE is not compiled in.")\n'
                      '        return AVX2ContractV3_MOE\n'
                      '    if forced == "amx":\n')
+        # pathb-nodescale: the image hook at the top of NativeMoEWrapper.load_weights, and its functions appended
+        replace_once(amx, '            return self._load_weights_mxfp4_cache(physical_to_logical_map_cpu)\n',
+                     '            return self._load_weights_mxfp4_cache(physical_to_logical_map_cpu)\n'
+                     '        # pathb-nodescale (concept-r1 NODE_SCALING_r1.md section 3): the block-ordered expert image\n'
+                     '        if self.method == "MXFP4" and os.environ.get("KT_IMAGE_DIR"):\n'
+                     '            if _kt_image_load_layer(self, physical_to_logical_map_cpu):\n'
+                     '                return\n')
+        amx.write_text(amx.read_text() + (HERE / "python/utils/kt_image.py").read_text())
         report["after"] = {str(p.relative_to(kt)): sha(p) for p in patched}
         report["added"] = {str(p.relative_to(kt)): sha(p) for p in sorted(d.iterdir())}
         report["added"]["operators/avx2/contract_v3h-moe.hpp"] = sha(kt / "operators/avx2/contract_v3h-moe.hpp")
         report["cpu_r1"] = {"dir": str(HERE), "pinned_header_sha256": sha(CPU / "contract_v3h-moe.hpp"),
                                "commit": (HERE / "SOURCE_COMMIT").read_text().strip() if (HERE / "SOURCE_COMMIT").is_file() else None,
-                               "preread": True, "bytescales": True, "pairfix": True, "stagger_r2_per_task": True}
+                               "preread": True, "bytescales": True, "pairfix": True, "stagger_r2_per_task": True,
+                               "nodescale": True, "image_r1": True,
+                               "kt_image_py_sha256": sha(HERE / "python/utils/kt_image.py")}
         if SIF is None:
             report["compiler"] = subprocess.check_output(["gcc", "--version"], text=True).splitlines()[0]
         else:
