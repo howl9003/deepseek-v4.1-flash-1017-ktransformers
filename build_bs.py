@@ -308,6 +308,7 @@ def main():
                  "          tp_configs.push_back(tp_config);\n"
                  "          kt_rows += (i ? \",\" : \"\") + std::to_string(tp_config.intermediate_size);\n"
                  "        }\n"
+                 # The constructor shares unbuffered stdout with the image loader. Keep the newline in this printf.
                  "        printf(\"[kt-parts] layer %d: KT_TP_PART_BLOCKS: %d parts of %s rows (granule %d)\\n\", config.layer_idx, tp_count,\n"
                  "               kt_rows.c_str(), gran);\n"
                  "      } else {\n"

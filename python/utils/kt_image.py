@@ -22,9 +22,15 @@ _KT_IMAGE_CACHE = {}
 _KT_IMAGE_CLAIMS = {}
 
 
+def _kt_image_write(text):
+    import sys
+    sys.stdout.write(text + "\n")
+    sys.stdout.flush()
+
+
 def _kt_image_fail(layer, why):
     msg = f"[KT image] layer {layer}: GGUF path: {why}"
-    print(msg, flush=True)
+    _kt_image_write(msg)
     if os.environ.get("KT_IMAGE_STRICT", "") == "1":
         raise RuntimeError(msg)
     return False
@@ -294,7 +300,7 @@ def _kt_image_init(self):
             try:
                 _kt_image_preload(self, pmap, ctx)
             except Exception as ex:   # the layer still loads in load_weights (r1's path)
-                print(f"[KT image] layer {self.layer_idx}: preload not queued: {ex!r}", flush=True)
+                _kt_image_write(f"[KT image] layer {self.layer_idx}: preload not queued: {ex!r}")
     return True
 
 
@@ -344,7 +350,7 @@ def _kt_image_digest(moe, L):
         return None
     infos = [[tuple(int(v) for v in t) for t in p] for p in moe.expert_arena_infos()]
     if not infos or any(len(p) != 7 or p[6] != (-1, 1, 0) for p in infos):
-        print(f"[KT image digest] layer {L}: no byte-arena infos, no digest", flush=True)
+        _kt_image_write(f"[KT image digest] layer {L}: no byte-arena infos, no digest")
         return None
     with ThreadPoolExecutor(max_workers=8) as ex:
         jobs = {(i, j): ex.submit(_kt_image_arena_sha, infos[i][j][0], infos[i][j][1])
@@ -354,7 +360,7 @@ def _kt_image_digest(moe, L):
             canon = "".join(f"{j}:{infos[i][j][1]}:{infos[i][j][2]}:{jobs[(i, j)].result()}\n" for j in range(6))
             out.append(hashlib.sha256(canon.encode()).hexdigest())
     for i, d in enumerate(out):
-        print(f"[KT image digest] layer {L} part {i} {d}", flush=True)
+        _kt_image_write(f"[KT image digest] layer {L} part {i} {d}")
     return out
 
 
@@ -379,11 +385,11 @@ def _kt_image_load_layer(self, physical_to_logical_map_cpu):
             mk, tot = build.seconds()
             self.moe = moe
             self._kt_image_map = pre["map"]   # the module's config points at this map
-            print(f"[KT image] layer {L}: {chunks} chunks, {nbytes / 2**30:.2f} GiB, read and verified in {secs:.2f} s "
-                  f"({'O_DIRECT' if direct else 'buffered'}); preloaded: queued {t_w - pre['t0']:.2f} s before "
-                  f"load_weights, waited {waited:.2f} s; made in the task in {mk:.2f} s (thread {build.tid()}), "
-                  f"task {tot:.2f} s; parts {','.join(str(r) for r in moe.contract_v3_part_rows())}; "
-                  f"format {pre['fmt']}", flush=True)
+            _kt_image_write(f"[KT image] layer {L}: {chunks} chunks, {nbytes / 2**30:.2f} GiB, read and verified in {secs:.2f} s "
+                            f"({'O_DIRECT' if direct else 'buffered'}); preloaded: queued {t_w - pre['t0']:.2f} s before "
+                            f"load_weights, waited {waited:.2f} s; made in the task in {mk:.2f} s (thread {build.tid()}), "
+                            f"task {tot:.2f} s; parts {','.join(str(r) for r in moe.contract_v3_part_rows())}; "
+                            f"format {pre['fmt']}")
             _kt_image_digest(moe, L)
             return True
         # r3: the main thread makes the layer again (or the GGUF path does): nothing may be queued while it does
@@ -392,8 +398,8 @@ def _kt_image_load_layer(self, physical_to_logical_map_cpu):
         pre = build = None
         if same:
             return _kt_image_fail(L, st)
-        print(f"[KT image] layer {L}: preload dropped (the expert map or the GPU mask changed after it was queued); "
-              "loading the layer again", flush=True)
+        _kt_image_write(f"[KT image] layer {L}: preload dropped (the expert map or the GPU mask changed after it was queued); "
+                        "loading the layer again")
     # r3: the foreground path below, and the GGUF path after a False, make the module on this thread: drain first
     _kt_image_drain()
     ctx, why = _kt_image_prep(self)
@@ -411,8 +417,8 @@ def _kt_image_load_layer(self, physical_to_logical_map_cpu):
         return _kt_image_fail(L, st)
     chunks, nbytes, secs, direct = moe.image_stats()
     self.moe = moe
-    print(f"[KT image] layer {L}: {chunks} chunks, {nbytes / 2**30:.2f} GiB, read and verified in {secs:.2f} s "
-          f"({'O_DIRECT' if direct else 'buffered'}); {time.time() - t0:.2f} s in all; parts "
-          f"{','.join(str(r) for r in moe.contract_v3_part_rows())}; format {ctx['mod_fmt']}", flush=True)
+    _kt_image_write(f"[KT image] layer {L}: {chunks} chunks, {nbytes / 2**30:.2f} GiB, read and verified in {secs:.2f} s "
+                    f"({'O_DIRECT' if direct else 'buffered'}); {time.time() - t0:.2f} s in all; parts "
+                    f"{','.join(str(r) for r in moe.contract_v3_part_rows())}; format {ctx['mod_fmt']}")
     _kt_image_digest(moe, L)
     return True
