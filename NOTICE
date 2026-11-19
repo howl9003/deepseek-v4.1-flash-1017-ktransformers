@@ -17,3 +17,6 @@ patches/sglang-tier1/18-stream-mmq.patch adds code derived from it
 
 The patches under patches/ modify sgl-project/sglang (commit 8c7ec052) and
 kvcache-ai/ktransformers (kt-kernel, commit 95009ea), both Apache-2.0.
+
+The GGUF reader, storage adapter and AVX2 repacker retain the Strata adaptation contributors' copyright notice.
+The reference panel uses sudoingX's top-128 plus tail-bucket KL metric.

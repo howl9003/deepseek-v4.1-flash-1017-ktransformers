@@ -1,0 +1,29 @@
+{
+  "schema": "pathb-image-arena-format-v1",
+  "image_manifest_sha256": "b5071c1ff1e594012881e6dce27d03914c838fc3ad69fb9ca79fc69e18b7724b",
+  "arena_format": "pathb-arena-v1;blk=32;scale=e8m0;w=28cf128e48d2791b",
+  "part_rows": [
+    [
+      288,
+      288,
+      288,
+      288,
+      288,
+      288,
+      288,
+      288
+    ],
+    [
+      320,
+      320,
+      320,
+      320,
+      192,
+      192,
+      320,
+      320
+    ]
+  ],
+  "module_sha256": "27cfbc4e9bc4840d648e7228e25b684e19b6640348a0ee726d594c98583f5645",
+  "writer_sha256": "28cf128e48d2791b018e721f5bfe5451be926af7f12293860b26406469980ae5"
+}
