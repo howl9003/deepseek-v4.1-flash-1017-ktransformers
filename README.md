@@ -1,176 +1,68 @@
-# DeepSeek-V4.1-Flash-1017 on SGLang + KTransformers (CPU/GPU hybrid inference)
+# DeepSeek V4.1 Flash 1017 · C4 r125
 
-Run [deepseek-ai/DeepSeek-V4.1-Flash-1017](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017) on one machine.
+C4 serves the 1017 checkpoint on two 16 GB RTX 5070 Ti GPUs with eight CPU NUMA parts. It uses Contract v3 integer expert accumulation, a prebuilt CPU expert image and plain decode. Table A, the equal split, is the default. The release adds atomic diagnostic writes to the measured build and makes machine-specific paths configurable. The software licence is Apache-2.0.
 
-- 512 GB of RAM and one or two ordinary GPUs ([Results](#results)).
-- One socket with 256 GB ([One socket, 256 GB](docs/results.md#one-socket-256-gb)).
-- 64 GB of RAM and one 16 GB GPU, with a GGUF pack of the model ([GGUF packs](#gguf-packs)).
-- A context of up to 1M tokens.
-- The reference's accuracy: on 24 public-domain texts the served model scores within the standard
-  error of DeepSeek's own `inference/model.py`. A patch stays only while that holds.
+## r120 results on the test server
 
-How it runs: the 384 routed experts a layer run on the CPU in MXFP4 through
-[KTransformers](https://github.com/kvcache-ai/ktransformers)' kt-kernel.
-Attention, the hottest experts and the prefill run on the GPUs through
-[SGLang](https://github.com/sgl-project/sglang).
-The engram tables (about 200 GB) are read from the checkpoint on disk, with no extracted copy.
+These measurements were recorded on r120. Qualification on the rebased r125 trees is pending.
 
-This repository is everything needed: patches against two public upstream commits, a setup
-script that builds them, a launcher that reads the machine it runs on, and tests ([which run where](docs/qualification.md#tests)).
-Each tag pins those commits: SGLang main at `8c7ec052` and KTransformers `95009ea` today, with
-torch 2.14.1 on CUDA 13 wheels, FlashInfer 0.7.4 and CUDA toolkit 13.1.
-The recipe follows SGLang main: every few weeks the patches move to a newer commit, are measured
-again, and go out under a new tag.
-The SGLang patches are the commits of branch `dsv41-1017-main` of
-[05yuki/sglang-upstream](https://github.com/05yuki/sglang-upstream/tree/dsv41-1017-main), one file
-a commit ([docs/patches.md](docs/patches.md)).
-A patch that SGLang merges is dropped at the next move.
+The official regrade passed all eight gates covering identity, image loading, thermal windows, speed, cold prefill traces, switch activation, the reference panel and table A.
 
-## Which way
+| Measurement | Result |
+|---|---|
+| Identity against both preceding plain references | 64/64 logits hash comparisons, 256/256 full logprob values, 12/12 greedy outputs, zero two- or four-request hash differences |
+| 1017 reference panel | 199 conversations, 254,846 positions. Mean KL 0.00978253 nats, served NLL 0.47020820, top-1 agreement 97.0323%. Paired mean KL and NLL differences were −3.69 × 10⁻⁸ and +1.49 × 10⁻⁸ nats. Only 2/199 capture files were byte-identical. |
+| Table B throughput at 1 / 2 / 4 sessions | **47.43 / 66.79 / 76.17 aggregate tokens/s**, means of three 512-token runs. Six-workload breadth averaged 48.10 tokens/s. |
+| Table B cold 12,288 / 35,000 tokens | **9.45 / 21.03 s**, mean client wall times. |
+| Table B weight load | **122.68 s**. All 40 expert layers used direct image reads. All 320 part digests matched. Prebuilt extensions required zero builds at server load. |
+| Table A, measured | **48.42 tokens/s** at one session, median across 60 × 2,048-token rounds in 2,709.3 s. Three P2 memory thermal assertions at 85 °C. |
+| Table B, measured | **74.47 aggregate tokens/s** over a four-session soak lasting 2,753.1 s. Zero P2 assertions or overlapping thermal windows. |
 
-| RAM | checkpoint | where to start |
+The table A short-run **estimates** are 50.0 / 69.6 / 83.7 aggregate tokens/s before throttling. Sustained table A rates at two and four sessions were unmeasured. Use table B temporarily when DIMM temperatures constrain the equal split.
+
+## Rebuild and serve
+
+Use these release branches.
+
+| Checkout | Repository | Branch |
 |---|---|---|
-| 512 GB | the MXFP4 checkpoint (476 GiB) | [Quick start](#quick-start) |
-| 256 GB on one socket | the MXFP4 checkpoint, with an expert cache | [One socket, 256 GB](docs/results.md#one-socket-256-gb) |
-| 64 to 128 GB | a GGUF pack (IQ2_XXS) | [GGUF packs](#gguf-packs) |
+| SGLang | howl9003/sglang | `main` |
+| Recipe | howl9003/deepseek-v4.1-flash-1017-ktransformers | `main` |
+| kt overlay | howl9003/deepseek-v4.1-flash-1017-ktransformers | `c4-r120-kt` |
 
-Each needs one 16 GB NVIDIA GPU of SM89 (RTX 40) or newer; a GGUF pack also runs on an 8 GB RTX 20.
+The SGLang tree is `b2dd424de65c9e45dcff2916fb9013071c5be0a5` and the kt overlay tree is `36f72b46dccf6ce3036f2c6162625d3adf147bf9`. Create the public base installation, build the native kernel and image, and qualify the GPU library on each device. The recipe book has the Linux commands and lists the external inputs. [Rebuild and calibration](RECIPE.md)
 
-## Quick start
+Copy `config.example.json` to a local file, replace the paths and insert the two real GPU UUIDs in rank order. Launch from the recipe directory after preparing the installation.
 
-```
-hf download deepseek-ai/DeepSeek-V4.1-Flash-1017 --local-dir /models/dsv41-1017
-MODEL=/models/dsv41-1017 ./setup.sh
-MODEL=/models/dsv41-1017 ./serve.sh
-```
-
-Or all of it in one command:
-
-```
-./run.sh
+```sh
+python3 -I -B preflight.py "$C4_ROOT/tree/third_party/sglang" "$KT" --config config.local.json
+python3 -I -B launch.py plan config.local.json
+python3 -I -B launch.py prebuild config.local.json
+python3 -I -B launch.py serve config.local.json > table-A.log 2>&1
 ```
 
-- `run.sh` runs `setup.sh`, downloads the checkpoint into `./models/` when it is not there, and starts `serve.sh`.
-  `MODEL=<dir>` uses a checkpoint already downloaded.
-  The directory is remembered in `state/run.env`, so the next `./run.sh` only starts the server.
-- `MODEL=<dir> tools/check.sh` starts the server once, sends one short request, checks the answer and stops the server.
-  It is the one command that says a setup works.
-- `MODEL=<dir> tools/qualify.sh` checks a machine end to end and writes one Markdown report, in about 15 minutes
-  ([docs/qualification.md](docs/qualification.md)).
-  Reports are filed by tag in [reports/](reports/README.md); one from another GPU or CPU is welcome.
-- A prebuilt archive for each tag skips every build: `PREBUILT=<archive> ./setup.sh` ([docs/setup.md](docs/setup.md#prebuilt-pieces)).
+For table B, stop the server and relaunch with `--table B`. Table A uses 288 rows per part. Table B uses 320,320,320,320,192,192,320,320. Both profiles keep speculative decoding off.
 
-The server speaks SGLang's OpenAI-compatible API on `127.0.0.1:8080`.
-Tool calls and the model's thinking come back in their own fields.
-A prefix cache keeps a copy in host memory.
-More than one request at a time, and other machines: [docs/serving.md](docs/serving.md).
+## Check identity, image loading and performance
 
-## Machines checked
+Run these probes against a dedicated server. The greedy probes flush its prefix cache. The default endpoint is `http://127.0.0.1:18209`. Clients accept another endpoint through `C4_URL`.
 
-| CPU | GPU | checkpoint | what was checked | where |
-|---|---|---|---|---|
-| 2 × EPYC 7452 (Zen 2), 512 GB | 2 × RTX 5070 Ti 16 GB (SM120) | MXFP4 | each tag since 2026-11-03: `tools/qualify.sh` | [reports/](reports/README.md) |
-| the same | 1 × RTX 5070 Ti | MXFP4 | each tag since 2026-11-03: `tools/qualify.sh` | [reports/](reports/README.md) |
-| the same | 1 and 2 × RTX 5070 Ti | GGUF IQ2_XXS | speed and NLL | [docs/gguf.md](docs/gguf.md) |
-| 2 × EPYC 7543 (Zen 3) | 1 × RTX 4080 SUPER, 32 GB (SM89) | MXFP4 | one tag, by a contributor: check, tool calls, NLL, speed | [docs/sm89.md](docs/sm89.md#validation) |
-| Core i5-9600K, 64 GB | RTX 2070 8 GB (SM75) | GGUF IQ2_XXS | speed and NLL | [docs/gguf.md](docs/gguf.md) |
-| 2 × Xeon Platinum 8573C (AVX-512; the CPU kernel runs AVX2), 751 GB | 1 × RTX 4090 24 GB (SM89) | MXFP4 | one tag, by a contributor: `tools/qualify.sh` | [report](reports/2026-11-05-0936/rtx4090-x1-xeon8573c-u2604.md) |
-| | a retail RTX 40 card with 16 GB | | not yet | |
-| | SM90 or SM100 (H100, B200) | | not yet | |
-| | three or more GPUs | | not yet | |
+```sh
+python3 -I -B gates/check_image.py table-A.log
+python3 -I -B gates/check_identity.py
+python3 -I -B gates/measure.py
+python3 -I -B launch.py verify config.local.json
+```
 
-A report from a row that says "not yet", or from any machine not listed, is welcome: `tools/qualify.sh` writes it ([docs/qualification.md](docs/qualification.md)).
+The identity command compares both paths to the frozen logits and logprob values, checks the 20K lane, and repeats paired and four-request batches. The public JSON prompt uses redacted example contacts. It is checked across modes. The other nine greedy outputs are checked against the frozen run. Supply the original fixture with `--json-prompt FILE` for all twelve frozen comparisons. The tool checks the fixture digest before sending it.
 
-## What it needs
+## Score the reference panel
 
-In short, from [docs/requirements.md](docs/requirements.md):
+Supply the tokenized 1017 panel and the matching reference top-128 safetensor parts in **sequence order**. The capture checks the panel digest, keeps the served top 256 and writes a new directory. Run the scorer with PyTorch and safetensors installed. Set `C4_PAIRED_CAPTURE` to the qualified baseline capture directory to also enforce the paired 10⁻⁷-nat gates.
 
-- **RAM:** a 512 GB class machine, or one socket with 256 GB, or 64 GB with a GGUF pack.
-  The MXFP4 checkpoint takes about 420 GiB, most of it the CPU experts.
-- **GPU:** NVIDIA SM89 (RTX 40) or newer, 16 GB a card, one or two cards.
-- **Disk:** about 500 GB on NVMe.
-  The checkpoint is 476 GiB, and its engram rows are read from it while serving.
-- **Software:** Linux, gcc/g++, the libnuma and hwloc headers, and a CUDA 13 toolkit.
-  Without a toolkit, `setup.sh` fetches NVIDIA's toolkit wheels.
-- **Host settings,** recommended as root for the MXFP4 checkpoint, none needed for a GGUF pack:
-  `transparent_hugepage/shmem_enabled` set to `advise`, `vm.min_free_kbytes = 8388608`, and swap off.
-  Without them the server still starts and says what is missing ([docs/requirements.md](docs/requirements.md)).
+```sh
+python3 -I -B gates/capture_panel.py "$PANEL" capture
+python3 -I -B gates/score_panel.py capture scores.json gates/panel_index.json "$PARTS"/part-*.safetensors
+```
 
-## GGUF packs
-
-The same tree serves [ISTA-DASLab's GSQ-RCO GGUF](https://huggingface.co/ISTA-DASLab/DeepSeek-V4.1-Flash-1017-GSQ-RCO-GGUF) of the model.
-
-- One 16 GB GPU and 64 GB of RAM are enough.
-- `BUILD=IQ2_XXS ./run.sh` downloads the IQ2_XXS build and serves it.
-  `GGUF=<dir> ./setup.sh` and `GGUF=<dir> ./serve.sh` take a build already downloaded.
-- Its NLL is 0.327 above the reference, from the pack's quantization.
-
-The IQ2_XXS build on the machine of [Results](#results); decode is Japanese prose, the median of four prompts.
-The 64 GB and 128 GB rows are one socket under a memory limit.
-
-| setup | decode | 35K prompt |
-|---|---|---|
-| two GPUs, two sockets, 512 GB | 62.6 tok/s | 34 s, 18 s the second time |
-| one GPU, one socket, 251 GiB | 43.5 tok/s | 17 s |
-| one GPU, 128 GB | 33.4 tok/s | 19 s |
-| one GPU, 64 GB | 25.7 tok/s | 28 s |
-
-An RTX 2070 8 GB with a Core i5-9600K and 64 GB decodes at 1.8 tok/s.
-Its NLL is 1.0468, within 0.001 of the same pack on the larger machine.
-Other kinds of text, the expert cache at each RAM size, and how each row was run: [docs/gguf.md](docs/gguf.md).
-
-## Results
-
-2 × EPYC 7452 (Zen 2), 512 GB DDR4, 2 × RTX 5070 Ti 16 GB, the `serve.sh` defaults with a 1M-token context.
-The decode column is Japanese prose, the median of four prompts.
-The prompt columns use prompts of random token ids.
-
-| setup | decode | 35K prompt | 1M prompt |
-|---|---|---|---|
-| two GPUs | 50.0 tok/s | 20 s | 16 min |
-| one GPU | 33.4 tok/s | 33 s | 21 min |
-| one socket, 256 GB, one GPU | 20.2 tok/s | 50 s | 27 min |
-
-Other kinds of text, more prompt lengths and how each setup was run: [docs/results.md](docs/results.md).
-
-The served model scores within the standard error of DeepSeek's own `inference/model.py` on the same 24 pieces.
-Its mean NLL is 0.7192 on two GPUs and 0.7224 on one, against 0.7185 for the reference ([docs/results.md](docs/results.md#accuracy)).
-
-## Documents
-
-- [docs/glossary.md](docs/glossary.md): the words used here (tier, lend, hot experts, chunk hint and the rest).
-- [docs/requirements.md](docs/requirements.md): RAM, VRAM, disk, software, host settings, containers.
-- [docs/setup.md](docs/setup.md): what `setup.sh` and `serve.sh` do, and the prebuilt archive.
-- [docs/serving.md](docs/serving.md): the API, concurrent requests, the prefix cache, tool calls and thinking.
-- [docs/results.md](docs/results.md): speed on two GPUs, one GPU and one socket, and accuracy.
-- [docs/qualification.md](docs/qualification.md): `tools/qualify.sh` and the multi-session prefix-cache check.
-- [docs/kv-cache.md](docs/kv-cache.md): V4.1's KV formats and the KV pool past the GPU.
-- [docs/1017-changes.md](docs/1017-changes.md): what 1017 changes and how the recipe runs its FP8 step.
-- [docs/patches.md](docs/patches.md) and [docs/tier1.md](docs/tier1.md): every patch, with its switch and measured effect.
-- [docs/optimizations.md](docs/optimizations.md): what made it fast, and what was tried and dropped.
-- [docs/sm89.md](docs/sm89.md): Ada (RTX 40) attention.
-- [docs/gguf.md](docs/gguf.md): serving a GGUF pack of the model.
-
-## Fixes from dsv41-flash-dual-epyc
-
-Two fixes by f-wunderlich came from the earlier release's repo.
-
-- `--kt-num-gpu-experts 0` starts with Marlin (#2): tier 0 for the MoE call, tier 1's `loading` for the loader.
-- The SM120 padding-page fix (#3) is no longer carried.
-  SGLang main's sparse attention with FlashInfer 0.7.2 runs a 48K-token prefill without it, with the same NLL.
-
-## Not done
-
-- Results are on 2 × RTX 5070 Ti (SM120) with Zen 2 CPUs.
-  SM89 was checked by a contributor on one card ([docs/sm89.md](docs/sm89.md)).
-- CPUs with AVX-512 should work: the experts run on the AVX2 kernels, which those CPUs also have.
-- More than two GPUs: `serve.sh` sets tensor parallelism from the GPUs it sees; not tested.
-- Older NVIDIA GPUs: RTX 30 and A100 do not run; DeepSeek-V4's attention here needs SM89 or newer.
-  With `SGLANG_MXFP4_MOE_FP32=0`, the MXFP4 Marlin path also needs SM90 or SM120.
-- AMD GPUs: not supported (kv-vmm and kt-kernel use CUDA).
-
-## License
-
-Apache-2.0 (see `LICENSE`).
-`engram-adapter/` is derived from 0xSero's engram adapter under the MIT License (see the headers of its files).
-The model weights are under DeepSeek's license (see the model card).
+The scorer uses the reference top-128 support plus one tail bucket. Each native ID missing from the served top 256 receives the smallest kept probability. The three model chapters explain the measurements and the limits of the fitted constants. [Decode](DECODE_MODEL_r1.md) · [Prefill](PREFILL_MODEL_r1.md) · [Placement](PLACEMENT_MODEL_r1.md)
