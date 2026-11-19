@@ -1,0 +1,11 @@
+{
+  "locations": {
+    "ROOT": "/srv/c4",
+    "INPUT": "/srv/c4-inputs",
+    "MODEL": "/models/DeepSeek-V4.1-Flash-1017",
+    "GGUF": "/models/DeepSeek-V4.1-Flash-1017-MXFP4.gguf",
+    "IMAGE": "/srv/expert-image",
+    "CUDA": "/usr/local/cuda",
+    "DEVICES": "GPU-FIRST-UUID,GPU-SECOND-UUID"
+  }
+}
