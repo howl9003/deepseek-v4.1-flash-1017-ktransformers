@@ -18,6 +18,10 @@
 #include <cstdlib>
 #include <cstdio>
 
+// concept-r1 pre-read (PREREAD_r1.md): see task_queue.h. Null until the contract v3 backend arms its pre-read.
+std::atomic<kt_tq_idle_fn> kt_tq_idle_hook{nullptr};
+std::atomic<uint64_t> kt_tq_last_qwait_ns{0};
+
 TaskQueue::TaskQueue() : done(false), pending(0) {
   if (const char* e = getenv("KT_TASKQUEUE_TIMING")) timing_every = atoi(e);
   if (const char* e = getenv("KT_TASKQUEUE_SPIN_US")) spin_us = atoi(e);
@@ -91,7 +95,23 @@ void TaskQueue::sync(size_t allow_n_pending) {
   if (task_exception) std::rethrow_exception(task_exception);
 }
 
+// concept-r1 CPU smoothing (12 Nov): KT_TASKQUEUE_CPU=<cpu> pins the worker thread (the thread every CPU expert call
+// runs on, and worker 0 of the whole-pool jobs) to that CPU. Unset: unpinned, as before.
+static void kt_pin_from_env(const char* name, const char* what) {
+  const char* e = getenv(name);
+  if (!e || !*e) return;
+  const int cpu = atoi(e);
+  if (cpu < 0 || cpu >= CPU_SETSIZE) return;
+  cpu_set_t set;
+  CPU_ZERO(&set);
+  CPU_SET(cpu, &set);
+  const int rc = pthread_setaffinity_np(pthread_self(), sizeof(set), &set);
+  printf("[kt-pin] %s pinned to cpu %d (%s=%s, rc %d)\n", what, cpu, name, e, rc);
+  fflush(stdout);
+}
+
 void TaskQueue::worker() {
+  kt_pin_from_env("KT_TASKQUEUE_CPU", "task-queue worker");
   Node* curr = head.load(std::memory_order_relaxed);
   while (!done.load(std::memory_order_acquire)) {
     Node* next = curr->next.load(std::memory_order_acquire);
@@ -99,6 +119,7 @@ void TaskQueue::worker() {
       std::exception_ptr task_exception;
       if (next->task) {
         const uint64_t ts = timing_every ? now_ns() : 0;
+        if (timing_every) kt_tq_last_qwait_ns.store(ts - next->t_enq, std::memory_order_relaxed);   // pre-read tests
         try {
           next->task();
         } catch (...) {
@@ -122,6 +143,16 @@ void TaskQueue::worker() {
         pending.fetch_sub(1, std::memory_order_acq_rel);
       }
       cv.notify_all();
+      // concept-r1 pre-read (PREREAD_r1.md): the task's completion is published; with nothing queued, the idle wait
+      // goes to the hook, which returns as soon as `pending` is non-zero. Unset (the default): nothing runs here.
+      if (const kt_tq_idle_fn hook = kt_tq_idle_hook.load(std::memory_order_acquire)) {
+        if (curr->next.load(std::memory_order_acquire) == nullptr) {
+          try {
+            hook(&pending);
+          } catch (...) {
+          }
+        }
+      }
     } else {
       if (spin_us > 0) {
         const uint64_t until = now_ns() + uint64_t(spin_us) * 1000;

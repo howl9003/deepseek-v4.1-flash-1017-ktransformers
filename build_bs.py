@@ -1,4 +1,44 @@
-"""Path B, option A: rebuild 05yuki main's kt-kernel AVX2 variant from his patched source, with the contract v3 (spec r3)
+"""pathb-cpu-r1 (13 Nov, concept-r1 ZEN3_OPTIMISATION_r1.md section 3.2; branch pathb-cpu-r1 off pathb-pairfix with
+pathb-preread and pathb-kernel-rw merged): every source of the three lines below, plus the CPU switches of this branch, each
+off unless set: KT_V3_CCD (per-CCD static split and per-CCD pre-read), KT_V3_RW_RED=2 (the row-wise kernel's microcode-free
+reduction), KT_V3_THP_COLLAPSE (MADV_COLLAPSE of the written arena extents at load), KT_V3_SUM_PART (the part sum's
+subpool), KT_MEMOP_FLAGS_NODE (the memop flags' node), and in his worker_pool.cpp, by one anchored edit applied only if
+its anchors are unique (else the file is left as it is and BUILD_RESULT.json says so), KT_NUMA_WAIT_PAUSE (a PAUSE in
+do_numa_job's wait; a live knob of his kt_knobs.h). Bindings added: contract_v3_set_ccd, contract_v3_ccd,
+contract_v3_set_rw, contract_v3_rw, contract_v3_thp, contract_v3_sum_part. A compile error stops the build; the job then
+prints the compiler's error lines from build.log.
+
+concept-r1 poller pairing fix (SEAM_FUSION_r1.md section 11, 13 Nov): the detector build below, with the same four files
+carrying KT_MEMOP_PAIRED=1 too (cpuinfer.h, memop_detect.h; task_queue.* unchanged): a stream-memop sync is served only
+after its own submit; a sync met first is left raised for the next pass. Unset, the module behaves as the detector one.
+This script's steps are unchanged; only the copied sources differ.
+
+concept-r1 poller detector (SEAM_FUSION_r1.md section 9, 13 Nov): the byte-scales build below, unchanged, plus his three
+task-queue files (cpu_backend/cpuinfer.h, task_queue.cpp, task_queue.h) replaced by this directory's after checking
+that the tree's are the ones they were made from, and cpu_backend/memop_detect.h added. KT_MEMOP_DETECT=1 counts the
+stream-memop poller's out-of-order syncs into a JSON-lines file; unset, the module behaves as the byte-scales one (the
+poller and TaskQueue run unchanged). No arithmetic, binding or kernel changes.
+
+concept-r1 byte scales (BYTE_SCALES_r1.md, 12 Nov): the pinned CPU module build with
+this directory's contract_v3h-moe.hpp in place of the pinned one and this directory's operators/avx2/mxfp4-moe.hpp in
+place of his (after checking that the tree's file is the one it was made from). Same tree, same toolchain image, same
+flags. KT_ARENA_SCALE_BYTES=1 makes the scale arenas hold E8M0 bytes; unset, the module behaves as the pinned one. The
+module it writes is a NEW module in its own out dir; the pinned one (freeze/queue/lib.sh MOD / MODPIN) is never touched.
+Bindings added: contract_v3_arena_scale_bytes, contract_v3_codes_fnv.
+
+concept-r1 pre-read (PREREAD_r1.md, 13 Nov; branch pathb-preread off pathb-cpusmooth): as below, plus cpu_backend/
+task_queue.h replaced (after the same sha check) for the idle hook, and five test bindings: contract_v3_set_preread,
+contract_v3_preread, contract_v3_preread_log, contract_v3_preread_hint, contract_v3_tq_last_qwait_ns. KT_PREREAD unset:
+the hook is never installed.
+
+concept-r1 CPU smoothing (RAM_BANDWIDTH_r1.md, 12 Nov): the pinned CPU module build with
+this directory's contract_v3h-moe.hpp in place of the pinned one. Same tree, same toolchain image, same flags. The module
+it writes is a NEW module in its own out dir; the pinned one (freeze/queue/lib.sh MOD / MODPIN) is never touched.
+Bindings added: contract_v3_codes_placement, contract_v3_set_clean, contract_v3_clean. cpu_backend/task_queue.cpp and
+cpu_backend/cpuinfer.h are replaced by this directory's (two pin knobs, off unless set), after checking that the tree's
+files are the ones they were made from.
+
+Path B, option A: rebuild 05yuki main's kt-kernel AVX2 variant from his patched source, with the contract v3 (spec r3)
 backend added, in a COPY (new namespace; his tree and wheel are only read).
 
   python -B build_pb.py <out_dir> [<sif>] (run through guard_pbc.py: node 3, no-swap service, bench lock, FEA idle)
@@ -80,10 +120,36 @@ def main():
         patched = [kt / "CMakeLists.txt", kt / "ext_bindings.cpp", kt / "python/utils/amx.py"]
         report["before"] = {str(p.relative_to(kt)): sha(p) for p in patched}
 
+        # concept-r1 byte scales: his MXFP4 backend file with the KT_ARENA_SCALE_BYTES switch
+        report["replaced"] = {}
+        for rel, base in (("operators/avx2/mxfp4-moe.hpp", "354d926e9465b9ec27d84b2a148d94aa92a56c42b3df6620f5f19f22e39178db"),):
+            if sha(kt / rel) != base:
+                raise SystemExit(f"{rel} in the tree is not the file the change was made from")
+            shutil.copy2(HERE / rel, kt / rel)
+            report["replaced"][rel] = {"from": base, "to": sha(kt / rel)}
+
+        # concept-r1 poller detector, CPU smoothing and pre-read: his three task-queue files with KT_MEMOP_DETECT and
+        # KT_MEMOP_PAIRED, the pin knobs (KT_TASKQUEUE_CPU, KT_MEMOP_POLLER_CPU) and the idle hook (all off unless set),
+        # and the detector's header
+        for rel, base in (("cpu_backend/task_queue.h", "ddf0967d003159399c967ef885b20261aa690dfd695ef5c10ceaccc06d76f319"),
+                          ("cpu_backend/task_queue.cpp", "9080c8ad286235f02ba9b7d4c048f4dcc4e5bf524ebf720785a22d1086f34a0f"),
+                          ("cpu_backend/cpuinfer.h", "565c84e1466de281e90c1bad61ce7eafb97b257dd55fc24d0f4899c7ac162719")):
+            if sha(kt / rel) != base:
+                raise SystemExit(f"{rel} in the tree is not the file the change was made from")
+            shutil.copy2(HERE / rel, kt / rel)
+            report["replaced"][rel] = {"from": base, "to": sha(kt / rel)}
+        if (kt / "cpu_backend/memop_detect.h").exists():
+            raise SystemExit("cpu_backend/memop_detect.h already exists in the tree")
+        shutil.copy2(HERE / "cpu_backend/memop_detect.h", kt / "cpu_backend/memop_detect.h")
+        report["replaced"]["cpu_backend/memop_detect.h"] = {"from": None, "to": sha(kt / "cpu_backend/memop_detect.h")}
+
         d = kt / "operators/avx2/contract_v3"
         d.mkdir()
         for f in ("v3_rm.h", "v3_rm.cpp", "v3_common.inc", "v3_cpu.h"):
             shutil.copy2(CPU / f, d / f)
+        # row-wise kernels (concept-r1/CPU_KERNEL_COMPUTE_r1.md): used when KT_V3_RW=1, else every call is the v3_rm one
+        for f in ("v3_rw.h", "v3_rw.cpp"):
+            shutil.copy2(HERE / "contract_v3" / f, d / f)
         assert sha(SILU_NPY) == SILU_SHA
         bits = np.load(SILU_NPY).astype(np.uint32)
         assert bits.shape == (65536,)
@@ -95,6 +161,33 @@ def main():
             'extern "C" const uint32_t kt_contract_v3_silu_bits[65536] = {\n' + ",\n".join(rows) + "\n};\n")
         shutil.copy2(HERE / "contract_v3h-moe.hpp", kt / "operators/avx2/contract_v3h-moe.hpp")
 
+        # pathb-cpu-r1: KT_NUMA_WAIT_PAUSE in his worker_pool.cpp (do_numa_job's wait), by two anchored edits applied only
+        # when both anchors are unique; otherwise the file stays as it is and the knob does nothing (recorded here)
+        wp = kt / "cpu_backend/worker_pool.cpp"
+        wp_src = wp.read_text()
+        wp_a1 = ('static int kt_spin_pauses() {\n  // kt-kernel-live-knobs.py: settable while running\n'
+                 '  static std::atomic<int>& n = kt_knob("KT_SPIN_PAUSES", 64);\n  return n.load(std::memory_order_relaxed);\n}\n')
+        wp_b1 = wp_a1 + ('\n// pathb-cpu-r1 (concept-r1 ZEN3_OPTIMISATION_r1.md section 2.11): KT_NUMA_WAIT_PAUSE > 0 puts a PAUSE in\n'
+                         '// do_numa_job\'s wait for the distributors (a live knob, read once a job); 0 (the default): the wait as before\n'
+                         'static int kt_numa_wait_pause() {\n'
+                         '  static std::atomic<int>& n = kt_knob("KT_NUMA_WAIT_PAUSE", 0);\n'
+                         '  return n.load(std::memory_order_relaxed);\n}\n')
+        wp_a2 = ('  for (int i = 0; i < numa_count; i++) {\n'
+                 '    while (status[i]->load(std::memory_order_acquire) == ThreadStatus::WORKING) {\n'
+                 '    }\n  }\n}\n#endif\n')
+        wp_b2 = ('  const bool kt_wait_pause = kt_numa_wait_pause() > 0;   // pathb-cpu-r1 KT_NUMA_WAIT_PAUSE\n'
+                 '  for (int i = 0; i < numa_count; i++) {\n'
+                 '    while (status[i]->load(std::memory_order_acquire) == ThreadStatus::WORKING) {\n'
+                 '      if (kt_wait_pause) _mm_pause();\n'
+                 '    }\n  }\n}\n#endif\n')
+        report["worker_pool"] = {"before": sha(wp), "expected_before": "e2840080910437e1ad98e0ca3466749a1a7c5aadbf8a8f148674814581d1f704",
+                                 "anchor_counts": [wp_src.count(wp_a1), wp_src.count(wp_a2)]}
+        if wp_src.count(wp_a1) == 1 and wp_src.count(wp_a2) == 1:
+            wp.write_text(wp_src.replace(wp_a1, wp_b1).replace(wp_a2, wp_b2))
+            report["worker_pool"].update(patch="applied", after=sha(wp))
+        else:
+            report["worker_pool"].update(patch="skipped: anchors not unique; KT_NUMA_WAIT_PAUSE has no effect in this module")
+
         cm = kt / "CMakeLists.txt"
         replace_once(cm, 'option(CPUINFER_ENABLE_LTO ',
                      'option(KT_ENABLE_CONTRACT_V3 "Build the contract v3 (spec r3, tiers C/D) AVX2 MoE backend; runtime opt-in KT_MXFP4_BACKEND=contract_v3" ON)\n'
@@ -103,6 +196,7 @@ def main():
             '\n# path B: contract v3 (spec r3) AVX2 MoE backend\n'
             'if(KT_ENABLE_CONTRACT_V3)\n'
             '    set(KT_V3_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/operators/avx2/contract_v3/v3_rm.cpp\n'
+            '                      ${CMAKE_CURRENT_SOURCE_DIR}/operators/avx2/contract_v3/v3_rw.cpp\n'
             '                      ${CMAKE_CURRENT_SOURCE_DIR}/operators/avx2/contract_v3/v3_silu_table.cpp)\n'
             '    target_sources(${PROJECT_NAME} PRIVATE ${KT_V3_SOURCES})\n'
             '    # the v3 arithmetic must not see -ffast-math: these flags come last\n'
@@ -137,7 +231,23 @@ def main():
                      '        .def("get_bl", &MoeClass::get_bl)\n'
                      '        .def("contract_v3_tier", &MoeClass::contract_v3_tier)\n'
                      '        .def("contract_v3_spec", &MoeClass::contract_v3_spec)\n'
-                     '        .def("contract_v3_silu_sha256", &MoeClass::contract_v3_silu_sha256);\n'
+                     '        .def("contract_v3_silu_sha256", &MoeClass::contract_v3_silu_sha256)\n'
+                     '        .def("contract_v3_arena_scale_bytes", &MoeClass::contract_v3_arena_scale_bytes)\n'
+                     '        .def("contract_v3_codes_fnv", &MoeClass::contract_v3_codes_fnv)\n'
+                     '        .def("contract_v3_codes_placement", &MoeClass::contract_v3_codes_placement)\n'
+                     '        .def("contract_v3_set_clean", &MoeClass::contract_v3_set_clean)\n'
+                     '        .def("contract_v3_clean", &MoeClass::contract_v3_clean)\n'
+                     '        .def("contract_v3_set_preread", &MoeClass::contract_v3_set_preread)\n'
+                     '        .def("contract_v3_preread", &MoeClass::contract_v3_preread)\n'
+                     '        .def("contract_v3_preread_log", &MoeClass::contract_v3_preread_log)\n'
+                     '        .def("contract_v3_preread_hint", &MoeClass::contract_v3_preread_hint)\n'
+                     '        .def("contract_v3_tq_last_qwait_ns", &MoeClass::contract_v3_tq_last_qwait_ns)\n'
+                     '        .def("contract_v3_set_ccd", &MoeClass::contract_v3_set_ccd)\n'
+                     '        .def("contract_v3_ccd", &MoeClass::contract_v3_ccd)\n'
+                     '        .def("contract_v3_set_rw", &MoeClass::contract_v3_set_rw)\n'
+                     '        .def("contract_v3_rw", &MoeClass::contract_v3_rw)\n'
+                     '        .def("contract_v3_thp", &MoeClass::contract_v3_thp)\n'
+                     '        .def("contract_v3_sum_part", &MoeClass::contract_v3_sum_part);\n'
                      '  }\n'
                      '#endif\n'
                      '  // kt-moe-partials-out.py\n  if constexpr (requires { &MoeClass::set_partial_outputs; }) {')
@@ -160,6 +270,9 @@ def main():
         report["after"] = {str(p.relative_to(kt)): sha(p) for p in patched}
         report["added"] = {str(p.relative_to(kt)): sha(p) for p in sorted(d.iterdir())}
         report["added"]["operators/avx2/contract_v3h-moe.hpp"] = sha(kt / "operators/avx2/contract_v3h-moe.hpp")
+        report["cpu_r1"] = {"dir": str(HERE), "pinned_header_sha256": sha(CPU / "contract_v3h-moe.hpp"),
+                               "commit": (HERE / "SOURCE_COMMIT").read_text().strip() if (HERE / "SOURCE_COMMIT").is_file() else None,
+                               "preread": True, "bytescales": True, "pairfix": True}
         if SIF is None:
             report["compiler"] = subprocess.check_output(["gcc", "--version"], text=True).splitlines()[0]
         else:
