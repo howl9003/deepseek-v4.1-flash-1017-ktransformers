@@ -1,7 +1,33 @@
-"""pathb-image-r1 (15 Nov, concept-r1 IMAGE_LOAD_DESIGN_r1.md; branch pathb-image-r1 off pathb-stagger-r2 e2eef18 = arm T3S's
-module 23194614, with pathb-nodescale-r1 0264d2b merged): the two builds below together. KT_IMAGE_DIR unset: no image
-code runs and the arenas are built by the same statements as the stagger-r2 module's (KT_TP_PART_BLOCKS unset: his
-split, kt_part_row0(i) = i * I / P). No arithmetic, kernel or thread change.
+"""pathb-image-r3 (16 Nov; branch pathb-image-r3 off pathb-image-r2 7a83c4d): r2 with its preload race removed. r2 made
+each layer's module on the Python main thread while an earlier layer's image task ran on the CPUInfer worker; both call
+NumaJobDistributor::do_numa_job (the module's constructor; the task's read, code tables and collapse), which keeps one
+compute_func and per-node flags with no lock. r3: (h) contract_v3h-moe.hpp ImageBuild: the module's constructor, the
+part-rows check, image_prepare and load_weights_image in ONE CPUInfer task (bound as AVX2ContractV3_MOE.image_build(...)
+and the record AVX2ContractV3_ImageBuild: task, done, status, rows, seconds, tid, take), so every do_numa_job of a
+preloaded load runs on the worker in queue order; (i) python/utils/kt_image.py queues that task at wrapper creation and
+makes or drops a module on the main thread only once every queued build has run (_kt_image_drain); a module without
+image_build gets no preload. The load's statements are r2's, ARENA_WRITERS untouched: the arena format string is r1's.
+
+pathb-image-r2 (16 Nov, concept-r1 STARTUP_CUTS_r1.md section 3; branch pathb-image-r2 off pathb-image-r1 b9eb35d): the
+pathb-image-r1 build below with (e) a second amx.py hook, at the GGUF loader's creation in NativeMoEWrapper.__init__
+(IMAGE_INIT_HOOK): when the image can serve the layer the wrapper makes no GGUF loader (load_weights makes it on a
+fallback, as his code already does after a release), and the layer's image task is queued at once (KT_IMAGE_PRELOAD,
+on unless 0; the map is the one sglang published before building the model). load_weights adopts the module once that
+layer's task is done; (f) contract_v3h-moe.hpp: an atomic done flag raised when load_weights_image() returns, and the
+binding image_done(); (g) KT_IMAGE_DIGEST=1 prints staged-imgid's per-part arena digests after every image load. No
+arena writer changes (ARENA_WRITERS untouched: the arena format string is r1's), no kernel or arithmetic change.
+
+pathb-image-r1 (15 Nov, concept-r1 IMAGE_LOAD_DESIGN_r1.md; branch pathb-image-r1 off pathb-stagger-r2 e2eef18 = arm T3S's
+module 23194614, with pathb-nodescale-r1 0264d2b merged): the two builds below together, plus (c) the arena format
+pin: this script hashes the sources that write the expert arena bytes as they stand in the tree after every edit
+(ARENA_WRITERS: mxfp4-moe.hpp, kt_image.hpp, his moe_base.hpp, his moe-tp.hpp), and compiles the string
+"pathb-arena-v1;blk=32;scale=e8m0;w=<first 16 hex of that hash>" into the module as the static binding
+AVX2ContractV3_MOE.kt_arena_format(); amx.py's image hook loads a layer only when the image's proven arena format
+(its manifest field, or the sidecar arena_format.json pinned by KT_IMAGE_FORMAT_SHA256) is that string and the
+layer's part rows are among the proven ones; (d) after the wheel step, the package's utils/amx.py must carry the
+image hook and the appended python/utils/kt_image.py (else the build fails). KT_IMAGE_DIR unset: no image code runs
+and the arenas are built by the same statements as the stagger-r2 module's (KT_TP_PART_BLOCKS unset: his split,
+kt_part_row0(i) = i * I / P). No arithmetic, kernel or thread change.
 
 pathb-stagger-r2 (13 Nov, concept-r1 STAGGER_DESIGN_r1.md section 9.2; branch pathb-stagger-r2 off pathb-cpu-r1 c64e1ca):
 the pathb-cpu-r1 build below, unchanged in its steps, with KT_MEMOP_SYNC_PER_TASK=1 added (off unless set) in
@@ -114,6 +140,45 @@ def replace_once(path, old, new):
     if s.count(old) != 1:
         raise SystemExit(f"patch anchor not unique in {path}: {old[:80]!r} ({s.count(old)})")
     path.write_text(s.replace(old, new))
+
+
+# pathb-image-r1: the arena format. These files, as they stand in the build tree after every edit, decide the bytes of
+# the expert arenas (allocation and stride: his moe_base.hpp; the part split: his moe-tp.hpp with the KT_TP_PART_BLOCKS
+# edit; the GGUF-path writer: mxfp4-moe.hpp; the image-path writer: kt_image.hpp). contract_v3h-moe.hpp reads the arenas
+# (code tables, MADV_COLLAPSE, pre-read) and writes none of their bytes, so a kernel-only change keeps the format.
+ARENA_FORMAT_ID = "pathb-arena-v1"   # bump by hand only if the image schema (pathb-expert-image-v1) changes
+ARENA_WRITERS = ("operators/avx2/mxfp4-moe.hpp", "operators/avx2/kt_image.hpp", "operators/avx2/moe_base.hpp",
+                 "operators/moe-tp.hpp")
+
+
+def arena_format(kt):
+    """(format string, {file: sha256}, writer sha256) of the kt-kernel tree at kt."""
+    files = {rel: sha(kt / rel) for rel in ARENA_WRITERS}
+    w = hashlib.sha256("".join(f"{rel}\0{files[rel]}\n" for rel in ARENA_WRITERS).encode()).hexdigest()
+    return f"{ARENA_FORMAT_ID};blk=32;scale=e8m0;w={w[:16]}", files, w
+
+
+# pathb-image-r1: the image hook at the top of NativeMoEWrapper.load_weights (pathb-nodescale's text, unchanged); the
+# package's utils/amx.py must carry it once and end with python/utils/kt_image.py (python/utils/patch_amx_image.py
+# puts the same two things into a served kt-pkg's amx.py)
+IMAGE_ANCHOR = '            return self._load_weights_mxfp4_cache(physical_to_logical_map_cpu)\n'
+IMAGE_HOOK = (IMAGE_ANCHOR +
+              '        # pathb-nodescale (concept-r1 NODE_SCALING_r1.md section 3): the block-ordered expert image\n'
+              '        if self.method == "MXFP4" and os.environ.get("KT_IMAGE_DIR"):\n'
+              '            if _kt_image_load_layer(self, physical_to_logical_map_cpu):\n'
+              '                return\n')
+# pathb-image-r2: the second hook, at the first wrapper's GGUF loader creation in NativeMoEWrapper.__init__
+IMAGE_INIT_ANCHOR = ('        if NativeMoEWrapper._native_loader_instance is None:\n'
+                     '            NativeMoEWrapper._native_loader_instance = NativeMoEWrapper._create_loader(method, weight_path)\n'
+                     '        self.loader = NativeMoEWrapper._native_loader_instance\n')
+IMAGE_INIT_HOOK = ('        # pathb-image-r2 (concept-r1 STARTUP_CUTS_r1.md section 3): no GGUF loader while the image serves the layer\n'
+                   '        # (load_weights makes one on a fallback); the layer\'s image task is queued here (KT_IMAGE_PRELOAD)\n'
+                   '        if method == "MXFP4" and os.environ.get("KT_IMAGE_DIR") and _kt_image_init(self):\n'
+                   '            self.loader = None\n'
+                   '        else:\n'
+                   '            if NativeMoEWrapper._native_loader_instance is None:\n'
+                   '                NativeMoEWrapper._native_loader_instance = NativeMoEWrapper._create_loader(method, weight_path)\n'
+                   '            self.loader = NativeMoEWrapper._native_loader_instance\n')
 
 
 def main():
@@ -307,6 +372,11 @@ def main():
             '    message(STATUS "contract v3 MoE backend: enabled (runtime opt-in KT_MXFP4_BACKEND=contract_v3)")\n'
             'endif()\n'))
 
+        # pathb-image-r1: the arena format of this tree (every writer edit is done by now), compiled in below
+        fmt, fmt_files, fmt_w = arena_format(kt)
+        report["arena_format"] = {"format": fmt, "writer_sha256": fmt_w, "files": fmt_files}
+        if not all(c.isalnum() or c in ";=-" for c in fmt):
+            raise SystemExit("arena format string has characters that cannot go in a C++ literal: " + fmt)
         eb = kt / "ext_bindings.cpp"
         replace_once(eb, '#include "operators/avx2/mxfp4-moe.hpp"\n',
                      '#include "operators/avx2/mxfp4-moe.hpp"\n#ifdef KT_ENABLE_CONTRACT_V3\n#include "operators/avx2/contract_v3h-moe.hpp"\n#endif\n')
@@ -336,6 +406,28 @@ def main():
                      '        if (map) moe->config.physical_to_logical_map = reinterpret_cast<void*>(map);\n'
                      '        return std::make_pair((intptr_t)&img_inner, (intptr_t)a);\n'
                      '      }\n'
+                     "      // pathb-image-r3: the layer's module made, prepared and read from the image in ONE CPUInfer task\n"
+                     '      // (MoeClass::ImageBuild, contract_v3h-moe.hpp), so every do_numa_job of a preloaded load runs on the worker;\n'
+                     '      // the queued task holds the record (a shared_ptr), so a dropped Python handle cannot free it under the task\n'
+                     '      using ImgBuild = typename MoeClass::ImageBuild;\n'
+                     '      struct BuildArgs { CPUInfer* cpuinfer; std::shared_ptr<ImgBuild>* b; };\n'
+                     '      static void build_inner(void* p) {\n'
+                     '        BuildArgs* a = (BuildArgs*)p;\n'
+                     '        std::shared_ptr<ImgBuild> b = std::move(*a->b);\n'
+                     '        CPUInfer* ci = a->cpuinfer;\n'
+                     '        delete a->b;\n'
+                     '        delete a;\n'
+                     '        ci->task_queue_->enqueue([b]() { b->run(); });\n'
+                     '      }\n'
+                     '      static std::pair<intptr_t, intptr_t> build_task(std::shared_ptr<ImgBuild> b) {\n'
+                     '        if (b->submitted_.exchange(1)) throw std::runtime_error("image build: its task was made already");\n'
+                     '        return std::make_pair((intptr_t)&build_inner, (intptr_t) new BuildArgs{nullptr, new std::shared_ptr<ImgBuild>(b)});\n'
+                     '      }\n'
+                     '      static std::shared_ptr<ImgBuild> build(const GeneralMOEConfig& cfg, const std::string& path, uint64_t nbytes,\n'
+                     '                                             const std::vector<int64_t>& geometry, const std::string& digests,\n'
+                     '                                             const std::vector<std::vector<int>>& rows, bool any_rows, uintptr_t map) {\n'
+                     '        return std::make_shared<ImgBuild>(cfg, path, nbytes, geometry, digests, rows, any_rows, map);\n'
+                     '      }\n'
                      '    };\n'
                      '    moe_cls.def("forward_partials_task", &ContractV3PartialBindings::task)\n'
                      '        .def("forward_partials", &MoeClass::forward_partials_binding)\n'
@@ -364,7 +456,21 @@ def main():
                      '        .def("image_prepare", &MoeClass::image_prepare)\n'
                      '        .def("image_status", &MoeClass::image_status)\n'
                      '        .def("image_stats", &MoeClass::image_stats)\n'
-                     '        .def("contract_v3_part_rows", &MoeClass::contract_v3_part_rows);\n'
+                     '        .def("image_done", &MoeClass::image_done)   // pathb-image-r2\n'
+                     '        .def("contract_v3_part_rows", &MoeClass::contract_v3_part_rows)\n'
+                     '        .def_static("image_build", &ContractV3PartialBindings::build)   // pathb-image-r3\n'
+                     '        // pathb-image-r1: the arena format this module writes (build_bs.py ARENA_WRITERS)\n'
+                     '        .def_static("kt_arena_format", []() { return std::string("' + fmt + '"); });\n'
+                     '    // pathb-image-r3: the build record (one per preloaded layer)\n'
+                     '    using ImgBuildT = typename ContractV3PartialBindings::ImgBuild;\n'
+                     '    py::class_<ImgBuildT, std::shared_ptr<ImgBuildT>>(moe_module, "AVX2ContractV3_ImageBuild")\n'
+                     '        .def("task", &ContractV3PartialBindings::build_task)\n'
+                     '        .def("done", &ImgBuildT::done)\n'
+                     '        .def("status", &ImgBuildT::status)\n'
+                     '        .def("rows", &ImgBuildT::rows)\n'
+                     '        .def("seconds", &ImgBuildT::seconds)\n'
+                     '        .def("tid", &ImgBuildT::tid)\n'
+                     '        .def("take", &ImgBuildT::take);\n'
                      '  }\n'
                      '#endif\n'
                      '  // kt-moe-partials-out.py\n  if constexpr (requires { &MoeClass::set_partial_outputs; }) {')
@@ -385,12 +491,8 @@ def main():
                      '        return AVX2ContractV3_MOE\n'
                      '    if forced == "amx":\n')
         # pathb-nodescale: the image hook at the top of NativeMoEWrapper.load_weights, and its functions appended
-        replace_once(amx, '            return self._load_weights_mxfp4_cache(physical_to_logical_map_cpu)\n',
-                     '            return self._load_weights_mxfp4_cache(physical_to_logical_map_cpu)\n'
-                     '        # pathb-nodescale (concept-r1 NODE_SCALING_r1.md section 3): the block-ordered expert image\n'
-                     '        if self.method == "MXFP4" and os.environ.get("KT_IMAGE_DIR"):\n'
-                     '            if _kt_image_load_layer(self, physical_to_logical_map_cpu):\n'
-                     '                return\n')
+        replace_once(amx, IMAGE_ANCHOR, IMAGE_HOOK)
+        replace_once(amx, IMAGE_INIT_ANCHOR, IMAGE_INIT_HOOK)   # pathb-image-r2
         amx.write_text(amx.read_text() + (HERE / "python/utils/kt_image.py").read_text())
         report["after"] = {str(p.relative_to(kt)): sha(p) for p in patched}
         report["added"] = {str(p.relative_to(kt)): sha(p) for p in sorted(d.iterdir())}
@@ -398,7 +500,7 @@ def main():
         report["cpu_r1"] = {"dir": str(HERE), "pinned_header_sha256": sha(CPU / "contract_v3h-moe.hpp"),
                                "commit": (HERE / "SOURCE_COMMIT").read_text().strip() if (HERE / "SOURCE_COMMIT").is_file() else None,
                                "preread": True, "bytescales": True, "pairfix": True, "stagger_r2_per_task": True,
-                               "nodescale": True, "image_r1": True,
+                               "nodescale": True, "image_r1": True, "image_r2": True, "image_r3": True,
                                "kt_image_py_sha256": sha(HERE / "python/utils/kt_image.py")}
         if SIF is None:
             report["compiler"] = subprocess.check_output(["gcc", "--version"], text=True).splitlines()[0]
@@ -454,6 +556,15 @@ def main():
             z.extractall(N / "pkg")
         sos = sorted((N / "pkg/kt_kernel").glob("*kt_kernel_ext*.so"))
         report["artifacts"] = {p.name: sha(p) for p in sos}
+        # pathb-image-r1: the image hook ships in the package (its utils/amx.py), or the build fails
+        pamx = N / "pkg/kt_kernel/utils/amx.py"
+        if not pamx.is_file():
+            raise SystemExit("the wheel has no kt_kernel/utils/amx.py")
+        ptxt = pamx.read_text()
+        if ptxt.count(IMAGE_HOOK) != 1 or ptxt.count(IMAGE_INIT_HOOK) != 1 or \
+                not ptxt.endswith((HERE / "python/utils/kt_image.py").read_text()):
+            raise SystemExit("the wheel's kt_kernel/utils/amx.py does not carry the two image hooks and kt_image.py")
+        report["pkg_amx_py_sha256"] = sha(pamx)
         # the strict-FP evidence for the v3 entry points (no reciprocal approximations)
         so = sos[0]
         dis = subprocess.run(["objdump", "-d", "--no-show-raw-insn", "-C", str(so)], capture_output=True, text=True).stdout
@@ -467,6 +578,9 @@ def main():
         report["v3_suspect_instructions"] = bad
         report.update(status="KT_PB_BUILD_PASS", module=str(so), module_sha256=sha(so))
         save()
+        # pathb-image-r1: the format record beside the module (the imgid job and the preflight check read it)
+        (N / "ARENA_FORMAT.json").write_text(json.dumps(dict(report["arena_format"], module_sha256=report["module_sha256"],
+                                                             pkg_amx_py_sha256=report["pkg_amx_py_sha256"]), indent=1) + "\n")
     except BaseException as exc:
         report.update(status="FAIL", error=repr(exc))
         save()

@@ -563,7 +563,97 @@ class TP_MOE<AVX2_CONTRACT_V3H_TP<K>> : public TP_MOE<AVX2_MXFP4_MOE_TP<K>> {
       this->image_status_ = "image: after the load: unknown exception";
       this->weights_loaded = false;
     }
+    image_done_.store(1, std::memory_order_release);   // pathb-image-r2: the status is final from here on
   }
+
+  // pathb-image-r2 (concept-r1 STARTUP_CUTS_r1.md section 3): 1 once load_weights_image() has returned, so a caller that
+  // queued the image task early (amx.py preload) waits for this layer alone, instead of a CPUInfer sync (which waits for
+  // every queued task), and reads image_status() only after the worker has stopped writing it. Reads no arena byte.
+  std::atomic<int> image_done_{0};
+  int image_done() const { return image_done_.load(std::memory_order_acquire); }
+
+  // pathb-image-r3 (16 Nov): the layer's module MADE inside its image task. r2 made the module on the Python main thread
+  // (TP_MOE_Common's constructor: NumaJobDistributor::do_numa_job, moe-tp.hpp) while an earlier layer's image task ran
+  // its own do_numa_job calls on the CPUInfer worker (load_weights_image_inner, build_codes, thp_collapse); do_numa_job
+  // stores one shared compute_func and spins on shared per-node flags with no lock (worker_pool.cpp), so two callers
+  // can run each other's function, or return early. Here the constructor, image_prepare and load_weights_image run in
+  // ONE task, so every do_numa_job of a preloaded load runs on the worker thread, in queue order. Nothing in the
+  // constructor needs the main thread: no CUDA, no Python; its per-part work runs on the node-bound distributor threads
+  // whoever calls it (USE_NUMA_JOB_DIRECT_WORK is not defined), its shared buffers are mutex-guarded (shared_mem_buffer).
+  // The statements of the load are r2's own (the constructor, then image_prepare, then load_weights_image with the map
+  // set as img_task sets it), so the arenas are byte for byte r2's. run() never throws: status() is "ok" or the reason,
+  // and on any failure the module is dropped on the worker before done() reads 1. ext_bindings.cpp (build_bs.py) binds
+  // it as AVX2ContractV3_ImageBuild with the CPUInfer task "task()".
+  struct ImageBuild {
+    GeneralMOEConfig cfg;                       // a copy: the Python MOEConfig may go; the GPU mask it points at may not
+    std::string path, digests;
+    uint64_t file_bytes = 0;
+    std::vector<int64_t> geometry;
+    std::vector<std::vector<int>> proven_rows;  // the image's proven part rows ...
+    bool any_rows = true;                       // ... or any layout (the proof names none)
+    uintptr_t map = 0;                          // physical -> logical, uint64 per expert, owned by the caller
+    std::shared_ptr<TP_MOE> moe;
+    std::string status_ = "queued";
+    std::vector<int> rows_;
+    double make_seconds_ = 0, total_seconds_ = 0;
+    int64_t tid_ = -1;                          // the thread run() ran on (the CPUInfer worker): imgid2's mechanism check
+    std::atomic<int> submitted_{0};
+    std::atomic<int> done_{0};
+
+    ImageBuild(const GeneralMOEConfig& c, const std::string& p, uint64_t nbytes, const std::vector<int64_t>& geom,
+               const std::string& dg, const std::vector<std::vector<int>>& rows, bool any, uintptr_t m)
+        : cfg(c), path(p), digests(dg), file_bytes(nbytes), geometry(geom), proven_rows(rows), any_rows(any), map(m) {}
+
+    void run() {   // on the CPUInfer worker
+      const auto t0 = std::chrono::steady_clock::now();
+      tid_ = (int64_t)::syscall(SYS_gettid);
+      std::shared_ptr<TP_MOE> m;
+      std::string st;
+      try {
+        m = std::make_shared<TP_MOE>(cfg);   // r2: ctx["backend_cls"](cfg) on the main thread
+        make_seconds_ = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+        rows_ = m->contract_v3_part_rows();
+        bool proven = any_rows;
+        for (const auto& r : proven_rows) proven = proven || r == rows_;
+        if (!proven) {
+          std::string a, b;
+          for (int v : rows_) a += (a.empty() ? "" : ", ") + std::to_string(v);
+          for (const auto& r : proven_rows) {
+            std::string s;
+            for (int v : r) s += (s.empty() ? "" : ", ") + std::to_string(v);
+            b += (b.empty() ? "[" : ", [") + s + "]";
+          }
+          st = "part rows [" + a + "] are not among the image's proven part rows [" + b + "]";
+        } else {
+          st = m->image_prepare(path, file_bytes, geometry, digests);
+          if (st == "ok") {
+            if (map) m->config.physical_to_logical_map = reinterpret_cast<void*>(map);   // as img_task
+            m->load_weights_image();
+            st = m->image_status();
+          }
+        }
+      } catch (const std::exception& ex) {
+        st = std::string("image: the module: ") + ex.what();
+      } catch (...) {
+        st = "image: the module: unknown exception";
+      }
+      if (st != "ok") m.reset();   // dropped here, on the worker, before done
+      moe = std::move(m);
+      status_ = st;
+      total_seconds_ = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+      done_.store(1, std::memory_order_release);   // everything above is final from here on
+    }
+    int done() const { return done_.load(std::memory_order_acquire); }
+    std::string status() const { return done() ? status_ : std::string("queued"); }
+    std::vector<int> rows() const { return done() ? rows_ : std::vector<int>{}; }
+    std::tuple<double, double> seconds() const { return done() ? std::make_tuple(make_seconds_, total_seconds_)
+                                                               : std::make_tuple(-1.0, -1.0); }
+    int64_t tid() const { return done() ? tid_ : (int64_t)-1; }
+    std::shared_ptr<TP_MOE> take() {   // the module once, after done and only when status is "ok"; else None
+      if (!done()) throw std::runtime_error("image build: take() before the task has run");
+      return std::move(moe);
+    }
+  };
 
   void v3_load(bool from_image) {
     if (kt_contract_v3h::env_on("KT_MXFP4_SCALE_CODES"))
