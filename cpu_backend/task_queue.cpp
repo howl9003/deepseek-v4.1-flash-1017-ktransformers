@@ -25,6 +25,7 @@ std::atomic<uint64_t> kt_tq_last_qwait_ns{0};
 TaskQueue::TaskQueue() : done(false), pending(0) {
   if (const char* e = getenv("KT_TASKQUEUE_TIMING")) timing_every = atoi(e);
   if (const char* e = getenv("KT_TASKQUEUE_SPIN_US")) spin_us = atoi(e);
+  if (const char* e = getenv("KT_MEMOP_SYNC_PER_TASK")) count_tasks = e[0] == '1' && e[1] == '\0';
   Node* dummy = new Node();
   head.store(dummy, std::memory_order_relaxed);
   tail.store(dummy, std::memory_order_relaxed);
@@ -49,6 +50,7 @@ TaskQueue::~TaskQueue() {
 
 void TaskQueue::enqueue(std::function<void()> task) {
   pending.fetch_add(1, std::memory_order_acq_rel);
+  if (count_tasks) n_enq.fetch_add(1, std::memory_order_acq_rel);
   Node* node = new Node(task);
   if (timing_every) node->t_enq = now_ns();
   Node* prev = tail.exchange(node, std::memory_order_acq_rel);
@@ -140,6 +142,7 @@ void TaskQueue::worker() {
         if (task_exception && !first_exception) {
           first_exception = task_exception;
         }
+        if (count_tasks) n_fin.fetch_add(1, std::memory_order_acq_rel);   // after the exception is stored
         pending.fetch_sub(1, std::memory_order_acq_rel);
       }
       cv.notify_all();
@@ -167,5 +170,32 @@ void TaskQueue::worker() {
             || done.load(std::memory_order_acquire);
       });
     }
+  }
+}
+
+// Path B stagger r2 (KT_MEMOP_SYNC_PER_TASK=1, memop_per_task.h): the two pieces of sync() a per-task wait still needs.
+void TaskQueue::rethrow_if_failed() {
+  std::exception_ptr task_exception;
+  {
+    std::lock_guard<std::mutex> lock(mtx);
+    task_exception = first_exception;
+    first_exception = nullptr;
+  }
+  if (task_exception) std::rethrow_exception(task_exception);
+}
+
+void TaskQueue::note_sync(uint64_t waited_ns) {
+  if (!timing_every) return;
+  sync_ns.fetch_add(waited_ns, std::memory_order_relaxed);
+  const uint64_t n = n_syncs.fetch_add(1, std::memory_order_relaxed) + 1;
+  if (n % uint64_t(timing_every) == 0) {
+    const uint64_t nt = n_tasks.exchange(0), qn = q_ns.exchange(0), rn = run_ns.exchange(0);
+    const uint64_t sn = sync_ns.exchange(0);
+    fprintf(stderr,
+            "[kt-timing] %d syncs (per task): tasks=%llu queue_wait=%.0f us/task run=%.0f us/task "
+            "(run total %.1f ms) | sync_wait=%.0f us/sync (total %.1f ms)\n",
+            timing_every, (unsigned long long)nt, nt ? qn / 1e3 / nt : 0.0, nt ? rn / 1e3 / nt : 0.0,
+            rn / 1e6, sn / 1e3 / timing_every, sn / 1e6);
+    fflush(stderr);
   }
 }

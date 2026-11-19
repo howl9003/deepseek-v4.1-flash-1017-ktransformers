@@ -1,4 +1,12 @@
-"""pathb-cpu-r1 (13 Nov, concept-r1 ZEN3_OPTIMISATION_r1.md section 3.2; branch pathb-cpu-r1 off pathb-pairfix with
+"""pathb-stagger-r2 (13 Nov, concept-r1 STAGGER_DESIGN_r1.md section 9.2; branch pathb-stagger-r2 off pathb-cpu-r1 c64e1ca):
+the pathb-cpu-r1 build below, unchanged in its steps, with KT_MEMOP_SYNC_PER_TASK=1 added (off unless set) in
+cpu_backend/cpuinfer.h, task_queue.h, task_queue.cpp and the new cpu_backend/memop_per_task.h (copied next to
+memop_detect.h): a stream-memop sync is served only after its own submit (KT_MEMOP_PAIRED's rule, implied) and raises its
+done flag once that submit's task has finished, without blocking the poller, so two decode lanes stop waiting for each
+other's CPU task. Unset, the module behaves as the pathb-cpu-r1 one (the TaskQueue counters stay off, the pollers are
+unchanged). No arithmetic, binding or kernel changes.
+
+pathb-cpu-r1 (13 Nov, concept-r1 ZEN3_OPTIMISATION_r1.md section 3.2; branch pathb-cpu-r1 off pathb-pairfix with
 pathb-preread and pathb-kernel-rw merged): every source of the three lines below, plus the CPU switches of this branch, each
 off unless set: KT_V3_CCD (per-CCD static split and per-CCD pre-read), KT_V3_RW_RED=2 (the row-wise kernel's microcode-free
 reduction), KT_V3_THP_COLLAPSE (MADV_COLLAPSE of the written arena extents at load), KT_V3_SUM_PART (the part sum's
@@ -138,10 +146,12 @@ def main():
                 raise SystemExit(f"{rel} in the tree is not the file the change was made from")
             shutil.copy2(HERE / rel, kt / rel)
             report["replaced"][rel] = {"from": base, "to": sha(kt / rel)}
-        if (kt / "cpu_backend/memop_detect.h").exists():
-            raise SystemExit("cpu_backend/memop_detect.h already exists in the tree")
-        shutil.copy2(HERE / "cpu_backend/memop_detect.h", kt / "cpu_backend/memop_detect.h")
-        report["replaced"]["cpu_backend/memop_detect.h"] = {"from": None, "to": sha(kt / "cpu_backend/memop_detect.h")}
+        # concept-r1 stagger r2: the per-task sync's header (KT_MEMOP_SYNC_PER_TASK, off unless set) next to the detector's
+        for rel in ("cpu_backend/memop_detect.h", "cpu_backend/memop_per_task.h"):
+            if (kt / rel).exists():
+                raise SystemExit(f"{rel} already exists in the tree")
+            shutil.copy2(HERE / rel, kt / rel)
+            report["replaced"][rel] = {"from": None, "to": sha(kt / rel)}
 
         d = kt / "operators/avx2/contract_v3"
         d.mkdir()
@@ -272,7 +282,7 @@ def main():
         report["added"]["operators/avx2/contract_v3h-moe.hpp"] = sha(kt / "operators/avx2/contract_v3h-moe.hpp")
         report["cpu_r1"] = {"dir": str(HERE), "pinned_header_sha256": sha(CPU / "contract_v3h-moe.hpp"),
                                "commit": (HERE / "SOURCE_COMMIT").read_text().strip() if (HERE / "SOURCE_COMMIT").is_file() else None,
-                               "preread": True, "bytescales": True, "pairfix": True}
+                               "preread": True, "bytescales": True, "pairfix": True, "stagger_r2_per_task": True}
         if SIF is None:
             report["compiler"] = subprocess.check_output(["gcc", "--version"], text=True).splitlines()[0]
         else:

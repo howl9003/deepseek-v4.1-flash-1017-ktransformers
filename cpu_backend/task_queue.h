@@ -45,7 +45,18 @@ class TaskQueue {
   // KT_MEMOP_DETECT (memop_detect.h): tasks enqueued and not finished, as sync() reads it. Read-only.
   size_t pending_now() const { return pending.load(std::memory_order_acquire); }
 
+  // Path B stagger r2, KT_MEMOP_SYNC_PER_TASK=1 (memop_per_task.h): tasks enqueued and finished so far. One worker runs
+  // them first in first out, so the n-th enqueued task has finished once finished() >= n. Both stay 0 when unset.
+  uint64_t enqueued() const { return n_enq.load(std::memory_order_acquire); }
+  uint64_t finished() const { return n_fin.load(std::memory_order_acquire); }
+  void rethrow_if_failed();               // a stored task exception, taken and rethrown as sync() does
+  bool timing_on() const { return timing_every != 0; }
+  void note_sync(uint64_t waited_ns);     // KT_TASKQUEUE_TIMING accounting of a per-task sync, as sync() keeps its own
+
  private:
+  bool count_tasks = false;               // KT_MEMOP_SYNC_PER_TASK=1, read once in the constructor
+  std::atomic<uint64_t> n_enq{0}, n_fin{0};
+
   struct Node {
     std::function<void()> task;
     std::atomic<Node*> next;

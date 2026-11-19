@@ -42,6 +42,7 @@
 #include "llama.cpp/ggml-impl.h"
 #include "task_queue.h"
 #include "memop_detect.h"
+#include "memop_per_task.h"
 #include "worker_pool.h"
 
 class CPUInfer {
@@ -87,7 +88,13 @@ class CPUInfer {
       if (mdet_fd_ >= 0) close(mdet_fd_);
       delete mdet_;
     }
-    if (mpaired_ != nullptr) {   // KT_MEMOP_PAIRED: the poller has stopped
+    if (mwaits_ != nullptr) {   // KT_MEMOP_SYNC_PER_TASK: the poller has stopped
+      printf("[kt-memops] CPUInfer[0x%lx]: KT_MEMOP_SYNC_PER_TASK=1: %llu syncs waited for their own task, %llu of them "
+             "released while a later task was pending\n",
+             (intptr_t)this, (unsigned long long)mwaits_->waits(), (unsigned long long)mwaits_->early());
+      delete mwaits_;
+    }
+    if (mpaired_ != nullptr) {   // KT_MEMOP_PAIRED (or implied by KT_MEMOP_SYNC_PER_TASK): the poller has stopped
       printf("[kt-memops] CPUInfer[0x%lx]: KT_MEMOP_PAIRED=1: %llu syncs were left for a later pass\n", (intptr_t)this,
              (unsigned long long)mpaired_->deferred());
       delete mpaired_;
@@ -172,7 +179,7 @@ class CPUInfer {
     int idx;
     bool sync;
     bool permanent;
-    int pair;    // KT_MEMOP_DETECT or KT_MEMOP_PAIRED: a sync's submit slot on the same stream, else -1
+    int pair;    // KT_MEMOP_DETECT, KT_MEMOP_PAIRED or KT_MEMOP_SYNC_PER_TASK: a sync's submit slot on its stream, else -1
     int graph;   // KT_MEMOP_DETECT: the graph ordinal on its first sync (the graph's step marker), else -1
   };
   typedef int (*StreamValueFn)(void*, unsigned long long, unsigned int, unsigned int);
@@ -189,7 +196,8 @@ class CPUInfer {
   kt_memop_detect::Detector* mdet_ = nullptr;   // KT_MEMOP_DETECT=1 only (memop_detect.h)
   int mdet_fd_ = -1;
   std::thread mflusher_;
-  kt_memop_detect::Paired* mpaired_ = nullptr;   // KT_MEMOP_PAIRED=1 only (memop_detect.h): the fix
+  kt_memop_detect::Paired* mpaired_ = nullptr;   // KT_MEMOP_PAIRED=1 or KT_MEMOP_SYNC_PER_TASK=1 (memop_detect.h): the fix
+  kt_memop::Waits<TaskQueue>* mwaits_ = nullptr;  // KT_MEMOP_SYNC_PER_TASK=1 only (memop_per_task.h); poller thread only
 
   volatile uint32_t* req_host(int i) { return mflags_ + (size_t)i * 2 * kStride; }
   volatile uint32_t* done_host(int i) { return mflags_ + (size_t)i * 2 * kStride + kStride; }
@@ -201,7 +209,15 @@ class CPUInfer {
   void memops_init() {
 #if defined(KTRANSFORMERS_USE_CUDA)
     const char* on = getenv("KT_STREAM_MEMOPS");
-    if (on == nullptr || on[0] != '1') return;
+    if (on == nullptr || on[0] != '1') {
+      if (kt_memop::per_task_from_env())   // stagger r2: the host-function path is ordered by the stream, no poller
+        printf("[kt-memops] KT_MEMOP_SYNC_PER_TASK=1 has no effect without KT_STREAM_MEMOPS=1\n");
+      return;
+    }
+    // stagger r2: the per-task wait exists in scan_per_task only; the detector's loop (scan_detect) has none. Refused
+    // here, before anything is allocated, rather than run with one of the two silently off.
+    if (kt_memop::per_task_from_env() && kt_memop_detect::on_from_env())
+      throw std::runtime_error("KT_MEMOP_SYNC_PER_TASK=1 with KT_MEMOP_DETECT=1 is not built: unset one of them");
     void* h = dlopen("libcuda.so.1", RTLD_NOW | RTLD_GLOBAL);
     if (h != nullptr) {
       write32_ = (StreamValueFn)dlsym(h, "cuStreamWriteValue32_v2");
@@ -260,16 +276,26 @@ class CPUInfer {
     std::memset(host, 0, bytes);
     mflags_dev_ = (uint32_t*)dev;
     mflags_ = (volatile uint32_t*)host;
-    if (kt_memop_detect::paired_from_env()) {   // KT_MEMOP_PAIRED=1: set before the poller starts and before any arm
+    const bool per_task = kt_memop::per_task_from_env();
+    // KT_MEMOP_PAIRED=1, or KT_MEMOP_SYNC_PER_TASK=1 (which keeps the pairing rule and adds the per-task wait):
+    // set before the poller starts and before any arm
+    if (kt_memop_detect::paired_from_env() || per_task) {
       mpaired_ = new kt_memop_detect::Paired(kRing + kPerm);
-      printf("[kt-memops] KT_MEMOP_PAIRED=1: a stream sync is served only after its own submit\n");
+      if (kt_memop_detect::paired_from_env())
+        printf("[kt-memops] KT_MEMOP_PAIRED=1: a stream sync is served only after its own submit\n");
+    }
+    if (per_task) {   // stagger r2 (memop_per_task.h)
+      mwaits_ = new kt_memop::Waits<TaskQueue>(task_queue_, kRing + kPerm);
+      printf("[kt-memops] KT_MEMOP_SYNC_PER_TASK=1: a stream sync is served only after its own submit and waits for "
+             "that submit's task only%s\n", kt_memop_detect::paired_from_env() ? "" : " (KT_MEMOP_PAIRED's rule implied)");
     }
     if (kt_memop_detect::on_from_env()) {   // KT_MEMOP_DETECT=1: set before the poller starts and before any arm
       mdet_ = new kt_memop_detect::Detector(kRing + kPerm);
       mdet_fd_ = kt_memop_detect::open_log(kRing, kPerm, mpaired_ != nullptr);
       mflusher_ = std::thread(&CPUInfer::memop_flusher, this);
     }
-    mpoller_ = std::thread(mdet_ != nullptr      ? &CPUInfer::memop_poller_detect
+    mpoller_ = std::thread(mwaits_ != nullptr    ? &CPUInfer::memop_poller_per_task
+                           : mdet_ != nullptr    ? &CPUInfer::memop_poller_detect
                            : mpaired_ != nullptr ? &CPUInfer::memop_poller_paired
                                                  : &CPUInfer::memop_poller,
                            this);
@@ -366,6 +392,47 @@ class CPUInfer {
       }
       std::vector<int> retire;
       kt_memop_detect::scan_paired(snap, *mpaired_, req, done, full_sync, retire, nothing);
+      __builtin_ia32_pause();
+      if (!retire.empty()) {
+        std::lock_guard<std::mutex> g(mmtx_);
+        for (int idx : retire) {
+          for (size_t i = 0; i < mentries_.size(); i++) {
+            if (!mentries_[i].permanent && mentries_[i].idx == idx) {
+              mentries_.erase(mentries_.begin() + i);
+              break;
+            }
+          }
+        }
+        mversion_.fetch_add(1, std::memory_order_release);
+      }
+    }
+  }
+
+  // KT_MEMOP_SYNC_PER_TASK=1 (stagger r2, memop_per_task.h): memop_poller_paired with the per-task wait. A paired sync
+  // with allow 0 is served only after its own submit (KT_MEMOP_PAIRED's deferral, unchanged) and then raises its done
+  // flag once that submit's task has finished, without blocking: the next pass sees the other lane's submit at once. An
+  // unpaired sync, or one with allow > 0, blocks in TaskQueue::sync exactly as memop_poller_paired does.
+  void memop_poller_per_task() {
+    memop_pin_from_env();
+    std::vector<MemopEntry> snap;
+    uint64_t seen = ~0ull;
+    auto req = [this](int i) { return req_host(i); };
+    auto done = [this](int i) { return done_host(i); };
+    auto full_sync = [this](size_t allow) { task_queue_->sync(allow); };
+    auto nothing = [](const MemopEntry&, bool) {};
+    while (!mstop_.load(std::memory_order_relaxed)) {
+      const uint64_t v = mversion_.load(std::memory_order_acquire);
+      if (v != seen) {
+        std::lock_guard<std::mutex> g(mmtx_);
+        snap = mentries_;
+        seen = mversion_.load(std::memory_order_acquire);
+      }
+      std::vector<int> retire;
+      const uint64_t now = task_queue_->timing_on()
+                               ? (uint64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                     std::chrono::steady_clock::now().time_since_epoch()).count()
+                               : 0;
+      kt_memop::scan_per_task(snap, *mpaired_, *mwaits_, req, done, full_sync, retire, now, nothing);
       __builtin_ia32_pause();
       if (!retire.empty()) {
         std::lock_guard<std::mutex> g(mmtx_);
