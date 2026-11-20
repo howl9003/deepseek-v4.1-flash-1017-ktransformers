@@ -30,7 +30,7 @@ Use these release branches.
 | Recipe | howl9003/deepseek-v4.1-flash-1017-ktransformers | `main` |
 | kt overlay | howl9003/deepseek-v4.1-flash-1017-ktransformers | `c4-r120-kt` |
 
-The SGLang tree is `b2dd424de65c9e45dcff2916fb9013071c5be0a5` and the kt overlay tree is `36f72b46dccf6ce3036f2c6162625d3adf147bf9`. Create the public base installation, build the native kernel and image, and qualify the GPU library on each device. The recipe book has the Linux commands and lists the external inputs. [Rebuild and calibration](RECIPE.md)
+The SGLang tree is `617e53a3a8a1f4d9390752a100eceda08919bc3f` and the kt overlay tree is `36f72b46dccf6ce3036f2c6162625d3adf147bf9`. Create the public base installation, build the native kernel and image, and qualify the GPU library on each device. The recipe book has the Linux commands and lists the external inputs. [Rebuild and calibration](RECIPE.md)
 
 Copy `config.example.json` to a local file, replace the paths and insert the two real GPU UUIDs in rank order. Launch from the recipe directory after preparing the installation.
 
