@@ -11,7 +11,7 @@ HERE=Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import launch
 
-TREES={"sglang":"f62b8d11d5d10a30b53b7f836283ee4fd85aa4f0","kt":"36f72b46dccf6ce3036f2c6162625d3adf147bf9"}
+TREES={"sglang":"2ca61d85d20e683981f07c2ef9522f25fa249303","kt":"36f72b46dccf6ce3036f2c6162625d3adf147bf9"}
 
 
 def main():
@@ -42,6 +42,8 @@ def main():
             raise SystemExit("The profile requests a speculative worker")
         if env.get("SGLANG_C4_ROUTE_R120_ORDER") != "1":
             raise SystemExit(f"Wrong router reduction for {table}")
+        if env.get("SGLANG_C4_STREAM_CAPTURE_GC") != "pause":
+            raise SystemExit(f"Stream graph captures collect garbage for {table}")
         if env.get("KT_TP_PART_BLOCKS") != (None if table=="A" else "10,10,10,10,6,6,10,10"):
             raise SystemExit(f"Wrong NUMA split for {table}")
         if args.config:

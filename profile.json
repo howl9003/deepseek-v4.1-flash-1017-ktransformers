@@ -241,6 +241,7 @@
     "SGLANG_V3_HEADROOM_EVERY_S": "60",
     "SGLANG_V3_HEADROOM_FILE": "$STATE/headroom/hr",
     "SGLANG_C4_ROUTE_R120_ORDER": "1",
+    "SGLANG_C4_STREAM_CAPTURE_GC": "pause",
     "SGLANG_V3_INVARIANT": "1",
     "SGLANG_V3_JIT_MANIFEST": "$ROOT/jit-manifest.json",
     "SGLANG_V3_KVT": "1",
