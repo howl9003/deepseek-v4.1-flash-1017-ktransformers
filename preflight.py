@@ -11,7 +11,7 @@ HERE=Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import launch
 
-TREES={"sglang":"617e53a3a8a1f4d9390752a100eceda08919bc3f","kt":"36f72b46dccf6ce3036f2c6162625d3adf147bf9"}
+TREES={"sglang":"f62b8d11d5d10a30b53b7f836283ee4fd85aa4f0","kt":"36f72b46dccf6ce3036f2c6162625d3adf147bf9"}
 
 
 def main():
@@ -40,6 +40,8 @@ def main():
         spec=[k for k in env if k.startswith("SGLANG_V3_SPEC") and env[k] not in ("0","")]
         if any(a.startswith("--speculative") for a in argv) or spec:
             raise SystemExit("The profile requests a speculative worker")
+        if env.get("SGLANG_C4_ROUTE_R120_ORDER") != "1":
+            raise SystemExit(f"Wrong router reduction for {table}")
         if env.get("KT_TP_PART_BLOCKS") != (None if table=="A" else "10,10,10,10,6,6,10,10"):
             raise SystemExit(f"Wrong NUMA split for {table}")
         if args.config:
